@@ -3,6 +3,7 @@
 #include <cstdlib> // For exit() and EXIT_FAILURE
 #include <iostream> // For cout
 #include <unistd.h> // For read
+#include <fstream> // ifstream
 
 int main() {
   // Create a socket (IPv4, TCP)
@@ -42,6 +43,19 @@ int main() {
   std::cout << "The message was: " << buffer;
 
   // Send a message to the connection
+    std::ifstream file;
+    file.open("nginx.conf");
+    if (file.fail())
+    {
+        std::cout << "cant open file" << std::endl;
+    }
+    std::string line;
+    while (getline(file, line))
+    {
+        send(connection, line.c_str(), line.size(), 0);
+        send(connection, "\n", 1, 0);
+    }
+
   std::string response = "Good talking to you\n";
   send(connection, response.c_str(), response.size(), 0);
 
