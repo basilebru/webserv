@@ -4,6 +4,7 @@
 #include <iostream> // For cout
 #include <unistd.h> // For read
 #include <fstream> // ifstream
+#include <sstream> // sstream
 
 int main() {
   // Create a socket (IPv4, TCP)
@@ -37,11 +38,22 @@ int main() {
     exit(EXIT_FAILURE);
   }
 
-  // Read from the connection
-  char buffer[100];
-  auto bytesRead = read(connection, buffer, 100);
-  std::cout << "The message was: " << buffer;
-
+  // Read from the connection until an empty line is found. Concatenate the successive buffers into a stringstream
+  char buffer[10];
+  std::stringstream data;
+  bool go_on = true;
+  int len;
+  while (go_on)
+  {
+    len = read(connection, buffer, 9);
+    buffer[len] = 0;
+    // std::cout << "buf: " << buffer << std::endl;
+    // std::cout << "len: " << len << std::endl;
+    data << buffer;
+    go_on = data.str().find("\r\n\r\n") == std::string::npos;
+  }
+  std::cout << data.str() << std::endl;
+  
   // Send a message to the connection
     std::ifstream file;
     file.open("nginx.conf");
@@ -55,7 +67,7 @@ int main() {
         send(connection, line.c_str(), line.size(), 0);
         send(connection, "\n", 1, 0);
     }
-
+    
   std::string response = "Good talking to you\n";
   send(connection, response.c_str(), response.size(), 0);
 
