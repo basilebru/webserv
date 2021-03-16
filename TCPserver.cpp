@@ -33,7 +33,7 @@ int main() {
 	}
 
 	// Grab a connection from the queue
-	auto addrlen = sizeof(sockaddr);
+	unsigned long addrlen = sizeof(sockaddr);
 	int connection = accept(sockfd, (struct sockaddr*)&sockaddr, (socklen_t*)&addrlen);
 	if (connection < 0) {
 		std::cout << "Failed to grab connection. errno: " << errno << std::endl;
@@ -55,6 +55,7 @@ int main() {
 		std::cout << "request_line: " << string_line << std::endl;
 		// process line
 		go_on = string_line != "\r";
+        free(char_line);
 	}
 	
 	// B. Alternative:
@@ -87,19 +88,22 @@ int main() {
 
 	
 	// Send a message to the connection
-		std::ifstream file;
-		file.open("nginx.conf");
-		if (file.fail())
-		{
-				std::cout << "cant open file" << std::endl;
-		}
-		std::string line;
-		while (getline(file, line))
-		{
-				send(connection, line.c_str(), line.size(), 0);
-				send(connection, "\n", 1, 0);
-		}
-		
+
+    // // Send content of a file
+	// 	std::ifstream file;
+	// 	file.open("old/nginx.conf");
+	// 	if (file.fail())
+	// 	{
+	// 			std::cout << "cant open file" << std::endl;
+	// 	}
+	// 	std::string line;
+	// 	while (getline(file, line))
+	// 	{
+	// 			send(connection, line.c_str(), line.size(), 0);
+	// 			send(connection, "\n", 1, 0);
+	// 	}
+
+    // send simple string
 	std::string response = "Good talking to you\n";
 	send(connection, response.c_str(), response.size(), 0);
 
