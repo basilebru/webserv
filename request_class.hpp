@@ -16,6 +16,7 @@ struct request_line
 class Request
 {
     private:
+        int error_code;
         request_line req_line;
         std::list<std::pair<std::string, std::string> > headers;
     public:
@@ -23,6 +24,10 @@ class Request
         Request(const Request &copy);
         virtual ~Request(void);
         Request&  operator=(const Request &copy);
+
+        void add_req_line(std::string line);
+        void add_header(std::string line);
+        void print();
 };
 
 #endif
