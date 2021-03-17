@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/16 16:09:18 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/03/17 10:08:39 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void ConfParser::readConfFile(void)
 	file.open(this->_configFile);
 	if (file.fail())
 	{
-		std::cout << "cant open file" << std::endl;
+		std::cerr << "cant open file" << std::endl;
 	}
 	std::string line;
 	int i = 0;

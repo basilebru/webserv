@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:26 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/16 16:03:27 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/03/17 09:36:05 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 int main()
 {
-	ConfParser parser;
+	ConfParser parser("../old/nginx.conf");
 
 	parser.readConfFile();
 	
