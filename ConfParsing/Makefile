@@ -6,7 +6,7 @@
 #    By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/16 17:10:11 by julnolle          #+#    #+#              #
-#    Updated: 2021/03/16 17:11:45 by julnolle         ###   ########.fr        #
+#    Updated: 2021/03/17 09:31:35 by julnolle         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,6 +22,8 @@ CFLAGS +=	-Wextra
 ifneq ($(err), no)
 	CFLAGS += -Werror
 endif
+
+EXTRAFLAGS =  --std=c++98 -g3 -fsanitize=address
 
 # ---------------- SRC --------------- #
 
@@ -39,11 +41,11 @@ OBJS		= $(patsubst %.cpp, $(DIR_OBJS)%.o, $(SRCS))
 all: $(NAME)
 
 $(NAME):	$(OBJS)
-			$(CC) $(CFLAGS) $(OBJS) -o $@
+			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(OBJS) -o $@
 # 			echo "$(_BOLD)$(_YELLOW)==> $@ linked$(_END)"
 
 $(OBJS): 	$(DIR_OBJS)%.o: %.cpp | $(DIR_OBJS)
-			$(CC) $(CFLAGS) -c $< -o $@
+			$(CC) $(CFLAGS) $(EXTRAFLAGS) -c $< -o $@
 # 			echo "$(_BOLD)$(_GREEN)--> $@ made$(_END)"
 
 $(DIR_OBJS):

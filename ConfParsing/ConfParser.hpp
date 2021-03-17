@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/16 16:08:50 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/03/17 17:08:57 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,14 @@
 # include <unistd.h>
 # include <fstream>
 # include <sstream>
+# include <HttpBlock.hpp>
 
 class ConfParser {
 
 private:
-	const std::string _configFile;
+	const std::string		_configFile;
+	HttpBlock *				_httpBlock;
+
 
 public:
 	ConfParser(void);
