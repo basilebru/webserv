@@ -11,20 +11,23 @@ void process_request(int connection)
 	std::string string_line;
     Request req;
 
+	// remarque: RFC 7230:3.5 "message parsing robustness" -> voir si ca vaut le coup de gerer des cas specifiques pour plus de "robustness"
+
 	while (go_on)
 	{
 		if (get_next_line(connection,&char_line) < 0)
 			std::cout << "cant read from socket" << std::endl;
 		string_line = char_line;
 		std::cout << "request_line: " << string_line << std::endl;
-        // if (line_num == 0)
-            // process request line
-        // else
-            // process header lines
+        if (line_num == 0)
+            req.add_req_line(string_line);
+        else
+            req.add_header(string_line);
 		go_on = string_line != "\r";
         free(char_line);
         line_num++;
 	}
+	req.print();
 	
 	// B. Alternative:
 	// Read from the connection until an empty line is found. Concatenate the successive buffers into a stringstream
