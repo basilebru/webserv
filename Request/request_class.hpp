@@ -30,4 +30,7 @@ class Request
         void print();
 };
 
+bool is_whitespace(char c);
+void trim_whitespace(std::string &s);
+
 #endif

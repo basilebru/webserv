@@ -4,6 +4,23 @@
 #include <algorithm>
 #include <cctype>
 
+
+bool is_whitespace(char c)
+{
+    if (c == 32 || c == 9) // space or HTAB (cf RFC 7230 3.2.3)
+        return true;
+    else
+        return false;
+}
+
+void trim_whitespace(std::string &s)
+{
+    size_t pos = s.find_first_not_of("\t ");
+    s.erase(0, pos);
+    pos = s.find_last_not_of("\t ");
+    s.erase(pos + 1);
+}
+
 Request::Request(void): error_code(0)
 {
 }
@@ -31,6 +48,7 @@ void Request::add_req_line(std::string line)
 
     if (std::count(line.begin(), line.end(), ' ') != 2)
     {
+        std::cout << "parsing error: request line not well formated: " << line << std::endl;
         this->error_code = 400;
         return ;
     }
@@ -56,17 +74,19 @@ void Request::add_header(std::string line)
     std::string field_value;
     if ((find = line.find(':')) == std::string::npos)
     {
+        std::cout << "parsing error: no double colon in header: " << line << std::endl;
         this->error_code = 400;
         return ;
     }
     field_name = line.substr(0, find);
-    field_value = line.substr(find + 1);
-    if (std::isspace(field_name.back()))
+    if (is_whitespace(field_name[field_name.size() - 1]))
     {
+        std::cout << "parsing error: whitespace before double colon: " << line << std::endl;
         this->error_code = 400;
         return ;
     }
-    // trim SP and HT in field_value
+    field_value = line.substr(find + 1);
+    trim_whitespace(field_value);
     this->headers.push_back(std::pair<std::string, std::string>(field_name, field_value));
 }
 
@@ -81,5 +101,14 @@ void Request::print()
     std::cout << " . Method: " << this->req_line.method << std::endl;
     std::cout << " . Target: " << this->req_line.target << std::endl;
     std::cout << " . Version: " << this->req_line.version << std::endl;
+    std::cout << std::endl;
+    for (std::list<std::pair<std::string, std::string> >::iterator it = this->headers.begin(); it != this->headers.end(); it++)
+    {
+        /* code */
+        std::cout << "Header line:" << std::endl;
+        std::cout << " . field_name: " << "[" << it->first << "]" << std::endl;
+        std::cout << " . field_value: " << "[" << it->second << "]" << std::endl;
+    }
+    
 }
 
