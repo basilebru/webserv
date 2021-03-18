@@ -1,23 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   LocationBlock.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/16 15:55:26 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/17 09:36:05 by julnolle         ###   ########.fr       */
+/*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
+/*   Updated: 2021/03/18 09:41:19 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ConfParser.hpp"
+#include "LocationBlock.hpp"
 
-int main()
+LocationBlock::LocationBlock(void)
 {
-	ConfParser parser("../old/nginx.conf");
-
-	parser.readConfFile();
-	
-
-	return 0;
+	return;
 }
+
+/*LocationBlock::LocationBlock(LocationBlock const & copy)
+{
+
+}
+*/
+LocationBlock::~LocationBlock(void)
+{
+	return;
+}
+
+/*LocationBlock::LocationBlock& operator=(LocationBlock const & rhs)
+{
+
+}
+*/

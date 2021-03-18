@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:23:44 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/17 17:14:04 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/03/18 09:13:47 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,9 @@
 # include <iostream>
 # include <map>
 # include <vector>
-# include <LocationBlock.hpp>
+# include "LocationBlock.hpp"
 
-class ServerBlocks {
+class ServerBlock {
 
 	typedef size_t					size_type;
 
@@ -37,13 +37,13 @@ private:
 	bool							_chunked_transfer_encoding; // on | off
 
 public:
-	ServerBlocks(void);
-	ServerBlocks(ServerBlocks const & copy);
-	~ServerBlocks(void);
-	ServerBlocks& operator=(ServerBlocks const & rhs);
+	ServerBlock(void);
+	ServerBlock(ServerBlock const & copy);
+	~ServerBlock(void);
+	ServerBlock& operator=(ServerBlock const & rhs);
 	
 };
 
-std::ostream & operator<<(std::ostream & o, ServerBlocks const & rhs);
+std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs);
 
 #endif // SERVER_BLOCK_HPP

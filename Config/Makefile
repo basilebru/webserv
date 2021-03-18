@@ -6,7 +6,7 @@
 #    By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/16 17:10:11 by julnolle          #+#    #+#              #
-#    Updated: 2021/03/17 09:31:35 by julnolle         ###   ########.fr        #
+#    Updated: 2021/03/18 09:44:36 by julnolle         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,18 +16,22 @@ NAME = parser
 
 CC = clang++
 
-CFLAGS +=	-Wall
-CFLAGS +=	-Wextra
+CFLAGS		+=	-Wall
+CFLAGS		+=	-Wextra
 
 ifneq ($(err), no)
-	CFLAGS += -Werror
+	CFLAGS +=	-Werror
 endif
 
-EXTRAFLAGS =  --std=c++98 -g3 -fsanitize=address
+EXTRAFLAGS	=	--std=c++98
+SANITIZE	=	-g3 -fsanitize=address
 
 # ---------------- SRC --------------- #
 
 SRCS += ConfParser.cpp
+SRCS += HttpBlock.cpp
+SRCS += ServerBlock.cpp
+SRCS += LocationBlock.cpp
 SRCS += main.cpp
 
 vpath %.cpp ./
@@ -41,11 +45,11 @@ OBJS		= $(patsubst %.cpp, $(DIR_OBJS)%.o, $(SRCS))
 all: $(NAME)
 
 $(NAME):	$(OBJS)
-			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(OBJS) -o $@
+			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(SANITIZE) $(OBJS) -o $@
 # 			echo "$(_BOLD)$(_YELLOW)==> $@ linked$(_END)"
 
 $(OBJS): 	$(DIR_OBJS)%.o: %.cpp | $(DIR_OBJS)
-			$(CC) $(CFLAGS) $(EXTRAFLAGS) -c $< -o $@
+			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(SANITIZE) -c $< -o $@
 # 			echo "$(_BOLD)$(_GREEN)--> $@ made$(_END)"
 
 $(DIR_OBJS):

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:59:09 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/17 17:14:27 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/03/18 09:13:36 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <string>
 # include <iostream>
 # include <vector>
+# include <map>
 
 class LocationBlock {
 
@@ -24,16 +25,16 @@ class LocationBlock {
 private:
 	std::string						_path;
 	std::string						_root;
-	std::vector						_limit_except; //ou allow_methods ?
+	std::vector<std::string>		_limit_except; //ou allow_methods ?
 	std::map<int, std::string>		_error_pages; /* num error, error file path */
 	std::vector<std::string>		_index;
-	bool							_chunked_transfer_encoding // on | off
+	bool							_chunked_transfer_encoding; // on | off
 	size_type						_client_max_body_size;
 
 	/*For CGI*/
 	std::string							_cgi_pass;
 	unsigned int						_cgi_port; //mixer en std::string avec _cgi_pass
-	std:string							_cgi_index;
+	std::string							_cgi_index;
 	std::map<std::string, std::string>	_cgi_params;
 
 public:
