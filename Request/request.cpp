@@ -28,8 +28,7 @@ void process_request(int connection)
 	req.print();
 
 	// 2. parsing du body (si nécessaire)
-	if (req.body_expected())
-		std::cout << "body expected" << std::endl;
+	req.parse_body();
 	
 	// Alternative:
 	// Read from the connection until an empty line is found. Concatenate the successive buffers into a stringstream

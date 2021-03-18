@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm> // find functions
-#include <cctype>
+// #include <cctype>
 
 
 bool is_whitespace(char c)
@@ -117,18 +117,51 @@ void Request::print()
     }
 }
 
-bool has_body_header(std::pair<std::string, std::string> header)
+bool content_lenght_present(std::pair<std::string, std::string> header)
 {
-    if (header.first == "Content-Lenght" || header.first == "Transfer-Encoding" ||
-    header.first == "content-lenght" || header.first == "transfer-encoding")
+    if (header.first == "Content-Lenght" || header.first == "content-lenght")
         return true;
     else
         return false;
 }
 
-bool Request::body_expected()
+bool transfer_encoding_present(std::pair<std::string, std::string> header)
 {
-    if (std::find_if(this->headers.begin(), this->headers.end(), has_body_header) != this->headers.end())
+    if (header.first == "Transfer-Encoding" || header.first == "transfer-encoding")
+        return true;
+    else
+        return false;
+}
+
+bool Request::has_transfer_encoding()
+{
+    if (std::find_if(this->headers.begin(), this->headers.end(), transfer_encoding_present) != this->headers.end())
         return true;
     return false;
+}
+
+bool Request::has_content_lenght()
+{
+    if (std::find_if(this->headers.begin(), this->headers.end(), content_lenght_present) != this->headers.end())
+        return true;
+    return false;
+}
+
+void Request::get_content_lenght()
+{
+    std::string string_lenght;
+    string_lenght =  std::find_if(this->headers.begin(), this->headers.end(), content_lenght_present) ->second;
+    // atoi ?
+
+}
+
+void Request::parse_body()
+{
+    if (this->has_transfer_encoding())
+        std::cout << "transfer-encoding header detected" << std::endl;
+    if (this->has_content_lenght())
+    {
+        std::cout << "content-lenght header detected" << std::endl;
+        this->get_content_lenght();
+    }
 }

@@ -21,6 +21,11 @@ class Request
         int error_code;
         request_line req_line;
         std::list<header> headers;
+        
+        bool has_transfer_encoding();
+        bool has_content_lenght();
+        void get_content_lenght();
+    
     public:
         Request(void);
         Request(const Request &copy);
@@ -30,7 +35,7 @@ class Request
         void add_req_line(std::string line);
         void add_header(std::string line);
         void print();
-        bool body_expected();
+        void parse_body();
         // void add_body
 };
 
