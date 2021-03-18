@@ -2,8 +2,7 @@
 
 void process_request(int connection)
 {
-	// Read from connection
-	// A. Read directly one line at a time (and proceed it directly) with our C-style getnextline
+	// Read from connection : Read directly one line at a time (and proceed it directly) with our C-style getnextline
 
 	bool go_on = true;
 	char *char_line;
@@ -11,8 +10,7 @@ void process_request(int connection)
 	std::string string_line;
     Request req;
 
-	// remarque: RFC 7230:3.5 "message parsing robustness" -> voir si ca vaut le coup de gerer des cas specifiques pour plus de "robustness"
-
+	// 1. parsing de la request_line et des header fields
 	while (go_on)
 	{
 		if (get_next_line(connection,&char_line) < 0)
@@ -28,8 +26,12 @@ void process_request(int connection)
         line_num++;
 	}
 	req.print();
+
+	// 2. parsing du body (si nécessaire)
+	if (req.body_expected())
+		std::cout << "body expected" << std::endl;
 	
-	// B. Alternative:
+	// Alternative:
 	// Read from the connection until an empty line is found. Concatenate the successive buffers into a stringstream
 	// Then call getlines on stringstream and proceed each line
 

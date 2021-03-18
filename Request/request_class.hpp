@@ -16,9 +16,11 @@ struct request_line
 class Request
 {
     private:
+        typedef std::pair<std::string, std::string> header;
+
         int error_code;
         request_line req_line;
-        std::list<std::pair<std::string, std::string> > headers;
+        std::list<header> headers;
     public:
         Request(void);
         Request(const Request &copy);
@@ -28,6 +30,8 @@ class Request
         void add_req_line(std::string line);
         void add_header(std::string line);
         void print();
+        bool body_expected();
+        // void add_body
 };
 
 bool is_whitespace(char c);
