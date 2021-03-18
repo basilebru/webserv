@@ -6,19 +6,20 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/18 12:12:00 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/03/18 16:11:55 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfParser.hpp"
 #include <stdio.h>
 #include <cstring>
-#define TOT_LINE 50
+
+#define NB_DIR 4
 
 ConfParser::ConfParser(void)
 : _configFile("nginx.conf")
 {
-	return; 
+	return;
 }
 
 ConfParser::ConfParser(const std::string filename)
@@ -42,15 +43,89 @@ void ConfParser::readConfFile()
 	{
 		std::cerr << "cant open file" << std::endl;
 	}
-	int i = 0;
-	while (getline(file, line) && i < TOT_LINE)
+	while (getline(file, line))
 	{
-		this->setDirective(line);
-		++i;
+		this->parseLine(line);
 	}
 }
 
-// void ConfParser::parseParams(std::string& line);
+void ConfParser::parseHttp(char *line)
+{
+	std::cout << "PARSEHTTP" << std::endl;
+	while (line != NULL && line[0] != '#')
+	{
+		std::cout << line << std::endl;
+		line = strtok (NULL, " ");
+	}
+}
+
+void ConfParser::paseServer(char *line)
+{
+	std::cout << "PASESERVER" << std::endl;
+	while (line != NULL && line[0] != '#')
+	{
+		std::cout << line << std::endl;
+		line = strtok (NULL, " ");
+	}
+}
+
+void ConfParser::ParseAutoindex(char *line)
+{
+	std::cout << "PARSEAUTOINDEX" << std::endl;
+	while (line != NULL && line[0] != '#')
+	{
+		std::cout << line << std::endl;
+		line = strtok (NULL, " ");
+	}
+}
+
+void ConfParser::ParseListen(char *line)
+{
+	std::cout << "PARSELISTEN" << std::endl;
+	while (line != NULL && line[0] != '#')
+	{
+		std::cout << line << std::endl;
+		line = strtok (NULL, " ");
+	}
+}
+
+void ConfParser::parseLine(std::string& line)
+{
+	// std::cout << "-- PARSE LINE --" << std::endl;
+	typedef	void		(ConfParser::*t_parse)(char	*);
+	static std::string	dir[NB_DIR] = {"http", "server", "autoindex", "listen"};
+	static t_parse		func[NB_DIR] = {&ConfParser::parseHttp, &ConfParser::paseServer, &ConfParser::ParseAutoindex, &ConfParser::ParseListen};
+
+	char *split;
+	char *cline = new char [line.length() + 1];
+	std::strcpy (cline, line.c_str());
+
+	split = strtok ( cline, " " );
+	if (split && split[0] == '#')
+	{
+		delete[] cline;
+		return ;
+	}
+	
+	while (split != NULL)
+	{
+		int i(0);
+		while (i < NB_DIR && split != NULL)
+		{
+			if (std::strcmp(split, dir[i].c_str()) == 0)
+			{
+				(this->*func[i])(split);
+				delete[] cline;
+				return ;
+			}
+			++i;
+		}
+		split = strtok (NULL, " ");
+	}
+	delete[] cline;
+}
+
+
 
 void ConfParser::setDirective(std::string& line)
 {

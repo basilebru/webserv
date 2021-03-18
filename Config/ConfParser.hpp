@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/18 10:47:01 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/03/18 15:40:06 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,10 @@ private:
 	const std::string		_configFile;
 	HttpBlock				_httpBlock;
 	// std::string				_line;
-
+	void parseHttp(char *line); 
+	void paseServer(char *line); 
+	void ParseAutoindex(char *line); 
+	void ParseListen(char *line);
 
 public:
 	ConfParser(void);
@@ -36,6 +39,8 @@ public:
 
 	void readConfFile(void);
 	void setDirective(std::string &);
+	void parseLine(std::string& line);
+
 };
 
 std::ostream & operator<<(std::ostream & o, ConfParser const & rhs);
