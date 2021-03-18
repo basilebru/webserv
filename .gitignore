@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-a.out
+a.out*
 parser
 objs/
-=======
-a.out*
 settings.json
->>>>>>> 4e3660e9368dd6064f39ab1760bfb2d0c9f89739
