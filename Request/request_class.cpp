@@ -120,6 +120,11 @@ void Request::add_header(std::string line)
     this->headers.push_back(header(field_name, field_value));
 }
 
+void Request::add_body(std::string body)
+{
+    this->body = body;
+}
+
 void Request::print()
 {
     if (this->error_code)
@@ -138,6 +143,11 @@ void Request::print()
         std::cout << "Header line:" << std::endl;
         std::cout << " . field_name: " << "[" << it->first << "]" << std::endl;
         std::cout << " . field_value: " << "[" << it->second << "]" << std::endl;
+        std::cout << std::endl;
+    }
+    if (this->body_size != -1)
+    {
+        std::cout << "body: " << this->body << std::endl;
         std::cout << std::endl;
     }
 }
@@ -196,7 +206,7 @@ void Request::store_body_lenght()
 		i++;
 	}
     this->body_size = ret;
-    std::cout << "body lenght is: " << this->body_size << std::endl;
+    // std::cout << "body lenght is: " << this->body_size << std::endl;
 }
 
 void Request::parse_body_headers()
@@ -208,7 +218,7 @@ void Request::parse_body_headers()
 
     if (this->has_content_lenght())
     {
-        std::cout << "content-lenght header detected" << std::endl;
+        // std::cout << "content-lenght header detected" << std::endl;
         this->store_body_lenght();
     }
 }

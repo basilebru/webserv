@@ -9,7 +9,7 @@ void process_request(int connection, Request &req)
     int line_num(0);
 	std::string string_line;
 
-	// 1. parsing de la request_line et des header fields
+	// 1. pasing et stockage de la request_line et des header fields
 	while (go_on)
 	{
 		if (get_next_line(connection,&char_line) < 0)
@@ -24,49 +24,22 @@ void process_request(int connection, Request &req)
         free(char_line);
         line_num++;
 	}
-	req.print();
 	
-	// 2. parsing du body (si nécessaire)
+	// 2. parsing des "body_headers" et si nécessaire du body
 	req.parse_body_headers();
-	if (req.get_error_code())
-		return ;
 	if (req.get_body_lenght() != -1)
 	{
 		char *body = (char*)malloc(req.get_body_lenght() + 1);
+		if (body == NULL)
+		{
+			std::cout << "alloc problem reading body" << std::endl;
+			return ;
+		}
 		read(connection, body, req.get_body_lenght());
 		body[req.get_body_lenght()] = 0;
-		std::cout << "body is: " << body << std::endl;
-		std::cout << std::endl;
+		req.add_body(body);
 		read(connection, body, 2); // read CRLF
 		free(body);
 	}
 	
-	// Alternative:
-	// Read from the connection until an empty line is found. Concatenate the successive buffers into a stringstream
-	// Then call getlines on stringstream and proceed each line
-
-	// char buffer[256];
-	// std::stringstream data;
-	// bool go_on = true;
-	// int len;
-	// while (go_on)
-	// {
-	// 	len = read(connection, buffer, 255);
-	// 	if (len < 0)
-	// 	{
-	// 		std::cout << "cant read from socket" << std::endl;
-	// 	}
-	// 	buffer[len] = 0;
-	// 	// std::cout << "buf: " << buffer << std::endl;
-	// 	// std::cout << "len: " << len << std::endl;
-	// 	data << buffer;
-	// 	go_on = data.str().find("\r\n\r\n") == std::string::npos;
-	// }
-	// std::cout << data.str() << std::endl;
-		// std::string my_line;
-		// while (getline(data, my_line))
-		// {
-		// 	std::cout << "request line:" << my_line << std::endl;
-		// }
-
 }

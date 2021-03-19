@@ -22,6 +22,7 @@ class Request
         request_line req_line;
         std::list<header> headers;
         int body_size;
+        std::string body;
         
         bool has_transfer_encoding();
         bool has_content_lenght();
@@ -35,6 +36,7 @@ class Request
 
         void add_req_line(std::string line);
         void add_header(std::string line);
+        void add_body(std::string body);
         void print();
         void parse_body_headers();
 
