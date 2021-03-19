@@ -23,8 +23,8 @@ int main() {
 		std::cout << "Failed to listen on socket. errno: " << errno << std::endl;
 		exit(EXIT_FAILURE);
 	}
-
 	// Grab a connection from the queue
+	// Will block until a request arrives
 	unsigned long addrlen = sizeof(sockaddr);
 	int connection = accept(sockfd, (struct sockaddr*)&sockaddr, (socklen_t*)&addrlen);
 	if (connection < 0) {

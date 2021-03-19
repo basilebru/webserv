@@ -2,50 +2,9 @@
 #include <iostream>
 #include <string>
 #include <algorithm> // find functions
-// #include <cctype>
 
 
-bool is_whitespace(char c)
-{
-    if (c == 32 || c == 9) // space or HTAB (cf RFC 7230 3.2.3)
-        return true;
-    else
-        return false;
-}
-
-void trim_whitespace(std::string &s)
-{
-    size_t pos = s.find_first_not_of("\t ");
-    s.erase(0, pos);
-    pos = s.find_last_not_of("\t ");
-    s.erase(pos + 1);
-}
-
-int	ft_isdigit(int c)
-{
-	if (c >= '0' && c <= 57)
-		return (1);
-	else
-		return (0);
-}
-
-int	ft_isdigit_str(const char *str)
-{
-	int i;
-
-	if (str == 0)
-		return (0);
-	i = 0;
-	while (str[i])
-	{
-		if (!ft_isdigit(str[i]))
-			return (0);
-		i++;
-	}
-	return (1);
-}
-
-Request::Request(void): error_code(0), body_size(-1)
+Request::Request(void): error_code(0), body_size(0), chunked_encoding(false)
 {
 }
 
@@ -63,6 +22,7 @@ Request&   Request::operator=(const Request &rhs)
     this->headers = rhs.headers;
     return(*this);
 }
+
 
 void Request::add_req_line(std::string line)
 {
@@ -120,37 +80,6 @@ void Request::add_header(std::string line)
     this->headers.push_back(header(field_name, field_value));
 }
 
-void Request::add_body(std::string body)
-{
-    this->body = body;
-}
-
-void Request::print()
-{
-    if (this->error_code)
-    {
-        std::cout << "Error:" << error_code << std::endl;
-        return ;
-    }
-    std::cout << "Request line:" << std::endl;
-    std::cout << " . Method: " << this->req_line.method << std::endl;
-    std::cout << " . Target: " << this->req_line.target << std::endl;
-    std::cout << " . Version: " << this->req_line.version << std::endl;
-    std::cout << std::endl;
-    for (std::list<header>::iterator it = this->headers.begin(); it != this->headers.end(); it++)
-    {
-        /* code */
-        std::cout << "Header line:" << std::endl;
-        std::cout << " . field_name: " << "[" << it->first << "]" << std::endl;
-        std::cout << " . field_value: " << "[" << it->second << "]" << std::endl;
-        std::cout << std::endl;
-    }
-    if (this->body_size != -1)
-    {
-        std::cout << "body: " << this->body << std::endl;
-        std::cout << std::endl;
-    }
-}
 
 bool content_lenght_present(std::pair<std::string, std::string> header)
 {
@@ -182,10 +111,23 @@ bool Request::has_content_lenght()
     return false;
 }
 
+void Request::store_encoding()
+{
+    std::string encoding;
+    encoding =  std::find_if(this->headers.begin(), this->headers.end(), content_lenght_present)->second;
+    if (encoding == "chunked" || encoding == "Chunked")
+        this->chunked_encoding = true;
+    else
+    {
+        std::cout << "parsing error: transfer-encoding name not supported: " << encoding << std::endl;
+        this->error_code = 500;
+    }
+}
+
 void Request::store_body_lenght()
 {
     std::string body_lenght;
-    body_lenght =  std::find_if(this->headers.begin(), this->headers.end(), content_lenght_present) ->second;
+    body_lenght =  std::find_if(this->headers.begin(), this->headers.end(), content_lenght_present)->second;
     if (ft_isdigit_str(body_lenght.c_str()) == false)
     {
         std::cout << "parsing error: Content-Lenght header value is invalid: " << body_lenght << std::endl;
@@ -211,16 +153,46 @@ void Request::store_body_lenght()
 
 void Request::parse_body_headers()
 {
-    // if (this->has_transfer_encoding())
-    //     std::cout << "transfer-encoding header detected" << std::endl;
     if (this->error_code)
         return ;
-
-    if (this->has_content_lenght())
+    if (this->has_transfer_encoding())
     {
-        // std::cout << "content-lenght header detected" << std::endl;
-        this->store_body_lenght();
+        this->store_encoding();
+        return ; // priorité au transfer-encoding header sur le body-lenght header
     }
+    if (this->has_content_lenght())
+        this->store_body_lenght();
+}
+
+void Request::read_normal(int connection)
+{
+		char *body = (char*)malloc(this->body_size + 1);
+		if (body == NULL)
+		{
+			std::cout << "alloc problem reading body" << std::endl;
+			return ;
+		}
+		read(connection, body, this->body_size);
+		body[this->body_size] = 0;
+		this->body = body;
+		read(connection, body, 2); // read CRLF
+		free(body);
+}
+
+void Request::read_chunked(int connection)
+{
+    (void)connection;
+}
+
+void Request::parse_body(int connection)
+{
+    if (this->error_code)
+        return ;
+    this->parse_body_headers();
+    if (this->chunked_encoding)
+        this->read_chunked(connection);
+    else if (this->body_size)
+        this->read_normal(connection);
 }
 
 int Request::get_error_code() const
@@ -228,7 +200,71 @@ int Request::get_error_code() const
     return this->error_code;
 }
 
-int Request::get_body_lenght() const
+void Request::print()
 {
-    return this->body_size;
+    if (this->error_code)
+    {
+        std::cout << "Error:" << error_code << std::endl;
+        return ;
+    }
+    std::cout << "Request line:" << std::endl;
+    std::cout << " . Method: " << this->req_line.method << std::endl;
+    std::cout << " . Target: " << this->req_line.target << std::endl;
+    std::cout << " . Version: " << this->req_line.version << std::endl;
+    std::cout << std::endl;
+    for (std::list<header>::iterator it = this->headers.begin(); it != this->headers.end(); it++)
+    {
+        /* code */
+        std::cout << "Header line:" << std::endl;
+        std::cout << " . field_name: " << "[" << it->first << "]" << std::endl;
+        std::cout << " . field_value: " << "[" << it->second << "]" << std::endl;
+        std::cout << std::endl;
+    }
+    if (this->body_size != -1)
+    {
+        std::cout << "body: " << this->body << std::endl;
+        std::cout << std::endl;
+    }
+}
+
+
+
+bool is_whitespace(char c)
+{
+    if (c == 32 || c == 9) // space or HTAB (cf RFC 7230 3.2.3)
+        return true;
+    else
+        return false;
+}
+
+void trim_whitespace(std::string &s)
+{
+    size_t pos = s.find_first_not_of("\t ");
+    s.erase(0, pos);
+    pos = s.find_last_not_of("\t ");
+    s.erase(pos + 1);
+}
+
+int	ft_isdigit(int c)
+{
+	if (c >= '0' && c <= 57)
+		return (1);
+	else
+		return (0);
+}
+
+int	ft_isdigit_str(const char *str)
+{
+	int i;
+
+	if (str == 0)
+		return (0);
+	i = 0;
+	while (str[i])
+	{
+		if (!ft_isdigit(str[i]))
+			return (0);
+		i++;
+	}
+	return (1);
 }

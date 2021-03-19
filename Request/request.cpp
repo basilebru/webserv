@@ -26,20 +26,6 @@ void process_request(int connection, Request &req)
 	}
 	
 	// 2. parsing des "body_headers" et si nécessaire du body
-	req.parse_body_headers();
-	if (req.get_body_lenght() != -1)
-	{
-		char *body = (char*)malloc(req.get_body_lenght() + 1);
-		if (body == NULL)
-		{
-			std::cout << "alloc problem reading body" << std::endl;
-			return ;
-		}
-		read(connection, body, req.get_body_lenght());
-		body[req.get_body_lenght()] = 0;
-		req.add_body(body);
-		read(connection, body, 2); // read CRLF
-		free(body);
-	}
+	req.parse_body(connection);
 	
 }
