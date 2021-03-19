@@ -14,6 +14,6 @@
 
 #include "Request/request_class.hpp"
 
-void process_request(int connection);
+void process_request(int connection, Request &req);
 
 #endif

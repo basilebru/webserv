@@ -32,8 +32,19 @@ int main() {
 		exit(EXIT_FAILURE);
 	}
 
-    // read from connection
-    process_request(connection);
+    // process requests until an error is found on a request
+		std::string request_ok = "Request received :)\n";
+		std::string request_ko = "Request error :( \n";
+		Request req;
+		while (req.get_error_code() == 0)
+		{
+    	process_request(connection, req);
+			if (req.get_error_code())
+				send(connection, request_ko.c_str(), request_ko.size(), 0);
+			else
+				send(connection, request_ok.c_str(), request_ok.size(), 0);
+		}
+		
 	
 	// Send a message to the connection
 

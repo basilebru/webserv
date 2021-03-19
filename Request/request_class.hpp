@@ -21,10 +21,11 @@ class Request
         int error_code;
         request_line req_line;
         std::list<header> headers;
+        int body_size;
         
         bool has_transfer_encoding();
         bool has_content_lenght();
-        void get_content_lenght();
+        void store_body_lenght();
     
     public:
         Request(void);
@@ -35,8 +36,11 @@ class Request
         void add_req_line(std::string line);
         void add_header(std::string line);
         void print();
-        void parse_body();
-        // void add_body
+        void parse_body_headers();
+
+        // getters
+        int get_error_code() const;
+        int get_body_lenght() const;
 };
 
 bool is_whitespace(char c);

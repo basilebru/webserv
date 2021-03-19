@@ -21,7 +21,31 @@ void trim_whitespace(std::string &s)
     s.erase(pos + 1);
 }
 
-Request::Request(void): error_code(0)
+int	ft_isdigit(int c)
+{
+	if (c >= '0' && c <= 57)
+		return (1);
+	else
+		return (0);
+}
+
+int	ft_isdigit_str(const char *str)
+{
+	int i;
+
+	if (str == 0)
+		return (0);
+	i = 0;
+	while (str[i])
+	{
+		if (!ft_isdigit(str[i]))
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+Request::Request(void): error_code(0), body_size(-1)
 {
 }
 
@@ -114,6 +138,7 @@ void Request::print()
         std::cout << "Header line:" << std::endl;
         std::cout << " . field_name: " << "[" << it->first << "]" << std::endl;
         std::cout << " . field_value: " << "[" << it->second << "]" << std::endl;
+        std::cout << std::endl;
     }
 }
 
@@ -147,21 +172,53 @@ bool Request::has_content_lenght()
     return false;
 }
 
-void Request::get_content_lenght()
+void Request::store_body_lenght()
 {
-    std::string string_lenght;
-    string_lenght =  std::find_if(this->headers.begin(), this->headers.end(), content_lenght_present) ->second;
-    // atoi ?
-
+    std::string body_lenght;
+    body_lenght =  std::find_if(this->headers.begin(), this->headers.end(), content_lenght_present) ->second;
+    if (ft_isdigit_str(body_lenght.c_str()) == false)
+    {
+        std::cout << "parsing error: Content-Lenght header value is invalid: " << body_lenght << std::endl;
+        this->error_code = 400;
+        return ;
+    }
+    if (body_lenght.length() > 7) // > 9.9999 MB
+    {
+        std::cout << "parsing error: Content-Lenght header value is too big: " << body_lenght << std::endl;
+        this->error_code = 400;
+        return ;
+    }
+    int ret(0);
+    int i(0);
+	while (body_lenght[i])
+	{
+		ret = ret * 10 + body_lenght[i] - 48;
+		i++;
+	}
+    this->body_size = ret;
+    std::cout << "body lenght is: " << this->body_size << std::endl;
 }
 
-void Request::parse_body()
+void Request::parse_body_headers()
 {
-    if (this->has_transfer_encoding())
-        std::cout << "transfer-encoding header detected" << std::endl;
+    // if (this->has_transfer_encoding())
+    //     std::cout << "transfer-encoding header detected" << std::endl;
+    if (this->error_code)
+        return ;
+
     if (this->has_content_lenght())
     {
         std::cout << "content-lenght header detected" << std::endl;
-        this->get_content_lenght();
+        this->store_body_lenght();
     }
+}
+
+int Request::get_error_code() const
+{
+    return this->error_code;
+}
+
+int Request::get_body_lenght() const
+{
+    return this->body_size;
 }
