@@ -31,8 +31,8 @@ class Request
         // private functions -- body parsing
         void parse_body_headers();
         bool has_transfer_encoding();
-        bool has_content_lenght();
-        void store_body_lenght();
+        bool has_content_length();
+        void store_body_length();
         void store_encoding();
         void read_chunked(int connection);
         void read_normal(int connection);

@@ -82,9 +82,9 @@ void Request::add_header(std::string line)
 }
 
 
-bool content_lenght_present(std::pair<std::string, std::string> header)
+bool content_length_present(std::pair<std::string, std::string> header)
 {
-    if (header.first == "Content-Lenght" || header.first == "content-lenght")
+    if (header.first == "Content-Length" || header.first == "content-length")
         return true;
     else
         return false;
@@ -105,9 +105,9 @@ bool Request::has_transfer_encoding()
     return false;
 }
 
-bool Request::has_content_lenght()
+bool Request::has_content_length()
 {
-    if (std::find_if(this->headers.begin(), this->headers.end(), content_lenght_present) != this->headers.end())
+    if (std::find_if(this->headers.begin(), this->headers.end(), content_length_present) != this->headers.end())
         return true;
     return false;
 }
@@ -125,31 +125,31 @@ void Request::store_encoding()
     }
 }
 
-void Request::store_body_lenght()
+void Request::store_body_length()
 {
-    std::string body_lenght;
-    body_lenght =  std::find_if(this->headers.begin(), this->headers.end(), content_lenght_present)->second;
-    if (ft_isdigit_str(body_lenght.c_str()) == false)
+    std::string body_length;
+    body_length =  std::find_if(this->headers.begin(), this->headers.end(), content_length_present)->second;
+    if (ft_isdigit_str(body_length.c_str()) == false)
     {
-        std::cout << "parsing error: Content-Lenght header value is invalid: " << body_lenght << std::endl;
+        std::cout << "parsing error: Content-length header value is invalid: " << body_length << std::endl;
         this->error_code = 400;
         return ;
     }
-    if (body_lenght.length() > 7) // > 9.9999 MB
+    if (body_length.length() > 7) // > 9.9999 MB
     {
-        std::cout << "parsing error: Content-Lenght header value is too big: " << body_lenght << std::endl;
+        std::cout << "parsing error: Content-length header value is too big: " << body_length << std::endl;
         this->error_code = 400;
         return ;
     }
     int ret(0);
     int i(0);
-	while (body_lenght[i])
+	while (body_length[i])
 	{
-		ret = ret * 10 + body_lenght[i] - 48;
+		ret = ret * 10 + body_length[i] - 48;
 		i++;
 	}
     this->body_size = ret;
-    // std::cout << "body lenght is: " << this->body_size << std::endl;
+    // std::cout << "body length is: " << this->body_size << std::endl;
 }
 
 void Request::parse_body_headers()
@@ -159,10 +159,10 @@ void Request::parse_body_headers()
     if (this->has_transfer_encoding())
     {
         this->store_encoding();
-        return ; // priorité au transfer-encoding header sur le body-lenght header
+        return ; // priorité au transfer-encoding header sur le body-length header
     }
-    if (this->has_content_lenght())
-        this->store_body_lenght();
+    if (this->has_content_length())
+        this->store_body_length();
 }
 
 void Request::read_normal(int connection) // faudrait peut être mieux lire par morceaux ?
@@ -190,16 +190,18 @@ void Request::read_chunked(int connection)
     // while (chunk-size > 0)
         // read chunk_data and CRLF
         // body += chunk_data
-        // content-lenght += chunk_size
+        // content-length += chunk_size
         // read chunk_size and CRLF
     long int chunk_size;
     char *line;
     get_next_line(connection, &line);
     chunk_size = std::strtol(line, NULL, 16);
+    int ret;
     while (chunk_size)
     {
         line = (char*)malloc(chunk_size + 1);
-        read(connection, line, chunk_size);
+        ret = read(connection, line, chunk_size);
+        std::cout << "ret: " << ret << std::endl;
         line[chunk_size] = 0;
         int i = 0;
         while (line[i])
