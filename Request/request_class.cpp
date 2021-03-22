@@ -167,19 +167,25 @@ void Request::parse_body_headers()
 
 void Request::read_normal(int connection) // faudrait peut être mieux lire par morceaux ?
 {
+        int ret(0);
+        int received(0);
 		char *body = (char*)malloc(this->body_size + 1);
 		if (body == NULL)
 		{
 			std::cout << "alloc problem reading body" << std::endl;
 			return ;
 		}
-		if (read(connection, body, this->body_size) < 0)
+        // we can't assume that we will be able to read the whole body in one call: we should be prepared for interuptions (eg: pressing "Enter" makes read() return) = a read can return only part of the desired number of bytes
+        while (received != this->body_size)
         {
-			std::cout << "problem reading from socket" << std::endl;
-            return;
+            // std::cout << "body_size - received " << this->body_size - received << std::endl;
+		    ret = read(connection, body, this->body_size - received);
+            body[ret] = 0;
+            // std::cout << "ret: " << ret << std::endl;
+            received += ret;
+            // std::cout << "received: " << received << std::endl;
+            this->body += body;
         }
-		body[this->body_size] = 0;
-		this->body = body;
 		read(connection, body, 2); // read CRLF
 		free(body);
 }
@@ -196,21 +202,26 @@ void Request::read_chunked(int connection)
     char *line;
     get_next_line(connection, &line);
     chunk_size = std::strtol(line, NULL, 16);
-    int ret;
+    long int ret;
+    long int received;
     while (chunk_size)
     {
+        free(line);
         line = (char*)malloc(chunk_size + 1);
-        ret = read(connection, line, chunk_size);
-        std::cout << "ret: " << ret << std::endl;
-        line[chunk_size] = 0;
-        int i = 0;
-        while (line[i])
+
+        // read(connection, line, chunk_size); same as read_normal: we cant assume that read() will be able to read the whole chunk in one call
+        received = 0;
+        while (received != chunk_size)
         {
-            std::cout << (int)line[i] << std::endl;
-            i++;
+            std::cout << "chunk_size - received " << chunk_size - received << std::endl;
+            ret = read(connection, line, chunk_size - received);
+            std::cout << "ret: " << ret << std::endl;
+            line[ret] = 0;
+            received += ret;
+            std::cout << "received: " << received << std::endl;
+            this->body += line;
         }
         
-        this->body += line;
         read(connection, line, 2); // read CRLF
         free(line);
 
@@ -218,6 +229,7 @@ void Request::read_chunked(int connection)
         chunk_size = std::strtol(line, NULL, 16);
     }
     read(connection, line, 2); // read CRLF
+    free(line);
 }
 
 void Request::parse_body(int connection)
