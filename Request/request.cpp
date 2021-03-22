@@ -13,7 +13,7 @@ void process_request(int connection, Request &req)
 	while (go_on)
 	{
 		if (get_next_line(connection,&char_line) < 0)
-			std::cout << "cant read from socket" << std::endl;
+			std::cout << "problem reading from socket" << std::endl;
 		string_line = char_line;
 		string_line.erase(string_line.length() - 1); // erase the /r at the end
 		go_on = !string_line.empty();
@@ -24,7 +24,6 @@ void process_request(int connection, Request &req)
         free(char_line);
         line_num++;
 	}
-	
 	// 2. parsing des "body_headers" et si nécessaire du body
 	req.parse_body(connection);
 	

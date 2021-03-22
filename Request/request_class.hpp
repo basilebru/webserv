@@ -5,6 +5,7 @@
 #include <string>
 #include <list>
 #include <unistd.h> //read
+#include "../GNL/get_next_line.h"
 
 
 struct request_line

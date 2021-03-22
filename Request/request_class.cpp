@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm> // find functions
+#include <cstdlib> // strtol
 
 
 Request::Request(void): error_code(0), body_size(0), chunked_encoding(false)
@@ -114,7 +115,7 @@ bool Request::has_content_lenght()
 void Request::store_encoding()
 {
     std::string encoding;
-    encoding =  std::find_if(this->headers.begin(), this->headers.end(), content_lenght_present)->second;
+    encoding =  std::find_if(this->headers.begin(), this->headers.end(), transfer_encoding_present)->second;
     if (encoding == "chunked" || encoding == "Chunked")
         this->chunked_encoding = true;
     else
@@ -164,7 +165,7 @@ void Request::parse_body_headers()
         this->store_body_lenght();
 }
 
-void Request::read_normal(int connection)
+void Request::read_normal(int connection) // faudrait peut être mieux lire par morceaux ?
 {
 		char *body = (char*)malloc(this->body_size + 1);
 		if (body == NULL)
@@ -172,7 +173,11 @@ void Request::read_normal(int connection)
 			std::cout << "alloc problem reading body" << std::endl;
 			return ;
 		}
-		read(connection, body, this->body_size);
+		if (read(connection, body, this->body_size) < 0)
+        {
+			std::cout << "problem reading from socket" << std::endl;
+            return;
+        }
 		body[this->body_size] = 0;
 		this->body = body;
 		read(connection, body, 2); // read CRLF
@@ -181,18 +186,53 @@ void Request::read_normal(int connection)
 
 void Request::read_chunked(int connection)
 {
-    (void)connection;
+    // read chunk-size and CRLF
+    // while (chunk-size > 0)
+        // read chunk_data and CRLF
+        // body += chunk_data
+        // content-lenght += chunk_size
+        // read chunk_size and CRLF
+    long int chunk_size;
+    char *line;
+    get_next_line(connection, &line);
+    chunk_size = std::strtol(line, NULL, 16);
+    while (chunk_size)
+    {
+        line = (char*)malloc(chunk_size + 1);
+        read(connection, line, chunk_size);
+        line[chunk_size] = 0;
+        int i = 0;
+        while (line[i])
+        {
+            std::cout << (int)line[i] << std::endl;
+            i++;
+        }
+        
+        this->body += line;
+        read(connection, line, 2); // read CRLF
+        free(line);
+
+        get_next_line(connection, &line);
+        chunk_size = std::strtol(line, NULL, 16);
+    }
+    read(connection, line, 2); // read CRLF
 }
 
 void Request::parse_body(int connection)
 {
     if (this->error_code)
         return ;
-    this->parse_body_headers();
+    this->parse_body_headers(); // sets chunked_encoding OR read_normal (OR none of them)
     if (this->chunked_encoding)
+    {
+        std::cout << "read chunked" << std::endl;
         this->read_chunked(connection);
+    }
     else if (this->body_size)
+    {
+        std::cout << "read normal" << std::endl;
         this->read_normal(connection);
+    }
 }
 
 int Request::get_error_code() const
