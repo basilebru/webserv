@@ -165,7 +165,7 @@ void Request::parse_body_headers()
         this->store_body_length();
 }
 
-void Request::read_normal(int connection) // faudrait peut être mieux lire par morceaux ?
+void Request::read_normal(int connection)
 {
         int ret(0);
         int received(0);
@@ -186,7 +186,6 @@ void Request::read_normal(int connection) // faudrait peut être mieux lire par 
             // std::cout << "received: " << received << std::endl;
             this->body += body;
         }
-		read(connection, body, 2); // read CRLF
 		free(body);
 }
 
@@ -198,6 +197,7 @@ void Request::read_chunked(int connection)
         // body += chunk_data
         // content-length += chunk_size
         // read chunk_size and CRLF
+
     long int chunk_size;
     char *line;
     get_next_line(connection, &line);
@@ -222,7 +222,12 @@ void Request::read_chunked(int connection)
             this->body += line;
         }
         
-        read(connection, line, 2); // read CRLF
+        ret = read(connection, line, 2); // read CRLF
+        if (ret != 2 || body[0] != '\r' || body[1] != '\n') // make sure it is CRLF
+        {
+            free(line);
+            this->error_code = 400;
+        }
         free(line);
 
         get_next_line(connection, &line);
@@ -253,6 +258,11 @@ int Request::get_error_code() const
 {
     return this->error_code;
 }
+
+void Request::set_error_code(int code)
+{
+    this->error_code = code;
+};
 
 void Request::print()
 {

@@ -52,8 +52,9 @@ class Request
         // utils
         void print();
 
-        // getters
+        // getters & setters
         int get_error_code() const;
+        void set_error_code(int code);
 };
 
 // utils
