@@ -1,0 +1,200 @@
+http {
+    include       
+    mime.types
+------
+
+
+------
+default_type
+------
+application/octet-stream;
+
+
+------
+sendfile
+------
+on;
+
+
+------
+#keepalive_timeout
+------
+0;
+
+------
+keepalive_timeout
+------
+65;
+
+
+------
+#gzip
+------
+on;
+
+
+------
+server
+------
+{
+
+------
+listen
+------
+8082;
+
+------
+server_name
+------
+localhosts;
+
+
+
+------
+autoindex
+------
+on;
+
+------
+root
+------
+/Users/bbrunet/.brew/var/www;
+
+------
+location
+------
+/
+------
+{
+
+------
+root
+------
+/Users/bbrunet/.brew/var/www;
+
+------
+index
+------
+readme.html
+------
+truc.machin;
+
+------
+===================
+http {
+    include       
+    mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    server {
+        listen       8082;
+        server_name  localhosts;
+
+
+        autoindex on;
+        root   /Users/bbrunet/.brew/var/www;
+        location / {
+            root   /Users/bbrunet/.brew/var/www;
+            index  readme.html truc.machin;
+        
+
+        location /bla/ {
+            root   /Users/bbrunet/.brew/var/www/folder/
+------
+
+
+------
+===================
+
+        location /bla/ {
+            root   /Users/bbrunet/.brew/var/www/folder/;
+        
+
+        location /blo/ {
+            root   /Users/bbrunet/.brew/var/www/folder/
+------
+
+
+------
+limit_except
+------
+POST
+------
+{
+------
+deny
+------
+all;
+------
+===================
+
+        location /blo/ {
+            root   /Users/bbrunet/.brew/var/www/folder/;
+            limit_except POST { deny all; 
+
+        
+------
+===================
+
+        
+
+
+        error_page  404              /40x.html
+------
+
+
+
+------
+error_page
+------
+500
+------
+502
+------
+503
+------
+504
+------
+413
+------
+/50x.html;
+
+
+------
+client_max_body_size
+------
+1;
+
+------
+===================
+
+
+        error_page  404              /40x.html;
+
+        error_page   500 502 503 504 413  /50x.html;
+
+        client_max_body_size 1;
+    
+
+
+
+
+    include servers/*
+------
+
+
+------
+===================
+
+
+
+
+    include servers/*;
+

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/18 15:40:06 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/03/22 17:50:26 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ public:
 	void readConfFile(void);
 	void setDirective(std::string &);
 	void parseLine(std::string& line);
+	void parseLine2(std::string& line);
 
 };
 

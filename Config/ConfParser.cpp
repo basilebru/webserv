@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/18 16:11:55 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/03/22 19:27:37 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,14 +38,15 @@ void ConfParser::readConfFile()
 	std::ifstream	file;
 	std::string		line;
 
-	file.open(this->_configFile);
+	file.open(this->_configFile.c_str());
 	if (file.fail())
 	{
 		std::cerr << "cant open file" << std::endl;
 	}
-	while (getline(file, line))
+	while (getline(file, line, '}'))
 	{
-		this->parseLine(line);
+		this->parseLine2(line);
+		file.clear();
 	}
 }
 
@@ -160,5 +161,30 @@ void ConfParser::setDirective(std::string& line)
 
 	delete[] cline;
 	// std::cout << line << std::endl;
+}
+
+void ConfParser::parseLine2(std::string& line)
+{
+	char *split;
+	char *cline = new char [line.length() + 1];
+	std::strcpy (cline, line.c_str());
+
+	split = strtok ( cline, ";" );
+	if (split && split[0] == '#')
+	{
+		delete[] cline;
+		return ;
+	}
+
+	while(split != NULL)
+	{
+		std::cout << split << std::endl;
+		std::cout << "------" << std::endl;
+		split = strtok (NULL, " ");
+	}
+	std::cout << "===================" << std::endl;
+
+	delete[] cline;
+	std::cout << line << std::endl;
 }
 

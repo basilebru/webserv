@@ -1,5 +1,6 @@
 #include "webserv.hpp"
 #include <csignal>
+#include <fcntl.h>
 
 int main() {
 
@@ -8,11 +9,22 @@ int main() {
 	int max_sockets = 0;
 
 	// Create a socket (IPv4, TCP)
-	int server_socket = socket(AF_INET, SOCK_STREAM, 0);
+	// Using the flag SOCK_NONBLOCK saves extra calls to fcntl(2) to achieve the same result.
+	int server_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); 
 	if (server_socket == -1) {
 		std::cout << "Failed to create socket. errno: " << errno << std::endl;
 		exit(EXIT_FAILURE);
 	}
+
+	// Set the socket as NON BLOCKING (for MAC, no need in Linux ?)
+	if (fcntl(server_socket, F_SETFL, O_NONBLOCK) < 0)
+		std::cout << "Fcntl failed. errno: " << errno << std::endl;
+
+	// In order to reuse the socket quickly after stopping and restarting the server
+	// Don't take TIME_WAIT into consideration
+	int optval = 1;
+	if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
+		std::cout << "Error: setsockopt(SO_REUSEADDR) failed. errno: " << errno << std::endl;
 
 
 	// Listen to port 9999 on any address
@@ -38,7 +50,8 @@ int main() {
 	FD_ZERO(&current_sockets);
 	FD_SET(server_socket, &current_sockets);
 	max_sockets = server_socket;
-
+	printf("server_socket: %d\n", max_sockets);
+	// printf("FD_SETSIZE: %d\n", FD_SETSIZE);
 
 	//Optional: sets the timeout for select()
 	struct timeval timeout;
@@ -46,7 +59,7 @@ int main() {
     // process requests until an error is found on a request
 	std::string request_ok = "Request received :)\n";
 	std::string request_ko = "Request error :( \n";
-	int connection;
+	int client_socket;
 	size_t addrlen = sizeof(sockaddr);
 	while (1)
 	{
@@ -56,7 +69,7 @@ int main() {
 
 		// select is destructive so we need a socket copy
 		ready_sockets = current_sockets;
-		int sret = select(FD_SETSIZE, &ready_sockets, NULL, NULL, &timeout);
+		int sret = select(max_sockets + 1, &ready_sockets, NULL, NULL, &timeout);
 		if (sret < 0)
 		{
 			std::cerr << "Select error. errno: " << errno << std::endl;
@@ -66,25 +79,32 @@ int main() {
 			std::cerr << sret << ": Select timeout (5 sec)" << std::endl;
 
 		// Loop over the FD_SET
-		for (int i = 0; i < FD_SETSIZE; ++i)
+		for (int i = 0; i < max_sockets + 1; ++i)
 		{
 			if (FD_ISSET(i, &ready_sockets))
 			{
+				printf("socket used: %d\n", i);
 				if (i == server_socket)
 				{
-					connection = accept(server_socket, (struct sockaddr*)&sockaddr, (socklen_t*)&addrlen);
-					if (connection < 0) {
+					client_socket = accept(server_socket, (struct sockaddr*)&sockaddr, (socklen_t*)&addrlen);
+					if (client_socket < 0) {
 						std::cout << "Failed to grab connection. errno: " << errno << std::endl;
 						exit(EXIT_FAILURE);
 					}
-					FD_SET(connection, &current_sockets);
+					FD_SET(client_socket, &current_sockets);
+					if (client_socket > max_sockets)
+						max_sockets = client_socket;
 				}
 				else
 				{
 					Request *req = new Request;
-					process_request(i, *req);
-					// FD_CLR(i, &current_sockets);
-			
+					int ret = process_request(i, *req);
+					if (ret == 0)
+					{
+						close(i);
+						FD_CLR(i, &current_sockets);
+					}
+
 					// send() errors handling
 					if ((*req).get_error_code())
 						send(i, request_ko.c_str(), request_ko.size(), 0);
@@ -106,7 +126,7 @@ int main() {
 	}
 
 	
-	// Send a message to the connection
+	// Send a message to the client_socket
 
     // // Send content of a file
 	// 	std::ifstream file;
@@ -118,16 +138,16 @@ int main() {
 	// 	std::string line;
 	// 	while (getline(file, line))
 	// 	{
-	// 			send(connection, line.c_str(), line.size(), 0);
-	// 			send(connection, "\n", 1, 0);
+	// 			send(client_socket, line.c_str(), line.size(), 0);
+	// 			send(client_socket, "\n", 1, 0);
 	// 	}
 
     // send simple string
 	// std::string response = "Good talking to you\n";
-	// send(connection, response.c_str(), response.size(), 0);
+	// send(client_socket, response.c_str(), response.size(), 0);
 
-	// Close the connections
-	close(connection);
+	// Close the client_sockets
+	close(client_socket);
 	close(server_socket);
 	return (0);
 }

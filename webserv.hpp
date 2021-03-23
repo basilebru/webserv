@@ -14,7 +14,7 @@
 // Request
 #include "GNL/get_next_line.h"
 #include "Request/request_class.hpp"
-void process_request(int connection, Request &req);
+int process_request(int connection, Request &req);
 
 
 #endif
