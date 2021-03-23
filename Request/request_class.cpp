@@ -200,40 +200,48 @@ void Request::read_chunked(int connection)
 
     long int chunk_size;
     char *line;
-    get_next_line(connection, &line);
-    chunk_size = std::strtol(line, NULL, 16);
     long int ret;
     long int received;
+
+    get_next_line(connection, &line);
+    chunk_size = std::strtol(line, NULL, 16);
     while (chunk_size)
     {
         free(line);
         line = (char*)malloc(chunk_size + 1);
 
-        // read(connection, line, chunk_size); same as read_normal: we cant assume that read() will be able to read the whole chunk in one call
+        // same as read_normal: we cant assume that read() will be able to read the whole chunk in one call
         received = 0;
         while (received != chunk_size)
         {
-            std::cout << "chunk_size - received " << chunk_size - received << std::endl;
+            // std::cout << "chunk_size - received " << chunk_size - received << std::endl;
             ret = read(connection, line, chunk_size - received);
-            std::cout << "ret: " << ret << std::endl;
+            // std::cout << "ret: " << ret << std::endl;
             line[ret] = 0;
             received += ret;
-            std::cout << "received: " << received << std::endl;
+            // std::cout << "received: " << received << std::endl;
             this->body += line;
         }
         
         ret = read(connection, line, 2); // read CRLF
-        if (ret != 2 || body[0] != '\r' || body[1] != '\n') // make sure it is CRLF
+        if (ret != 2 || line[0] != '\r' || line[1] != '\n') // make sure it is CRLF
         {
             free(line);
+            std::cout << "parsing error: no CRLF after chunked data" << std::endl;
             this->error_code = 400;
+            return ;
         }
         free(line);
 
         get_next_line(connection, &line);
         chunk_size = std::strtol(line, NULL, 16);
     }
-    read(connection, line, 2); // read CRLF
+    ret = read(connection, line, 2); // read CRLF
+    if (ret != 2 || line[0] != '\r' || line[1] != '\n') // make sure it is CRLF
+    {
+        std::cout << "parsing error: no CRLF after chunked data" << std::endl;
+        this->error_code = 400;
+    }
     free(line);
 }
 
@@ -243,15 +251,9 @@ void Request::parse_body(int connection)
         return ;
     this->parse_body_headers(); // sets chunked_encoding OR read_normal (OR none of them)
     if (this->chunked_encoding)
-    {
-        std::cout << "read chunked" << std::endl;
         this->read_chunked(connection);
-    }
     else if (this->body_size)
-    {
-        std::cout << "read normal" << std::endl;
         this->read_normal(connection);
-    }
 }
 
 int Request::get_error_code() const
