@@ -22,6 +22,7 @@ class Request
         typedef std::pair<std::string, std::string> header;
 
         // attributes
+        int fd;
         int error_code;
         request_line req_line;
         std::list<header> headers;
@@ -37,10 +38,12 @@ class Request
         void store_encoding();
         void read_chunked(int connection);
         void read_normal(int connection);
+        int readline(std::string &line);
     
     public:
         // constructor & destructor
         Request(void);
+        Request(int fd);
         Request(const Request &copy);
         virtual ~Request(void);
         Request&  operator=(const Request &copy);
@@ -49,6 +52,7 @@ class Request
         void add_req_line(std::string line);
         void add_header(std::string line);
         void parse_body(int connection);
+        int parse();
 
         // utils
         void print();
@@ -57,5 +61,7 @@ class Request
         int get_error_code() const;
         void set_error_code(int code);
 };
+
+int crlf_gnl(int connection, std::string &line, Request &req);
 
 #endif

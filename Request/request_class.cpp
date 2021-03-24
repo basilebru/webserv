@@ -3,13 +3,13 @@
 #include <cstdlib> // strtol
 
 
-Request::Request(void): error_code(0), body_size(0), chunked_encoding(false)
+Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunked_encoding(false)
 {
 }
 
-Request::Request(const Request &copy): req_line(copy.req_line), headers(copy.headers)
-{
-}
+// Request::Request(const Request &copy): req_line(copy.req_line), headers(copy.headers)
+// {
+// }
 
 Request::~Request(void)
 {
@@ -77,6 +77,64 @@ void Request::add_header(std::string line)
     field_value = line.substr(find + 1);
     trim_whitespace(field_value);
     this->headers.push_back(header(field_name, field_value));
+}
+
+int Request::readline(std::string &line)
+{
+	char *char_line;
+	int ret = 0;
+
+	ret = get_next_line(this->fd, &char_line);
+	if (ret < 0)
+	{
+		std::cout << "problem reading from socket" << std::endl;
+		return ret;
+	}
+	line = char_line;
+	free(char_line);
+	if (line[line.length() - 1] != '\r')
+	{
+		this->error_code = 400;
+		std::cout << "parsing error: expected \r\n at the end of a line" << std::endl;
+	}
+	else
+		line.erase(line.length() - 1); // erase the /r at the end
+    return ret;
+}
+
+int Request::parse()
+{
+	// Read from connection : Read directly one line at a time (and proceed it directly) with our C-style getnextline
+
+	bool go_on = true;
+	std::string line;
+	int ret = 0;
+
+	// 1. parsing et stockage de la request_line
+	ret = this->readline(line);
+	if (line.empty()) // ignore one empty line before request (cf RFC 7230 3.5) -> pratique dans le cas ou on a un body et une content-length: on peut sauter une ligne entre la fin du body et la prochaine request (comme dans nginx)
+	    ret = this->readline(line);
+	this->add_req_line(line);
+	if (this->error_code)
+		return ret;
+
+	// 2. parsing et stockage des header fields
+	while (go_on)
+	{
+	    ret = this->readline(line);
+        if (!line.empty())
+            this->add_header(line);
+		else
+			go_on = false; // empty line signals the end of the header fields
+		if (this->error_code)
+			return ret;
+	}
+
+	// 3. parsing des "body_headers" (Content-Length et Transfer-Enconding) et stockage du body
+	// (seul "chunked" est en Transfer-Encoding)
+	this->parse_body(this->fd);
+	
+	return ret;
 }
 
 
@@ -290,3 +348,4 @@ void Request::print()
         std::cout << std::endl;
     }
 }
+

@@ -97,8 +97,9 @@ int main() {
 				}
 				else
 				{
-					Request *req = new Request;
-					int ret = process_request(i, *req);
+					Request *req = new Request(i);
+					int ret = req->parse();
+
 					if (ret == 0)
 					{
 						close(i);
@@ -106,12 +107,12 @@ int main() {
 					}
 
 					// send() errors handling
-					if ((*req).get_error_code())
+					if (req->get_error_code())
 						send(i, request_ko.c_str(), request_ko.size(), 0);
 					else
 						send(i, request_ok.c_str(), request_ok.size(), 0);
-					(*req).print();
-					if ((*req).get_error_code())
+					req->print();
+					if (req->get_error_code())
 					{
 						delete req;
 						break;
