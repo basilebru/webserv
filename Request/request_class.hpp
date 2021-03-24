@@ -24,21 +24,32 @@ class Request
         // attributes
         int fd;
         int error_code;
+        std::string error_message;
         request_line req_line;
         std::list<header> headers;
         int body_size;
         std::string body;
         bool chunked_encoding;
         
-        // private functions -- body parsing
-        void parse_body_headers();
+        // processing
+        void check_body_headers();
         bool has_transfer_encoding();
         bool has_content_length();
         void store_body_length();
         void store_encoding();
-        void read_chunked(int connection);
-        void read_normal(int connection);
+        void store_req_line(std::string line);
+        void store_header(std::string line);
+
+        // reading
         int readline(std::string &line);
+        void read_chunked();
+        void read_normal();
+        
+        // main
+        void parse_req_line();
+        void parse_headers();
+        void parse_body();
+
     
     public:
         // constructor & destructor
@@ -49,9 +60,6 @@ class Request
         Request&  operator=(const Request &copy);
 
         // main functions
-        void add_req_line(std::string line);
-        void add_header(std::string line);
-        void parse_body(int connection);
         int parse();
 
         // utils
@@ -59,9 +67,10 @@ class Request
 
         // getters & setters
         int get_error_code() const;
-        void set_error_code(int code);
+        // void set_error_code(int code);
 };
 
-int crlf_gnl(int connection, std::string &line, Request &req);
+bool content_length_present(std::pair<std::string, std::string> header);
+bool transfer_encoding_present(std::pair<std::string, std::string> header);
 
 #endif
