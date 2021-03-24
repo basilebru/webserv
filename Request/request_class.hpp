@@ -5,7 +5,8 @@
 #include <string>
 #include <list>
 #include <unistd.h> //read
-#include "../GNL/get_next_line.h"
+#include "../Utils/get_next_line.h"
+#include "../Utils/utils.hpp"
 
 
 struct request_line
@@ -56,12 +57,5 @@ class Request
         int get_error_code() const;
         void set_error_code(int code);
 };
-
-// utils
-bool is_whitespace(char c);
-void trim_whitespace(std::string &s);
-int	ft_isdigit(int c);
-int	ft_isdigit_str(const char *str);
-
 
 #endif

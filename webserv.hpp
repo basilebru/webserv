@@ -12,7 +12,7 @@
 
 
 // Request
-#include "GNL/get_next_line.h"
+#include "Utils/get_next_line.h"
 #include "Request/request_class.hpp"
 int process_request(int connection, Request &req);
 
