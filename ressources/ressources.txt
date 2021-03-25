@@ -1,0 +1,57 @@
+# To connect Telnet on port 8080
+telnet localhost 8080
+
+
+# To test Authorization header
+GET / HTTP/1.1
+host: static.local
+Upgrade-Insecure-Requests: 1
+Authorization: Basic anVsaWVuOnB3
+
+
+GET / HTTP/1.1
+host: localhost
+Authorization: Basic anVsaWVuOnB3
+Authorization: Basic anVsaWVuOnB3Cg==
+Upgrade-Insecure-Requests: 1
+
+------
+
+# To test POST method
+POST / HTTP/1.1
+Host: localhost
+Content-Type: text/html
+Content-Length: 7
+
+test=42
+
+------
+
+# To test Chunked
+GET / HTTP/1.1
+transfer-encoding:chunked
+6
+nbr=42
+3
+abc
+0
+
+------
+
+
+
+
+
+
+
+# To test Last-modified method
+GET / HTTP/1.1
+host: localhost
+If-Modified-Since: Thu, 12 Mar 2021 11:04:35 GMT
+If-Modified-Since: Thu, 04 Mar 2021 11:04:35 GMT
+If-Unmodified-Since: Thu, 04 Mar 2021 11:04:35 GMT
+
+------
+
+# To base64 encode a login:pw
+echo julien:pw | base64 | rev | cut -c 5- | rev
