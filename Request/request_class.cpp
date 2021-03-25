@@ -25,6 +25,7 @@ Request::~Request(void)
 
 int Request::parse()
 {
+    // std::cout << "parsing new request" << std::endl;
     this->parse_req_line();
     if (!this->error_code)
         this->parse_headers();
@@ -91,7 +92,7 @@ int Request::readline(std::string &line)
 	if (line[line.length() - 1] != '\r')
 	{
 		this->error_code = 400;
-		this->error_message = "parsing error: expected \r\n at the end of a line";
+		this->error_message = "parsing error: expected CRLF at the end of a line";
 	}
 	else
 		line.erase(line.length() - 1); // erase the /r at the end
