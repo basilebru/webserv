@@ -3,15 +3,14 @@
 #include <fcntl.h>
 #include <vector>
 
-int main() {
 
-
-	fd_set current_sockets, ready_sockets;
-	int max_sockets = 0;
-
+int setup(int port)
+{
+	int server_socket; 
+	sockaddr_in sockaddr;
 	// Create a socket (IPv4, TCP)
 	// Using the flag SOCK_NONBLOCK saves extra calls to fcntl(2) to achieve the same result.
-	int server_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); 
+	server_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); 
 	if (server_socket == -1) {
 		std::cout << "Failed to create socket. errno: " << errno << std::endl;
 		exit(EXIT_FAILURE);
@@ -27,12 +26,10 @@ int main() {
 	if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
 		std::cout << "Error: setsockopt(SO_REUSEADDR) failed. errno: " << errno << std::endl;
 
-
 	// Listen to port 9999 on any address
-	sockaddr_in sockaddr;
 	sockaddr.sin_family = AF_INET;
 	sockaddr.sin_addr.s_addr = INADDR_ANY;
-	sockaddr.sin_port = htons(9999); // htons is necessary to convert a number to
+	sockaddr.sin_port = htons(port); // htons is necessary to convert a number to
 																	 // network byte order
 	if (bind(server_socket, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0) {
 		std::cout << "Failed to bind to port 9999. errno: " << errno << std::endl;
@@ -47,12 +44,28 @@ int main() {
 	}
 
 
+	return server_socket;
+}
+
+
+int main() {
+
+
+	sockaddr_in client_sockaddr;
+	fd_set current_sockets, ready_sockets;
+	int max_socket = 0;
+	int rdy_fd = 0;
+
+	int server_socket = setup(9999);
+
+
+
 	//Initilaize the current socket set
 	FD_ZERO(&current_sockets);
 	FD_SET(server_socket, &current_sockets);
 	// au début, notre set (current_sockets) ne contient que 1 socket: server_socket que nous avons créé plus haut
-	max_sockets = server_socket;
-	printf("server_socket: %d\n", max_sockets);
+	max_socket = server_socket;
+	printf("server_socket: %d\n", max_socket);
 	// printf("FD_SETSIZE: %d\n", FD_SETSIZE);
 
 	//Optional: sets the timeout for select()
@@ -62,7 +75,7 @@ int main() {
 	std::string request_ok = "Request received :)\n";
 	std::string request_ko = "Request error :( \n";
 	int client_socket;
-	size_t addrlen = sizeof(sockaddr);
+	size_t addrlen = sizeof(client_sockaddr);
 	while (1)
 	{
 		//Optional: sets the timeout for select()
@@ -73,7 +86,7 @@ int main() {
 
 		// select is destructive so we need a socket copy
 		ready_sockets = current_sockets;
-		int sret = select(max_sockets + 1, &ready_sockets, NULL, NULL, NULL);
+		int sret = select(max_socket + 1, &ready_sockets, NULL, NULL, NULL);
 		// suite à l'appel à select, ready_sockets ne contient plus que les fd disponibles en lecture
 		// (current_sockets contie)nt toujours tous les sockets existants)
 
@@ -89,26 +102,28 @@ int main() {
 			std::cerr << sret << ": Select timeout (5 sec)" << std::endl;
 
 		// On parcourt notre fd_set (current socket): pour chaque fd on teste s'il est présent dans ready_sockets = disponible en lecture
-		for (int i = 0; i < max_sockets + 1; ++i)
+		rdy_fd = sret;
+		for (int i = 0; i < max_socket + 1 && rdy_fd > 0; ++i)
 		{
 			if (FD_ISSET(i, &ready_sockets)) 
 			{
 				if (i == server_socket) // a new connection has arrived -> grab connection from the queue (cf "listen" plus haut)
 				{
-					client_socket = accept(server_socket, (struct sockaddr*)&sockaddr, (socklen_t*)&addrlen);
+					rdy_fd -= 1;
+					client_socket = accept(server_socket, (struct sockaddr*)&client_sockaddr, (socklen_t*)&addrlen);
 					if (client_socket < 0) 
 					{
 						std::cout << "Failed to grab connection. errno: " << errno << std::endl;
 						exit(EXIT_FAILURE);
 					}
-					printf("Accept new connection (fd %d)\n", client_socket);
+					printf("New incoming connection (fd %d)\n", client_socket);
 					FD_SET(client_socket, &current_sockets); // new connection is added to fd_set (current socket)
-					if (client_socket > max_sockets)
-						max_sockets = client_socket;
+					if (client_socket > max_socket)
+						max_socket = client_socket;
 				}
 				else // read from existing connection
 				{
-					printf("client socket used: %d\n", i);
+					printf("Communication with client - fd %d\n", i);
 					// std::vector<Request> v;
 					Request *req = new Request(i);
 					// v.push_back(req);
@@ -124,7 +139,11 @@ int main() {
 							exit(EXIT_FAILURE);
 						}
 						FD_CLR(i, &current_sockets);
+
+						if (i == max_socket)
+							max_socket -= 1;
 						printf("fd %d closed.\n", i);
+						printf("max_socket %d\n", max_socket);
 					}
 
 					// send() errors handling
@@ -143,9 +162,16 @@ int main() {
 				}
 			}
 		}
-
-
-
+	}
+	
+	// Clean up all of the sockets that are open 
+	for (int i = 0; i <= max_socket; ++i)
+	{
+		if (FD_ISSET(i, &ready_sockets))
+		{
+			close(i);
+			printf("fd %d closed.\n", i);
+		}
 	}
 
 	
@@ -170,7 +196,7 @@ int main() {
 	// send(client_socket, response.c_str(), response.size(), 0);
 
 	// Close the client_sockets
-	close(client_socket);
-	close(server_socket);
+	// close(client_socket);
+	// close(server_socket);
 	return (0);
 }
