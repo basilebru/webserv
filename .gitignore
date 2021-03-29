@@ -2,3 +2,4 @@ a.out*
 parser
 objs/
 settings.json
+webserv
