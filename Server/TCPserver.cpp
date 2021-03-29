@@ -8,6 +8,7 @@ int setup(int port)
 {
 	int server_socket; 
 	sockaddr_in sockaddr;
+
 	// Create a socket (IPv4, TCP)
 	// Using the flag SOCK_NONBLOCK saves extra calls to fcntl(2) to achieve the same result.
 	server_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); 
@@ -26,6 +27,7 @@ int setup(int port)
 	if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
 		std::cout << "Error: setsockopt(SO_REUSEADDR) failed. errno: " << errno << std::endl;
 
+	
 	// Listen to port 9999 on any address
 	sockaddr.sin_family = AF_INET;
 	sockaddr.sin_addr.s_addr = INADDR_ANY;
@@ -47,17 +49,27 @@ int setup(int port)
 	return server_socket;
 }
 
+int accept_new_connection(int server_socket)
+{
+	int			client_socket;
+	sockaddr_in client_sockaddr;
+	size_t		addrlen = sizeof(client_sockaddr);
+
+	client_socket = accept(server_socket, (struct sockaddr*)&client_sockaddr, (socklen_t*)&addrlen);
+	return client_socket;
+}
+
 
 int main() {
 
 
-	sockaddr_in client_sockaddr;
 	fd_set current_sockets, ready_sockets;
 	int max_socket = 0;
 	int rdy_fd = 0;
+	int client_socket;
 
+	// Create socket, binf and listen
 	int server_socket = setup(9999);
-
 
 
 	//Initilaize the current socket set
@@ -74,8 +86,6 @@ int main() {
     // process requests until an error is found on a request
 	std::string request_ok = "Request received :)\n";
 	std::string request_ko = "Request error :( \n";
-	int client_socket;
-	size_t addrlen = sizeof(client_sockaddr);
 	while (1)
 	{
 		//Optional: sets the timeout for select()
@@ -110,7 +120,7 @@ int main() {
 				if (i == server_socket) // a new connection has arrived -> grab connection from the queue (cf "listen" plus haut)
 				{
 					rdy_fd -= 1;
-					client_socket = accept(server_socket, (struct sockaddr*)&client_sockaddr, (socklen_t*)&addrlen);
+					client_socket = accept_new_connection(server_socket);
 					if (client_socket < 0) 
 					{
 						std::cout << "Failed to grab connection. errno: " << errno << std::endl;

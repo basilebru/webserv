@@ -1,6 +1,11 @@
+#include "Server.hpp"
+
 int main(void)
 {
-	Server server;
+	Server *server =  new Server();
+
+	server->launch();
+	delete server;
 
 	return 0;
 }

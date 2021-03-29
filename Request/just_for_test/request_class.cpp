@@ -58,7 +58,7 @@ int Request::parse_headers()
 	
 	while (1)
 	{
-		printf("PARSE HEADER\n");
+		// printf("PARSE HEADER\n");
 		ret = this->readline(line);
 		// printf("RET: %d\n", ret);
 		if (line.empty() || this->error_code)
@@ -88,9 +88,9 @@ int Request::readline(std::string &line)
 	char *char_line;
 	int ret = 0;
 
-	printf("AVANT GNL\n");
+	// printf("AVANT GNL\n");
 	ret = get_next_line(this->fd, &char_line);
-	printf("APRES GNL\n");
+	// printf("APRES GNL\n");
 	if (ret < 0)
 	{
 		this->error_message = "internal-error: problem reading from socket";

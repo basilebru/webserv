@@ -6,7 +6,7 @@
 #    By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/16 17:10:11 by julnolle          #+#    #+#              #
-#    Updated: 2021/03/26 16:32:23 by julnolle         ###   ########.fr        #
+#    Updated: 2021/03/29 12:48:28 by julnolle         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -40,7 +40,9 @@ ALL_INC			= 	-I$(SERVER_DIR) -I$(REQUEST_DIR) -I$(UTILS_DIR)
 # ---------------- SRC --------------- #
 
 # Add files to compile here
-SRCS += TCPserver.cpp
+SRCS += webserv.cpp
+SRCS += Server.cpp
+# SRCS += TCPserver.cpp
 SRCS += request_class.cpp
 SRCS += get_next_line.cpp
 SRCS += get_next_line_utils.cpp
