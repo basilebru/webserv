@@ -26,6 +26,126 @@ Server::~Server(void)
 }
 
 
+/*int Server::launch(void)
+{
+
+	fd_set current_sockets;
+	int rdy_fd = 0;
+	int client_socket;
+
+	// Create socket, binf and listen
+	int server_socket = this->setup(9999);
+
+
+	//Initilaize the current socket set
+	FD_ZERO(&current_sockets);
+	FD_SET(server_socket, &current_sockets);
+	// au début, notre set (current_sockets) ne contient que 1 socket: server_socket que nous avons créé plus haut
+	this->max_socket = server_socket;
+	printf("server_socket: %d\n", this->max_socket);
+	// printf("FD_SETSIZE: %d\n", FD_SETSIZE);
+
+	//Optional: sets the timeout for select()
+	struct timeval timeout;
+
+    // process requests until an error is found on a request
+	std::string request_ok = "Request received :)\n";
+	std::string request_ko = "Request error :( \n";
+	while (1)
+	{
+		//Optional: sets the timeout for select()
+		// Il s'agit du temps le plus long que select() pourrait attendre avant de rendre la main, même si rien d'intéressant n'est arrivé.
+		// Si cette valeur est positionnée à NULL, alors, select() bloque indéfiniment dans l'attente qu'un descripteur de fichier devienne prêt
+		timeout.tv_sec = 5;
+		timeout.tv_usec = 0;
+
+		// select is destructive so we need a socket copy
+		this->ready_sockets = current_sockets;
+		int sret = select(this->max_socket + 1, &this->ready_sockets, NULL, NULL, NULL);
+		// suite à l'appel à select, this->ready_sockets ne contient plus que les fd disponibles en lecture
+		// (current_sockets contie)nt toujours tous les sockets existants)
+
+		// En cas de succès, select() renvoie le nombre total de descripteurs de fichiers encore présents dans les ensembles de descripteurs de fichier.
+		// En cas de timeout échu, alors les fd_set devraient tous être vides -> la valeur renvoyée est zéro
+		// En cas d'erreur, renvoie -1	
+		if (sret < 0)
+		{
+			std::cerr << "Select error. errno: " << errno << std::endl;
+			exit(EXIT_FAILURE);
+		}
+		else if (sret == 0)
+			std::cerr << sret << ": Select timeout (5 sec)" << std::endl;
+
+		// On parcourt notre fd_set (current socket): pour chaque fd on teste s'il est présent dans this->ready_sockets = disponible en lecture
+		rdy_fd = sret;
+		for (int i = 0; i <= this->max_socket && rdy_fd > 0; ++i)
+		{
+			if (FD_ISSET(i, &this->ready_sockets))
+			{
+				if (i == server_socket) // a new connection has arrived -> grab connection from the queue (cf "listen" plus haut)
+				{
+					rdy_fd -= 1;
+					client_socket = this->accept_new_connection(server_socket);
+					if (client_socket < 0) 
+					{
+						std::cout << "Failed to grab connection. errno: " << errno << std::endl;
+						exit(EXIT_FAILURE);
+					}
+					printf("New incoming connection (fd %d)\n", client_socket);
+					FD_SET(client_socket, &current_sockets); // new connection is added to fd_set (current socket)
+					
+					Request *req = new Request(client_socket);
+					this->requests.insert(std::make_pair(client_socket, req));
+
+
+					if (client_socket > this->max_socket)
+						this->max_socket = client_socket;
+				}
+				else // read from existing connection
+				{
+					printf("Communication with client - fd %d\n", i);
+					std::map<int, Request*>::iterator req;
+					req = requests.find(i);
+					int ret = req->second->parse();
+					printf("ret = %d\n", ret);
+
+					if (ret == 0)
+					{
+						if (close(i) < 0)
+						{
+							std::cerr << "Failed to close. errno:" << errno << std::endl;
+							exit(EXIT_FAILURE);
+						}
+						FD_CLR(i, &current_sockets);
+
+						if (i == this->max_socket)
+							this->max_socket -= 1;
+						printf("fd %d closed.\n", i);
+						// printf("this->max_socket %d\n", this->max_socket);
+					}
+
+					// send() errors handling
+					if (req->second->get_error_code())
+						send(i, request_ko.c_str(), request_ko.size(), 0);
+					else
+						send(i, request_ok.c_str(), request_ok.size(), 0);
+					if (ret != 0)
+						req->second->print();
+					if (req->second->get_error_code())
+					{
+						delete req->second;
+						this->requests.erase(i);
+						break;
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+*/
+
+
 int Server::launch(void)
 {
 
@@ -78,9 +198,125 @@ int Server::launch(void)
 
 		// On parcourt notre fd_set (current socket): pour chaque fd on teste s'il est présent dans this->ready_sockets = disponible en lecture
 		rdy_fd = sret;
-		for (int i = 0; i < this->max_socket + 1 && rdy_fd > 0; ++i)
+		if (FD_ISSET(server_socket, &this->ready_sockets))
 		{
-			if (FD_ISSET(i, &this->ready_sockets)) 
+			rdy_fd -= 1;
+			client_socket = this->accept_new_connection(server_socket);
+			if (client_socket < 0) 
+			{
+				std::cout << "Failed to grab connection. errno: " << errno << std::endl;
+				exit(EXIT_FAILURE);
+			}
+			printf("New incoming connection (fd %d)\n", client_socket);
+			FD_SET(client_socket, &current_sockets); // new connection is added to fd_set (current socket)
+			
+			Request *req = new Request(client_socket);
+			this->requests.insert(std::make_pair(client_socket, req));
+
+
+			if (client_socket > this->max_socket)
+				this->max_socket = client_socket;
+		}
+		else // read from existing connection
+		{
+			std::map<int, Request*>::iterator end = this->requests.end();
+			for (std::map<int, Request*>::iterator it = this->requests.begin(); it != end && rdy_fd > 0; it++)
+			{
+				printf("Communication with client - fd %d\n", it->first);
+				// req = requests.find(i);
+				int ret = it->second->parse();
+				printf("ret = %d\n", ret);
+
+				if (ret == 0)
+				{
+					if (close(it->first) < 0)
+					{
+						std::cerr << "Failed to close. errno:" << errno << std::endl;
+						exit(EXIT_FAILURE);
+					}
+					FD_CLR(it->first, &current_sockets);
+
+					if (it->first == this->max_socket)
+						this->max_socket -= 1;
+					printf("fd %d closed.\n", it->first);
+						// printf("this->max_socket %d\n", this->max_socket);
+				}
+
+					// send() errors handling
+				if (it->second->get_error_code())
+					send(it->first, request_ko.c_str(), request_ko.size(), 0);
+				else
+					send(it->first, request_ok.c_str(), request_ok.size(), 0);
+				if (ret != 0)
+					it->second->print();
+				if (it->second->get_error_code())
+				{
+					delete it->second;
+					this->requests.erase(it->first);
+					break;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+/*
+int Server::launch(void)
+{
+
+	fd_set current_sockets;
+	int rdy_fd = 0;
+	int client_socket;
+
+	// Create socket, binf and listen
+	int server_socket = this->setup(9999);
+
+
+	//Initilaize the current socket set
+	FD_ZERO(&current_sockets);
+	FD_SET(server_socket, &current_sockets);
+	// au début, notre set (current_sockets) ne contient que 1 socket: server_socket que nous avons créé plus haut
+	this->max_socket = server_socket;
+	printf("server_socket: %d\n", this->max_socket);
+	// printf("FD_SETSIZE: %d\n", FD_SETSIZE);
+
+	//Optional: sets the timeout for select()
+	struct timeval timeout;
+
+    // process requests until an error is found on a request
+	std::string request_ok = "Request received :)\n";
+	std::string request_ko = "Request error :( \n";
+	while (1)
+	{
+		//Optional: sets the timeout for select()
+		// Il s'agit du temps le plus long que select() pourrait attendre avant de rendre la main, même si rien d'intéressant n'est arrivé.
+		// Si cette valeur est positionnée à NULL, alors, select() bloque indéfiniment dans l'attente qu'un descripteur de fichier devienne prêt
+		timeout.tv_sec = 5;
+		timeout.tv_usec = 0;
+
+		// select is destructive so we need a socket copy
+		this->ready_sockets = current_sockets;
+		int sret = select(this->max_socket + 1, &this->ready_sockets, NULL, NULL, NULL);
+		// suite à l'appel à select, this->ready_sockets ne contient plus que les fd disponibles en lecture
+		// (current_sockets contie)nt toujours tous les sockets existants)
+
+		// En cas de succès, select() renvoie le nombre total de descripteurs de fichiers encore présents dans les ensembles de descripteurs de fichier.
+		// En cas de timeout échu, alors les fd_set devraient tous être vides -> la valeur renvoyée est zéro
+		// En cas d'erreur, renvoie -1	
+		if (sret < 0)
+		{
+			std::cerr << "Select error. errno: " << errno << std::endl;
+			exit(EXIT_FAILURE);
+		}
+		else if (sret == 0)
+			std::cerr << sret << ": Select timeout (5 sec)" << std::endl;
+
+		// On parcourt notre fd_set (current socket): pour chaque fd on teste s'il est présent dans this->ready_sockets = disponible en lecture
+		rdy_fd = sret;
+		for (int i = 0; i <= this->max_socket && rdy_fd > 0; ++i)
+		{
+			if (FD_ISSET(i, &this->ready_sockets))
 			{
 				if (i == server_socket) // a new connection has arrived -> grab connection from the queue (cf "listen" plus haut)
 				{
@@ -98,11 +334,9 @@ int Server::launch(void)
 				}
 				else // read from existing connection
 				{
-					printf("Communication with client - fd %d\n", i);
-					// std::vector<Request> v;
+					printf("Communication with client -> fd %d\n", i);
 					Request *req = new Request(i);
-					// v.push_back(req);
-					// int ret = v[i].parse();
+
 					int ret = req->parse();
 					printf("ret = %d\n", ret);
 
@@ -141,7 +375,7 @@ int Server::launch(void)
 	return 0;
 }
 
-
+*/
 
 int Server::setup(int port)
 {

@@ -29,7 +29,7 @@ test=42
 
 # To test Chunked
 GET / HTTP/1.1
-transfer-encoding:chunked
+transfer-encoding: chunked
 
 6
 nbr=42

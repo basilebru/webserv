@@ -10,15 +10,19 @@
 # include <fstream> // ifstream
 # include <sstream> // sstream
 # include <fcntl.h> // For fcntl --> non_blocking fd
-
+# include <map>
 
 # include "request_class.hpp"
 
 class Server {
 
+	typedef	Request* Req;
+
 private:
 	int max_socket;
 	fd_set ready_sockets;
+	std::map<int, Req> requests;
+
 	int setup(int port);
 	int accept_new_connection(int server_socket);
 
