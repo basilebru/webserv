@@ -12,8 +12,8 @@
 
 
 // Request
-#include "Utils/get_next_line.h"
-#include "Request/request_class.hpp"
+#include "get_next_line.h"
+#include "request_class.hpp"
 int process_request(int connection, Request &req);
 
 
