@@ -41,7 +41,8 @@ class Request
         void store_header(std::string line);
 
         // reading
-        int readline(std::string &line);
+        void readline(std::string &line);
+        void set_read_error(int ret);
         void read_chunked();
         void read_normal();
         
@@ -60,7 +61,7 @@ class Request
         Request&  operator=(const Request &copy);
 
         // main functions
-        int parse();
+        void parse();
 
         // utils
         void print();

@@ -23,7 +23,7 @@ Request::~Request(void)
 // }
 
 
-int Request::parse()
+void Request::parse()
 {
     // std::cout << "parsing new request" << std::endl;
     this->parse_req_line();
@@ -31,7 +31,6 @@ int Request::parse()
         this->parse_headers();
     if (!this->error_code)
         this->parse_body();
-    return 1;
 }
 
 void Request::parse_req_line()
@@ -75,18 +74,29 @@ void Request::parse_body()
         this->read_normal();
 }
 
-int Request::readline(std::string &line)
+void Request::set_read_error(int ret)
+{
+	if (ret < 0)
+	{
+		this->error_message = "read() error";
+        this->error_code = -1;
+        return ;
+	}
+    if (ret == 0)
+    {
+		this->error_message = "read() returned 0";
+        this->error_code = 1;
+        return ;
+    }
+}
+
+void Request::readline(std::string &line)
 {
 	char *char_line;
 	int ret = 0;
 
-	ret = get_next_line(this->fd, &char_line);
-	if (ret < 0)
-	{
-		this->error_message = "internal-error: problem reading from socket";
-        this->error_code = 500;
-		return ret;
-	}
+	if ((ret = get_next_line(this->fd, &char_line)) <= 0)
+        return this->set_read_error(ret);
 	line = char_line;
 	free(char_line);
 	if (line[line.length() - 1] != '\r')
@@ -96,7 +106,6 @@ int Request::readline(std::string &line)
 	}
 	else
 		line.erase(line.length() - 1); // erase the /r at the end
-    return ret;
 }
 
 void Request::read_normal() // we read the number of bytes specified by "content-lenght"
@@ -114,7 +123,8 @@ void Request::read_normal() // we read the number of bytes specified by "content
         while (received != this->body_size)
         {
             // std::cout << "body_size - received " << this->body_size - received << std::endl;
-		    ret = read(this->fd, body, this->body_size - received);
+		    if ((ret = read(this->fd, body, this->body_size - received)) <= 0)
+                return this->set_read_error(ret);
             body[ret] = 0;
             // std::cout << "ret: " << ret << std::endl;
             received += ret;
@@ -138,7 +148,8 @@ void Request::read_chunked()
     long int ret;
     long int received;
 
-    get_next_line(this->fd, &line);
+    if ((ret = get_next_line(this->fd, &line)) <= 0)
+        return this->set_read_error(ret);
     chunk_size = std::strtol(line, NULL, 16);
     while (chunk_size)
     {
@@ -150,7 +161,11 @@ void Request::read_chunked()
         while (received != chunk_size)
         {
             // std::cout << "chunk_size - received " << chunk_size - received << std::endl;
-            ret = read(this->fd, line, chunk_size - received);
+            if ((ret = read(this->fd, line, chunk_size - received)) <= 0)
+            {
+                free(line);
+                return this->set_read_error(ret);
+            }
             // std::cout << "ret: " << ret << std::endl;
             line[ret] = 0;
             received += ret;
@@ -158,7 +173,11 @@ void Request::read_chunked()
             this->body += line;
         }
         
-        ret = read(this->fd, line, 2); // read CRLF
+        if ((ret = read(this->fd, line, 2)) <= 0) // read CRLF
+        {
+            free(line);
+            return this->set_read_error(ret);
+        }
         if (ret != 2 || line[0] != '\r' || line[1] != '\n') // make sure it is CRLF
         {
             free(line);
@@ -168,10 +187,12 @@ void Request::read_chunked()
         }
         free(line);
 
-        get_next_line(this->fd, &line);
+        if (get_next_line(this->fd, &line) <= 0)
+            return this->set_read_error(ret);
         chunk_size = std::strtol(line, NULL, 16);
     }
-    ret = read(this->fd, line, 2); // read CRLF
+    if ((ret = read(this->fd, line, 2)) <= 0) // read CRLF
+        this->set_read_error(ret);
     if (ret != 2 || line[0] != '\r' || line[1] != '\n') // make sure it is CRLF
     {
         this->error_message = "parsing error: no CRLF after chunked data";
