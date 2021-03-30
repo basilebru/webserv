@@ -10,6 +10,7 @@
 # include <fstream> // ifstream
 # include <sstream> // sstream
 # include <fcntl.h> // For fcntl --> non_blocking fd
+# include <csignal> // To handle CTRL-C (and others signals ?)
 # include <map>
 
 # include "request_class.hpp"
@@ -19,15 +20,18 @@ class Server {
 	typedef	Request* Req;
 
 private:
-	int max_socket;
-	fd_set ready_sockets;
-	std::map<int, Req> requests;
+	int					server_socket;
+	int					max_socket;
+	fd_set				ready_sockets;
+	std::map<int, Req>	requests;
 
-	int setup(int port);
-	int accept_new_connection(int server_socket);
-	void close_socket(std::map<int, Request*>::iterator it);
+	void	setup(int port);
+	int		accept_new_connection();
+	void	close_socket(std::map<int, Request*>::iterator it);
+	// void	signal_handler(int signum);
 
 public:
+	static int			server_is_alive;
 	Server(void);
 	// Server(Server const & copy);
 	~Server(void);
