@@ -25,6 +25,7 @@ private:
 
 	int setup(int port);
 	int accept_new_connection(int server_socket);
+	void close_socket(std::map<int, Request*>::iterator it);
 
 public:
 	Server(void);
