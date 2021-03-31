@@ -8,7 +8,7 @@ Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunked_encoding(
 {
 }
 
-// Request::Request(const Request &copy): req_line(copy.req_line), headers(copy.headers)
+// Request::Request(const Request &copy) 
 // {
 // }
 
@@ -18,17 +18,24 @@ Request::~Request(void)
 
 // Request&   Request::operator=(const Request &rhs)
 // {
-//     this->req_line = rhs.req_line;
-//     this->headers = rhs.headers;
-//     return(*this);
 // }
 
-
-// will return 0 if read() returns 0 (end of transmission) or if parsing error -> close connection in both cases
-// will return -1 in case of read error (EAGAIN/EWOULDBLOCK: no data to read, EINTR: interupted by signal...)
+void Request::parse()
+{
+    this->read_from_socket();
+    if (this->error_code)
+        return;
+    std::cout << "buffer: " << this->buffer << std::endl;
+    this->parse_buffer();
+}
 
 void Request::read_from_socket()
 {
+
+    // TO DO:
+    // - better way to handle ctrl-C on client side ?
+    // - set a limit on buffer size ?
+
     long int ret;
     char *buf;
     buf = (char*)malloc(BUF_SIZE + 1);
@@ -47,14 +54,6 @@ void Request::read_from_socket()
         this->end_of_connection = true;
 }
 
-void Request::parse()
-{
-    this->read_from_socket();
-    if (this->error_code)
-        return;
-    std::cout << "buffer: " << this->buffer << std::endl;
-    this->parse_buffer();
-}
 
 void Request::parse_buffer()
 {
@@ -106,8 +105,7 @@ void Request::parse_headers()
     while (1)
     {
         line_read = this->read_buf_line(line);
-        std::cout << "line: " << line << std::endl;
-        if (!line_read)
+        if (!line_read) // if no CRLF was found in buf, quit parsing
             return ;
         if (line.empty())
             break ;
@@ -127,8 +125,8 @@ void Request::parse_body()
 
     if (this->body_size)
         this->parse_body_normal();
-    // else if (this->chunked_encoding)
-    //     this->parse_body_chunked();
+    else if (this->chunked_encoding)
+        this->parse_body_chunked();
     else
         this->request_ready = true;
 }
@@ -143,18 +141,25 @@ void Request::parse_body_normal()
     }
 }
 
+void Request::parse_body_chunked()
+{
+    
+}
+
 void Request::reset()
 {
     std::cout << "reseting request" << std::endl;
-    this->body_size = 0;
+    // set bools to false
     this->chunked_encoding = false;
     this->req_line_read = false;
+    this->request_ready = false;
+    // reset req line, headers & body
     this->req_line.method = "";
     this->req_line.version = "";
     this->req_line.target = "";
     this->headers.erase(this->headers.begin(), this->headers.end());
     this->body = "";
-    this->request_ready = false;
+    this->body_size = 0;
 }
 
 void Request::store_req_line(std::string line)
@@ -284,10 +289,10 @@ int Request::get_error_code() const
     return this->error_code;
 }
 
-void Request::set_error_code(int code)
-{
-    this->error_code = code;
-};
+// void Request::set_error_code(int code)
+// {
+//     this->error_code = code;
+// };
 
 void Request::print()
 {

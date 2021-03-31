@@ -31,17 +31,20 @@ class Request
 
         // attributes
         int fd;
+        std::string buffer;
+        
         int error_code;
         std::string error_message;
+        
         request_line req_line;
         std::list<header> headers;
         unsigned long body_size;
         std::string body;
+        
         bool chunked_encoding;
         bool req_line_read;
-        std::string buffer;
         
-        // processing
+        // processing methods
         void check_body_headers();
         bool has_transfer_encoding();
         bool has_content_length();
@@ -50,8 +53,7 @@ class Request
         void store_req_line(std::string line);
         void store_header(std::string line);
 
-        // main
-
+        // parsing buf methods
         void parse_buffer();
         void parse_req_line();
         void parse_headers();
@@ -59,20 +61,23 @@ class Request
         void parse_body_normal();
         void parse_body_chunked();
         bool read_buf_line(std::string &line);
-        
+
+        // reading from socket   
         void read_from_socket();
 
     
     public:
         // constructor & destructor
-        Request(void);
+        Request(void); // not defined
         Request(int fd);
-        Request(const Request &copy);
+        Request(const Request &copy); // not defined (needed ?)
         virtual ~Request(void);
-        Request&  operator=(const Request &copy);
+        Request&  operator=(const Request &copy); // not defined
 
+        // attributes (to be set to private...)
         bool end_of_connection;
         bool request_ready;
+
         // main functions
         void parse();
         void reset();
@@ -82,7 +87,7 @@ class Request
 
         // getters & setters
         int get_error_code() const;
-        void set_error_code(int code);
+        // void set_error_code(int code);
 };
 
 bool content_length_present(std::pair<std::string, std::string> header);

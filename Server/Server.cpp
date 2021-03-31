@@ -128,8 +128,6 @@ int Server::launch(void)
 					it->second->print();
 					if (it->second->end_of_connection || it->second->get_error_code())
 					{
-						it->second->end_of_connection = false;
-						it->second->set_error_code(0);
 						// Remove client_socket from FD SET
 						FD_CLR(it->first, &current_sockets);
 						if (it->first == this->max_socket)
