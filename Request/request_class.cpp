@@ -4,7 +4,7 @@
 #include <cstdlib> // strtol
 #include <sys/socket.h> // recv
 
-Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunked_encoding(false), req_line_read(false), end_of_connection(false), request_ready(false)
+Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunk_size(0), chunked_encoding(false), chunked_size_read(false), req_line_read(false), end_of_connection(false), request_ready(false)
 {
 }
 
@@ -123,16 +123,15 @@ void Request::parse_body()
     if (this->error_code)
         return ;
 
-    if (this->body_size)
+    if (!this->chunked_encoding)
         this->parse_body_normal();
-    else if (this->chunked_encoding)
-        this->parse_body_chunked();
     else
-        this->request_ready = true;
+        this->parse_body_chunked();
 }
 
 void Request::parse_body_normal()
 {
+    std::cout << "Parsing body normal..." << std::endl;
     if (this->buffer.size() >= this->body_size)
     {
         this->body = this->buffer.substr(0, this->body_size);
@@ -141,9 +140,58 @@ void Request::parse_body_normal()
     }
 }
 
+bool Request::read_chunked_size()
+{
+    std::string line;
+    if (this->read_buf_line(line) == false)
+        return false;
+    this->chunk_size = strtol(line.c_str(), NULL, 16);
+    this->chunked_size_read = true;
+    return true;
+}
+
+bool Request::read_chunked_data()
+{
+    if (this->buffer.size() < this->chunk_size)
+        return false;
+    this->body += this->buffer.substr(0, this->chunk_size);
+    this->buffer.erase(0, this->chunk_size);
+    return true;
+}
+
 void Request::parse_body_chunked()
 {
-    
+    std::cout << "Parsing body chunked..." << std::endl;
+    std::string line;
+    while (1)
+    {
+        if (this->chunked_size_read)
+        {
+            std::cout << "Parsing chunked data..." << std::endl;
+            std::cout << "chunked_size is: " << this->chunk_size << std::endl;
+            if (this->read_chunked_data() == false)
+                return ;
+            if (this->read_buf_line(line) == false) // there should be a CRLF after chunked data
+                return ;
+            if (!line.empty())
+            {
+                this->error_message = "parsing error: no CRLF after chunked data";
+                this->error_code = 400;
+                return ;
+            }
+            if (this->chunk_size == 0)
+            {
+                this->request_ready = true;
+                return ;
+            }
+            this->chunked_size_read = false;
+        }
+        std::cout << "Parsing chunked size..." << std::endl;
+        if (this->read_chunked_size() == false) // not enough data in buffer
+            return ;
+    }
+
+
 }
 
 void Request::reset()
@@ -153,6 +201,7 @@ void Request::reset()
     this->chunked_encoding = false;
     this->req_line_read = false;
     this->request_ready = false;
+    this->chunked_size_read = false;
     // reset req line, headers & body
     this->req_line.method = "";
     this->req_line.version = "";
@@ -160,6 +209,7 @@ void Request::reset()
     this->headers.erase(this->headers.begin(), this->headers.end());
     this->body = "";
     this->body_size = 0;
+    this->chunk_size = 0;
 }
 
 void Request::store_req_line(std::string line)

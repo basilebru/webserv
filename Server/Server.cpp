@@ -128,6 +128,12 @@ int Server::launch(void)
 					it->second->print();
 					if (it->second->end_of_connection || it->second->get_error_code())
 					{
+						// log message
+						if (it->second->end_of_connection)
+							std::cout << RED << "Client closed connection" << std::endl;
+						else
+							std::cout << RED << "Request error, closing connection" << std::endl;
+
 						// Remove client_socket from FD SET
 						FD_CLR(it->first, &current_sockets);
 						if (it->first == this->max_socket)

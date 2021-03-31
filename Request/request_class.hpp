@@ -39,9 +39,11 @@ class Request
         request_line req_line;
         std::list<header> headers;
         unsigned long body_size;
+        unsigned long chunk_size;
         std::string body;
         
         bool chunked_encoding;
+        bool chunked_size_read;
         bool req_line_read;
         
         // processing methods
@@ -61,6 +63,8 @@ class Request
         void parse_body_normal();
         void parse_body_chunked();
         bool read_buf_line(std::string &line);
+        bool read_chunked_size();
+        bool read_chunked_data();
 
         // reading from socket   
         void read_from_socket();
