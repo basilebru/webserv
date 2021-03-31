@@ -49,7 +49,10 @@ void Request::read_from_socket()
         buf[ret] = 0;
         this->buffer += buf;
     }
+
     free(buf);
+    if (this->buffer == "\xFF\xF4\xFF\xFD\x06") // Ctrl - c
+        this->error_code = 400;
     if (ret == 0)
         this->end_of_connection = true;
 }
