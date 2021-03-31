@@ -1,8 +1,3 @@
-
-// Class that doesnt use GNL to read(): use of an internal buffer to store successive reads (in case request doesnt arrive line by line)
-// : use of an internal buffer to store u (in case request doesnt arrive line by linecould rece)TO DO: read_chunked
-
-
 #ifndef REQUEST_CLASS_H
 # define REQUEST_CLASS_H
 
@@ -12,9 +7,6 @@
 #include <unistd.h> //read
 #include "../Utils/get_next_line.h"
 #include "../Utils/utils.hpp"
-
-#define BUF_SIZE 1024
-#define SUCCESS 1
 
 
 struct request_line
@@ -35,11 +27,9 @@ class Request
         std::string error_message;
         request_line req_line;
         std::list<header> headers;
-        unsigned long body_size;
+        int body_size;
         std::string body;
         bool chunked_encoding;
-        bool req_line_read;
-        std::string buffer;
         
         // processing
         void check_body_headers();
@@ -50,17 +40,16 @@ class Request
         void store_req_line(std::string line);
         void store_header(std::string line);
 
+        // reading
+        void readline(std::string &line);
+        void set_read_error(int ret);
+        void read_chunked();
+        void read_normal();
+        
         // main
-
-        void parse_buffer();
         void parse_req_line();
         void parse_headers();
         void parse_body();
-        void parse_body_normal();
-        void parse_body_chunked();
-        bool read_buf_line(std::string &line);
-        
-        void read_from_socket();
 
     
     public:
@@ -71,11 +60,8 @@ class Request
         virtual ~Request(void);
         Request&  operator=(const Request &copy);
 
-        bool end_of_connection;
-        bool request_ready;
         // main functions
         void parse();
-        void reset();
 
         // utils
         void print();

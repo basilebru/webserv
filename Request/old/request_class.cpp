@@ -1,10 +1,9 @@
-
 #include "request_class.hpp"
 #include <algorithm> // find functions
 #include <cstdlib> // strtol
-#include <sys/socket.h> // recv
 
-Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunked_encoding(false), req_line_read(false), end_of_connection(false), request_ready(false)
+
+Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunked_encoding(false)
 {
 }
 
@@ -24,138 +23,184 @@ Request::~Request(void)
 // }
 
 
-// will return 0 if read() returns 0 (end of transmission) or if parsing error -> close connection in both cases
-// will return -1 in case of read error (EAGAIN/EWOULDBLOCK: no data to read, EINTR: interupted by signal...)
-
-void Request::read_from_socket()
-{
-    long int ret;
-    char *buf;
-    buf = (char*)malloc(BUF_SIZE + 1);
-    if (buf == NULL)
-    {
-		this->error_message = "internal-error: malloc error";
-		this->error_code = 500;
-    }
-    while ((ret = recv(this->fd, buf, BUF_SIZE, MSG_DONTWAIT)) > 0)
-    {
-        buf[ret] = 0;
-        this->buffer += buf;
-    }
-    free(buf);
-    if (ret == 0)
-        this->end_of_connection = true;
-}
-
 void Request::parse()
 {
-    this->read_from_socket();
-    if (this->error_code)
-        return;
-    std::cout << "buffer: " << this->buffer << std::endl;
-    this->parse_buffer();
-}
-
-void Request::parse_buffer()
-{
-    std::cout << "Parsing buffer..." << std::endl;
-    if (this->chunked_encoding || this->body_size)
-        this->parse_body();
-    else if (this->req_line_read)
+    // std::cout << "parsing new request" << std::endl;
+    this->parse_req_line();
+    if (!this->error_code)
         this->parse_headers();
-    else
-        this->parse_req_line();
-}
-
-bool Request::read_buf_line(std::string &line)
-{
-    size_t pos;
-    pos = this->buffer.find("\r\n");
-    if (pos == std::string::npos)
-        return false;
-    line = this->buffer.substr(0, pos);
-    // std::cout << "line: [" << line << "]" << std::endl;
-    this->buffer.erase(0, pos + 2);
-    return true;
+    if (!this->error_code)
+        this->parse_body();
 }
 
 void Request::parse_req_line()
 {
-    std::cout << "Parsing req_line..." << std::endl;
-    std::string line;
-    bool line_read;
-    line_read = this->read_buf_line(line);
-    if (line_read && line.empty())
-        line_read = this->read_buf_line(line);
-    if (line_read)
-    {
-        this->store_req_line(line);
-        if (this->error_code)
-            return ;
-        this->req_line_read = true;
-        this->parse_headers();
-    }
+	std::string line;
+
+	this->readline(line);
+    //  ignore one empty line before request (cf RFC 7230 3.5) 
+    //  -> pratique dans le cas ou on a un body et une content-length: on peut sauter une ligne entre la fin du body et la prochaine request (comme dans nginx)
+	if (line.empty() && !this->error_code)
+	    this->readline(line);
+    if (!this->error_code)
+	    this->store_req_line(line);
 }
 
 void Request::parse_headers()
 {
-    std::cout << "Parsing header..." << std::endl;
-    std::string line;
-    bool line_read;
-
+	std::string line;
+	
     while (1)
-    {
-        line_read = this->read_buf_line(line);
-        std::cout << "line: " << line << std::endl;
-        if (!line_read)
-            return ;
-        if (line.empty())
+	{
+	    this->readline(line);
+        if (line.empty() || this->error_code)
             break ;
+        
         this->store_header(line);
         if (this->error_code)
-            return ;
-    }
-    this->parse_body();
+            break;
+	}
 }
 
 void Request::parse_body()
 {
-    std::cout << "Parsing body..." << std::endl;
     this->check_body_headers(); // will check the "content-length" and "transfer-encoding headers"
     if (this->error_code)
-        return ;
-
-    if (this->body_size)
-        this->parse_body_normal();
-    // else if (this->chunked_encoding)
-    //     this->parse_body_chunked();
-    else
-        this->request_ready = true;
+        return;
+    
+    if (this->chunked_encoding)
+        this->read_chunked();
+    else if (this->body_size)
+        this->read_normal();
 }
 
-void Request::parse_body_normal()
+void Request::set_read_error(int ret)
 {
-    if (this->buffer.size() >= this->body_size)
+	if (ret < 0)
+	{
+		this->error_message = "read() error";
+        this->error_code = -1;
+        return ;
+	}
+    if (ret == 0)
     {
-        this->body = this->buffer.substr(0, this->body_size);
-        this->buffer.erase(0, this->body_size);
-        this->request_ready = true;
+		this->error_message = "read() returned 0";
+        this->error_code = 1;
+        return ;
     }
 }
 
-void Request::reset()
+void Request::readline(std::string &line)
 {
-    std::cout << "reseting request" << std::endl;
-    this->body_size = 0;
-    this->chunked_encoding = false;
-    this->req_line_read = false;
-    this->req_line.method = "";
-    this->req_line.version = "";
-    this->req_line.target = "";
-    this->headers.erase(this->headers.begin(), this->headers.end());
-    this->body = "";
-    this->request_ready = false;
+	char *char_line;
+	int ret = 0;
+
+	if ((ret = get_next_line(this->fd, &char_line)) <= 0)
+        return this->set_read_error(ret);
+	line = char_line;
+	free(char_line);
+	if (line[line.length() - 1] != '\r')
+	{
+		this->error_code = 400;
+		this->error_message = "parsing error: expected CRLF at the end of a line";
+	}
+	else
+		line.erase(line.length() - 1); // erase the /r at the end
 }
+
+void Request::read_normal() // we read the number of bytes specified by "content-lenght"
+{
+        int ret(0);
+        int received(0);
+		char *body = (char*)malloc(this->body_size + 1);
+		if (body == NULL)
+		{
+			this->error_message = "internal-error: alloc problem reading body";
+            this->error_code = 500;
+			return ;
+		}
+        // we can't assume that we will be able to read the whole body in one call: we should be prepared for interuptions (eg: pressing "Enter" makes read() return) = a read can return only part of the desired number of bytes
+        while (received != this->body_size)
+        {
+            // std::cout << "body_size - received " << this->body_size - received << std::endl;
+		    if ((ret = read(this->fd, body, this->body_size - received)) <= 0)
+                return this->set_read_error(ret);
+            body[ret] = 0;
+            // std::cout << "ret: " << ret << std::endl;
+            received += ret;
+            // std::cout << "received: " << received << std::endl;
+            this->body += body;
+        }
+		free(body);
+}
+
+void Request::read_chunked()
+{
+    // read chunk-size and CRLF
+    // while (chunk-size > 0)
+        // read chunk_data and CRLF
+        // body += chunk_data
+        // content-length += chunk_size
+        // read chunk_size and CRLF
+
+    long int chunk_size;
+    char *line;
+    long int ret;
+    long int received;
+
+    if ((ret = get_next_line(this->fd, &line)) <= 0)
+        return this->set_read_error(ret);
+    chunk_size = std::strtol(line, NULL, 16);
+    while (chunk_size)
+    {
+        free(line);
+        line = (char*)malloc(chunk_size + 1);
+
+        // same as read_normal: we cant assume that read() will be able to read the whole chunk in one call
+        received = 0;
+        while (received != chunk_size)
+        {
+            // std::cout << "chunk_size - received " << chunk_size - received << std::endl;
+            if ((ret = read(this->fd, line, chunk_size - received)) <= 0)
+            {
+                free(line);
+                return this->set_read_error(ret);
+            }
+            // std::cout << "ret: " << ret << std::endl;
+            line[ret] = 0;
+            received += ret;
+            // std::cout << "received: " << received << std::endl;
+            this->body += line;
+        }
+        
+        if ((ret = read(this->fd, line, 2)) <= 0) // read CRLF
+        {
+            free(line);
+            return this->set_read_error(ret);
+        }
+        if (ret != 2 || line[0] != '\r' || line[1] != '\n') // make sure it is CRLF
+        {
+            free(line);
+            this->error_message = "parsing error: no CRLF after chunked data";
+            this->error_code = 400;
+            return ;
+        }
+        free(line);
+
+        if (get_next_line(this->fd, &line) <= 0)
+            return this->set_read_error(ret);
+        chunk_size = std::strtol(line, NULL, 16);
+    }
+    if ((ret = read(this->fd, line, 2)) <= 0) // read CRLF
+        this->set_read_error(ret);
+    if (ret != 2 || line[0] != '\r' || line[1] != '\n') // make sure it is CRLF
+    {
+        this->error_message = "parsing error: no CRLF after chunked data";
+        this->error_code = 400;
+    }
+    free(line);
+}
+
 
 void Request::store_req_line(std::string line)
 {

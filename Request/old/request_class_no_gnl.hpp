@@ -13,7 +13,7 @@
 #include "../Utils/get_next_line.h"
 #include "../Utils/utils.hpp"
 
-#define BUF_SIZE 256
+#define BUF_SIZE 1024
 #define SUCCESS 1
 
 

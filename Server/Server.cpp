@@ -138,9 +138,9 @@ int Server::launch(void)
 					printf("Communication with client -> fd %d\n", it->first);
 					
 					// Parse the request
-					int ret = it->second->parse();
-
-					if (ret == 0)
+					it->second->parse();
+					it->second->print();
+					if (it->second->end_of_connection || it->second->get_error_code())
 					{
 						// Remove client_socket from FD SET
 						FD_CLR(it->first, &current_sockets);
@@ -149,14 +149,11 @@ int Server::launch(void)
 						
 						this->close_socket(it);
 					}
-					else
+					else if (it->second->request_ready)
 					{
-						if (it->second->get_error_code())
-							send(it->first, request_ko.c_str(), request_ko.size(), 0);
-						else
-							send(it->first, request_ok.c_str(), request_ok.size(), 0);
-						if (ret != 0)
-							it->second->print();
+						std::cout << "Request is ready" << std::endl;
+						// process request
+						it->second->reset();
 					}
 				}
 			}

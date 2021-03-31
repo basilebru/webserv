@@ -31,7 +31,7 @@ SANITIZE	=	-g3 -fsanitize=address
 # -------------- INCLUDES ------------ #
 
 SERVER_DIR 		=	./Server/
-REQUEST_DIR 	=	./Request/just_for_test/
+REQUEST_DIR 	=	./Request/
 UTILS_DIR 		=	./Utils/
 
 ALL_INC			= 	-I$(SERVER_DIR) -I$(REQUEST_DIR) -I$(UTILS_DIR)
