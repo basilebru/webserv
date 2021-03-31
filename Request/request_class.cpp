@@ -284,10 +284,10 @@ int Request::get_error_code() const
     return this->error_code;
 }
 
-// void Request::set_error_code(int code)
-// {
-//     this->error_code = code;
-// };
+void Request::set_error_code(int code)
+{
+    this->error_code = code;
+};
 
 void Request::print()
 {

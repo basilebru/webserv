@@ -30,22 +30,12 @@ Server::~Server(void)
 		std::cerr << "Failed to close. errno:" << errno << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	std::cerr << "server_socket closed (fd " << this->server_socket << ")." << std::endl;;
+	std::cerr << WHITE << "server_socket closed (fd " << this->server_socket << ")." << NOCOLOR <<std::endl;;
 
 	return ;
 }
 
 int	Server::server_is_alive = 1;
-
-void signal_handler(int signum)
-{
-
-	if (signum == SIGINT)
-	{
-		Server::server_is_alive = 0;
-		std::cerr << std::endl;
-	}
-}
 
 int Server::launch(void)
 {
@@ -65,7 +55,6 @@ int Server::launch(void)
 	// For Select (it needs the highest-numbered file descriptor in any of the three sets, plus 1)
 	this->max_socket = this->server_socket;
 	printf("server_socket: %d\n", this->max_socket);
-	// printf("FD_SETSIZE: %d\n", FD_SETSIZE);
 
 	//Optional: sets the timeout for select()
 	struct timeval timeout;
@@ -75,9 +64,6 @@ int Server::launch(void)
 	std::string request_ko = "Request error :( \n";
 	while (Server::server_is_alive)
 	{
-		if (signal(SIGINT, signal_handler) == SIG_ERR)
-			return (1);
-
 		//Optional: sets the timeout for select()
 		// Il s'agit du temps le plus long que select() pourrait attendre avant de rendre la main, même si rien d'intéressant n'est arrivé.
 		// Si cette valeur est positionnée à NULL, alors, select() bloque indéfiniment dans l'attente qu'un descripteur de fichier devienne prêt
@@ -112,13 +98,13 @@ int Server::launch(void)
 				std::cout << "Failed to grab connection. errno: " << errno << std::endl;
 				exit(EXIT_FAILURE);
 			}
-			else if (errno != EAGAIN)
+			else if (client_socket > 0)
 			{
 /*				// Set the client_socket NON BLOCKING
 				if (fcntl(client_socket, F_SETFL, O_NONBLOCK) < 0)
 					std::cout << "fcntl error" << std::endl;
 */
-				printf("New incoming connection (fd %d)\n", client_socket);
+				std::cout << YELLOW << "New incoming connection (fd " << client_socket << ")" << NOCOLOR << std::endl;
 				FD_SET(client_socket, &current_sockets); // new connection is added to fd_set (current socket)
 				
 				Request *req = new Request(client_socket);
@@ -135,13 +121,15 @@ int Server::launch(void)
 			{
 				if (FD_ISSET(it->first, &this->ready_sockets))
 				{
-					printf("Communication with client -> fd %d\n", it->first);
+					std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
 					
 					// Parse the request
 					it->second->parse();
 					it->second->print();
 					if (it->second->end_of_connection || it->second->get_error_code())
 					{
+						it->second->end_of_connection = false;
+						it->second->set_error_code(0);
 						// Remove client_socket from FD SET
 						FD_CLR(it->first, &current_sockets);
 						if (it->first == this->max_socket)
@@ -224,7 +212,7 @@ void Server::close_socket(std::map<int, Request*>::iterator it)
 		std::cerr << "Failed to close. errno:" << errno << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	std::cout << "fd " << it->first << " closed." << std::endl;
+	std::cout << YELLOW << "Client " << it->first << " disconnected." << NOCOLOR << std::endl;
 
 	// delete the Request 
 	delete it->second;

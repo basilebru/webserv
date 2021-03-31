@@ -1,18 +1,7 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-# include <string>
-# include <iostream>
-# include <sys/socket.h> // For socket functions
-# include <netinet/in.h> // For sockaddr_in
-# include <cstdlib> // For exit() and EXIT_FAILURE
-# include <unistd.h> // For read
-# include <fstream> // ifstream
-# include <sstream> // sstream
-# include <fcntl.h> // For fcntl --> non_blocking fd
-# include <csignal> // To handle CTRL-C (and others signals ?)
-# include <map>
-
+# include "webserv.hpp"
 # include "request_class.hpp"
 
 class Server {
@@ -28,7 +17,6 @@ private:
 	void	setup(int port);
 	int		accept_new_connection();
 	void	close_socket(std::map<int, Request*>::iterator it);
-	// void	signal_handler(int signum);
 
 public:
 	static int			server_is_alive;

@@ -6,7 +6,7 @@
 #    By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/16 17:10:11 by julnolle          #+#    #+#              #
-#    Updated: 2021/03/30 14:40:46 by julnolle         ###   ########.fr        #
+#    Updated: 2021/03/31 15:11:41 by julnolle         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,11 +30,12 @@ SANITIZE	=	-g3 -fsanitize=address
 
 # -------------- INCLUDES ------------ #
 
+INCLUDES 		=	./includes/
 SERVER_DIR 		=	./Server/
 REQUEST_DIR 	=	./Request/
 UTILS_DIR 		=	./Utils/
 
-ALL_INC			= 	-I$(SERVER_DIR) -I$(REQUEST_DIR) -I$(UTILS_DIR)
+ALL_INC			= 	-I$(SERVER_DIR) -I$(REQUEST_DIR) -I$(UTILS_DIR) -I$(INCLUDES)
 
 
 # ---------------- SRC --------------- #

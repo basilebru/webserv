@@ -82,7 +82,7 @@ class Request
 
         // getters & setters
         int get_error_code() const;
-        // void set_error_code(int code);
+        void set_error_code(int code);
 };
 
 bool content_length_present(std::pair<std::string, std::string> header);
