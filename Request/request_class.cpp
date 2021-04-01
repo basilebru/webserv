@@ -1,8 +1,8 @@
-
 #include "request_class.hpp"
 #include <algorithm> // find functions
 #include <cstdlib> // strtol
 #include <sys/socket.h> // recv
+#include <cstring> // strcmp
 
 Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunk_size(0), chunked_encoding(false), chunked_size_read(false), req_line_read(false), end_of_connection(false), request_ready(false)
 {
@@ -47,12 +47,12 @@ void Request::read_from_socket()
     while ((ret = recv(this->fd, buf, BUF_SIZE, MSG_DONTWAIT)) > 0)
     {
         buf[ret] = 0;
+        if (ret == 5 && strcmp(buf, "\xFF\xF4\xFF\xFD\x06") == 0)
+            this->error_code = 400;
         this->buffer += buf;
     }
 
     free(buf);
-    if (this->buffer == "\xFF\xF4\xFF\xFD\x06") // Ctrl - c
-        this->error_code = 400;
     if (ret == 0)
         this->end_of_connection = true;
 }
@@ -155,10 +155,18 @@ bool Request::read_chunked_size()
 
 bool Request::read_chunked_data()
 {
-    if (this->buffer.size() < this->chunk_size)
+    if (this->buffer.size() < this->chunk_size + 2) // + 2 because we also want to read crlf after chunk data
         return false;
     this->body += this->buffer.substr(0, this->chunk_size);
     this->buffer.erase(0, this->chunk_size);
+    std::string crlf = this->buffer.substr(0, 2);
+    if (crlf != "\r\n")
+    {
+        this->error_message = "parsing error: no CRLF after chunked data";
+        this->error_code = 400;
+        return false;
+    }
+    this->buffer.erase(0, 2);
     return true;
 }
 
@@ -174,20 +182,12 @@ void Request::parse_body_chunked()
             std::cout << "chunked_size is: " << this->chunk_size << std::endl;
             if (this->read_chunked_data() == false)
                 return ;
-            if (this->read_buf_line(line) == false) // there should be a CRLF after chunked data
-                return ;
-            if (!line.empty())
-            {
-                this->error_message = "parsing error: no CRLF after chunked data";
-                this->error_code = 400;
-                return ;
-            }
-            if (this->chunk_size == 0)
+            if (this->chunk_size == 0) // end of chunked body, stop reading
             {
                 this->request_ready = true;
                 return ;
             }
-            this->chunked_size_read = false;
+            this->chunked_size_read = false; // go on reading
         }
         std::cout << "Parsing chunked size..." << std::endl;
         if (this->read_chunked_size() == false) // not enough data in buffer
