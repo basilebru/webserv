@@ -22,11 +22,20 @@ Request::~Request(void)
 
 void Request::parse()
 {
-    this->read_from_socket();
-    if (this->error_code)
-        return;
-    std::cout << "buffer: " << this->buffer << std::endl;
-    this->parse_buffer();
+    try
+    {
+        this->read_from_socket();
+        if (this->error_code)
+            return;
+        std::cout << "buffer: " << this->buffer << std::endl;
+        this->parse_buffer();
+    }
+    catch(const std::exception& e)
+    {
+        this->error_code = 500;
+		this->error_message = "internal-error: " + std::string(e.what());
+    }
+    
 }
 
 void Request::read_from_socket()
@@ -48,15 +57,7 @@ void Request::read_from_socket()
         buf[ret] = 0;
         if (ret == 5 && strcmp(buf, "\xFF\xF4\xFF\xFD\x06") == 0)
             this->error_code = 400;
-        try
-        {
-            this->buffer += buf;
-        }
-        catch(const std::exception& e)
-        {
-		    this->error_message = "internal-error: " + std::string(e.what());
-		    this->error_code = 500;
-        }
+        this->buffer += buf;
     }
     free(buf);
     if (ret == 0)
@@ -82,7 +83,6 @@ bool Request::read_buf_line(std::string &line)
     if (pos == std::string::npos)
         return false;
     line = this->buffer.substr(0, pos);
-    // std::cout << "line: [" << line << "]" << std::endl;
     this->buffer.erase(0, pos + 2);
     return true;
 }
@@ -93,7 +93,7 @@ void Request::parse_req_line()
     std::string line;
     bool line_read;
     line_read = this->read_buf_line(line);
-    if (line_read && line.empty())
+    while (line_read && line.empty()) // skip empty line(s) before req_line
         line_read = this->read_buf_line(line);
     if (line_read)
     {
@@ -149,6 +149,30 @@ void Request::parse_body_normal()
     }
 }
 
+void Request::parse_body_chunked()
+{
+    std::cout << "Parsing body chunked..." << std::endl;
+    std::string line;
+    while (1)
+    {
+        if (this->chunked_size_read)
+        {
+            std::cout << "Parsing chunked data..." << std::endl;
+            if (this->read_chunked_data() == false)
+                return ;
+            if (this->chunk_size == 0) // end of request, stop reading
+            {
+                this->request_ready = true;
+                return ;
+            }
+            this->chunked_size_read = false; // go on reading new chunk size
+        }
+        std::cout << "Parsing chunked size..." << std::endl;
+        if (this->read_chunked_size() == false) // not enough data in buffer
+            return ;
+    }
+}
+
 bool Request::read_chunked_size()
 {
     std::string line;
@@ -178,32 +202,6 @@ bool Request::read_chunked_data()
     return true;
 }
 
-void Request::parse_body_chunked()
-{
-    std::cout << "Parsing body chunked..." << std::endl;
-    std::string line;
-    while (1)
-    {
-        if (this->chunked_size_read)
-        {
-            std::cout << "Parsing chunked data..." << std::endl;
-            std::cout << "chunked_size is: " << this->chunk_size << std::endl;
-            if (this->read_chunked_data() == false)
-                return ;
-            if (this->chunk_size == 0) // end of chunked body, stop reading
-            {
-                this->request_ready = true;
-                return ;
-            }
-            this->chunked_size_read = false; // go on reading
-        }
-        std::cout << "Parsing chunked size..." << std::endl;
-        if (this->read_chunked_size() == false) // not enough data in buffer
-            return ;
-    }
-
-
-}
 
 void Request::reset()
 {
@@ -237,9 +235,6 @@ void Request::store_req_line(std::string line)
     }
     while((next = line.find(" ", pos)) != std::string::npos)
     {
-        //std::cout << "pos: " << pos << std::endl;
-        //std::cout << "next: " << next << std::endl;
-        // std::cout << "sub: " << line.substr(pos, next - pos) << std::endl;
         if (count == 0)
             this->req_line.method = line.substr(pos, next - pos);
         else // count == 1
