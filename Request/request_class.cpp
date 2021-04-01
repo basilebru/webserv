@@ -286,14 +286,14 @@ void Request::check_body_headers()
         this->store_body_length();
 }
 
-bool Request::has_transfer_encoding()
+bool Request::has_transfer_encoding() const
 {
     if (std::find_if(this->headers.begin(), this->headers.end(), transfer_encoding_present) != this->headers.end())
         return true;
     return false;
 }
 
-bool Request::has_content_length()
+bool Request::has_content_length() const
 {
     if (std::find_if(this->headers.begin(), this->headers.end(), content_length_present) != this->headers.end())
         return true;
@@ -363,12 +363,22 @@ int Request::get_error_code() const
     return this->error_code;
 }
 
+bool Request::connection_end() const
+{
+    return this->end_of_connection;
+}
+
+bool Request::request_is_ready() const
+{
+    return this->request_ready;
+}
+
 // void Request::set_error_code(int code)
 // {
 //     this->error_code = code;
 // };
 
-void Request::print()
+void Request::print() const
 {
     if (this->error_code)
     {
@@ -381,7 +391,7 @@ void Request::print()
     std::cout << " . Target: " << this->req_line.target << std::endl;
     std::cout << " . Version: " << this->req_line.version << std::endl;
     std::cout << std::endl;
-    for (std::list<header>::iterator it = this->headers.begin(); it != this->headers.end(); it++)
+    for (std::list<header>::const_iterator it = this->headers.begin(); it != this->headers.end(); it++)
     {
         /* code */
         std::cout << "Header line:" << std::endl;

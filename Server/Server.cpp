@@ -126,10 +126,10 @@ int Server::launch(void)
 					// Parse the request
 					it->second->parse();
 					it->second->print();
-					if (it->second->end_of_connection || it->second->get_error_code())
+					if (it->second->connection_end() || it->second->get_error_code())
 					{
 						// log message
-						if (it->second->end_of_connection)
+						if (it->second->connection_end())
 							std::cout << RED << "Client closed connection" << std::endl;
 						else
 							std::cout << RED << "Request error, closing connection" << std::endl;
@@ -141,7 +141,7 @@ int Server::launch(void)
 						
 						this->close_socket(it);
 					}
-					else if (it->second->request_ready)
+					else if (it->second->request_is_ready())
 					{
 						std::cout << "Request is ready" << std::endl;
 						// process request

@@ -25,31 +25,38 @@ class Request
         typedef std::pair<std::string, std::string> header;
 
         // attributes
+
+        // reading from connection
         int fd;
         std::string buffer;
         
+        // error
         int error_code;
         std::string error_message;
         
+        // storing request
         request_line req_line;
         std::list<header> headers;
         unsigned long body_size;
         unsigned long chunk_size;
         std::string body;
         
+        // bools
         bool chunked_encoding;
         bool chunked_size_read;
         bool req_line_read;
+        bool end_of_connection;
+        bool request_ready;
         
         // processing methods
         void check_body_headers();
-        bool has_transfer_encoding();
-        bool has_content_length();
         void store_body_length();
         void store_chunk_size(std::string line);
         void store_encoding();
         void store_req_line(std::string line);
         void store_header(std::string line);
+        bool has_transfer_encoding() const;
+        bool has_content_length() const;
 
         // parsing buf methods
         void parse_buffer();
@@ -74,19 +81,18 @@ class Request
         virtual ~Request(void);
         Request&  operator=(const Request &copy); // not defined
 
-        // attributes (to be set to private...)
-        bool end_of_connection;
-        bool request_ready;
 
         // main functions
         void parse();
         void reset();
 
         // utils
-        void print();
+        void print() const;
 
         // getters & setters
         int get_error_code() const;
+        bool request_is_ready() const;
+        bool connection_end() const;
         // void set_error_code(int code);
 };
 
