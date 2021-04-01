@@ -130,9 +130,9 @@ int Server::launch(void)
 					{
 						// log message
 						if (it->second->connection_end())
-							std::cout << RED << "Client closed connection" << std::endl;
+							std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
 						else
-							std::cout << RED << "Request error, closing connection" << std::endl;
+							std::cout << RED << "Request error, closing connection" << NOCOLOR << std::endl;
 
 						// Remove client_socket from FD SET
 						FD_CLR(it->first, &current_sockets);

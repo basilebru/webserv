@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/22 19:27:37 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/01 19:41:50 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,22 +14,29 @@
 #include <stdio.h>
 #include <cstring>
 
-#define NB_DIR 4
+#define NB_BLOKS	3
+
+/*Blocks*/
+#define HTTP		0
+#define SERVER		1
+#define LOCATION	2
+#define NOBLOCK	   -1
 
 ConfParser::ConfParser(void)
-: _configFile("nginx.conf")
+: _configFile("nginx.conf"), _httpBlock(new HttpBlock()), _block_type(-1), _nbr_of_srv(0), _nbr_of_loc(0)
 {
 	return;
 }
 
 ConfParser::ConfParser(const std::string filename)
-: _configFile(filename)
+: _configFile(filename), _httpBlock(new HttpBlock()), _block_type(-1), _nbr_of_srv(0), _nbr_of_loc(0)
 {
 	return; 
 }
 
 ConfParser::~ConfParser(void)
 {
+	delete this->_httpBlock;
 	return ;
 }
 
@@ -43,90 +50,124 @@ void ConfParser::readConfFile()
 	{
 		std::cerr << "cant open file" << std::endl;
 	}
-	while (getline(file, line, '}'))
+	while (getline(file, line))
 	{
-		this->parseLine2(line);
+		this->parseLine(line);
 		file.clear();
 	}
 }
 
-void ConfParser::parseHttp(char *line)
+/*void trim_whitespace(std::string & line)
 {
-	std::cout << "PARSEHTTP" << std::endl;
-	while (line != NULL && line[0] != '#')
-	{
-		std::cout << line << std::endl;
-		line = strtok (NULL, " ");
-	}
+	size_t pos;
+
+	pos = line.find_first_not_of(" ");
+	line.erase(0, pos);
+}*/
+
+void erase_comments(std::string& line)
+{
+	size_t pos;
+	size_t len = 0;
+
+	pos = line.find_first_of("#");
+	len = line.size() - pos;
+
+	if (pos != std::string::npos)
+		line.erase(pos, len);
 }
 
-void ConfParser::paseServer(char *line)
+/*	typedef	void		(ConfParser::*t_parse)(std::string&);
+	static std::string	blocks[NB_BLOKS] = {"http", "server", "location"};
+	static t_parse		func[NB_BLOKS] = {&ConfParser::parseHttp, &ConfParser::parseServer, &ConfParser::ParseLocation};
+*/
+
+void ConfParser::check_block(std::string& token)
 {
-	std::cout << "PASESERVER" << std::endl;
-	while (line != NULL && line[0] != '#')
+	static std::string	blocks[NB_BLOKS] = {"http", "server", "location"};
+	static int			ret[NB_BLOKS] = {HTTP, SERVER, LOCATION};
+
+
+	size_t i(0);
+	while (i < NB_BLOKS)
 	{
-		std::cout << line << std::endl;
-		line = strtok (NULL, " ");
+		if (blocks[i] == token)
+		{
+			this->_block_type = ret[i];
+			return ;
+		}
+		++i;
 	}
+	return ;
 }
 
-void ConfParser::ParseAutoindex(char *line)
-{
-	std::cout << "PARSEAUTOINDEX" << std::endl;
-	while (line != NULL && line[0] != '#')
-	{
-		std::cout << line << std::endl;
-		line = strtok (NULL, " ");
-	}
-}
-
-void ConfParser::ParseListen(char *line)
-{
-	std::cout << "PARSELISTEN" << std::endl;
-	while (line != NULL && line[0] != '#')
-	{
-		std::cout << line << std::endl;
-		line = strtok (NULL, " ");
-	}
-}
 
 void ConfParser::parseLine(std::string& line)
 {
-	// std::cout << "-- PARSE LINE --" << std::endl;
-	typedef	void		(ConfParser::*t_parse)(char	*);
-	static std::string	dir[NB_DIR] = {"http", "server", "autoindex", "listen"};
-	static t_parse		func[NB_DIR] = {&ConfParser::parseHttp, &ConfParser::paseServer, &ConfParser::ParseAutoindex, &ConfParser::ParseListen};
+	size_t	line_nb = 1;
 
-	char *split;
-	char *cline = new char [line.length() + 1];
-	std::strcpy (cline, line.c_str());
+	std::cout << "NATIVE LINE  : " << line << std::endl;
+	erase_comments(line);
+	std::cout << "LINE w/o com.: " << line << std::endl << std::endl;
 
-	split = strtok ( cline, " " );
-	if (split && split[0] == '#')
+	std::istringstream iss(line); 
+	for(std::string token; iss >> token; )
 	{
-		delete[] cline;
-		return ;
-	}
-	
-	while (split != NULL)
-	{
-		int i(0);
-		while (i < NB_DIR && split != NULL)
+		std::cout << "TOKEN " << line_nb << ": " << token << std::endl;
+		
+		this->check_block(token);
+		if (this->_block_type == HTTP)
 		{
-			if (std::strcmp(split, dir[i].c_str()) == 0)
-			{
-				(this->*func[i])(split);
-				delete[] cline;
-				return ;
-			}
-			++i;
+			this->parseHttp(token);
 		}
-		split = strtok (NULL, " ");
+		else if (this->_block_type == SERVER)
+		{
+			this->parseServer(token);
+		}
+		else if (this->_block_type == LOCATION)
+		{
+			this->parseLocation(token);
+		}
+		line_nb++;
 	}
-	delete[] cline;
+	std::cout << "===================" << std::endl;
 }
 
 
+int ConfParser::parseHttp(std::string& token)
+{
+	(void)token;
+	std::cout << "==> HTTP BLOCK" << std::endl << std::endl;
+
+	return HTTP;
+}
+
+int ConfParser::parseServer(std::string& token)
+{
+	if (token == "{")
+		this->_nbr_of_srv++;
+	if (this->_nbr_of_srv != 0)
+		std::cout << "-> SERVER No " << this->_nbr_of_srv << std::endl << std::endl;
+
+	std::cout << "==> SERVER BLOCK" << std::endl << std::endl;
+	if (token == "}")
+		this->_block_type = HTTP;
+
+	return SERVER;
+}
+
+int ConfParser::parseLocation(std::string& token)
+{
+	if (token == "{")
+		this->_nbr_of_loc++;
+	if (this->_nbr_of_loc != 0)
+		std::cout << "-> LOCATION No " << this->_nbr_of_loc << std::endl << std::endl;
+	std::cout << "==> LOCATION BLOCK" << std::endl << std::endl;
+	if (token == "}")
+		this->_block_type = SERVER;
+
+	return LOCATION;
+}
 
 void ConfParser::setDirective(std::string& line)
 {
@@ -162,29 +203,3 @@ void ConfParser::setDirective(std::string& line)
 	delete[] cline;
 	// std::cout << line << std::endl;
 }
-
-void ConfParser::parseLine2(std::string& line)
-{
-	char *split;
-	char *cline = new char [line.length() + 1];
-	std::strcpy (cline, line.c_str());
-
-	split = strtok ( cline, ";" );
-	if (split && split[0] == '#')
-	{
-		delete[] cline;
-		return ;
-	}
-
-	while(split != NULL)
-	{
-		std::cout << split << std::endl;
-		std::cout << "------" << std::endl;
-		split = strtok (NULL, " ");
-	}
-	std::cout << "===================" << std::endl;
-
-	delete[] cline;
-	std::cout << line << std::endl;
-}
-

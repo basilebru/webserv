@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/22 17:50:26 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/01 19:12:31 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,15 @@ class ConfParser {
 
 private:
 	const std::string		_configFile;
-	HttpBlock				_httpBlock;
-	// std::string				_line;
-	void parseHttp(char *line); 
-	void paseServer(char *line); 
-	void ParseAutoindex(char *line); 
-	void ParseListen(char *line);
+	HttpBlock				*_httpBlock; // will certainely be removed, ConfParser will be called from HttpBlock
+	int						_block_type;
+	size_t					_nbr_of_srv;
+	size_t					_nbr_of_loc;
+
+	void	check_block(std::string& token);
+	int		parseHttp(std::string& token); 
+	int		parseServer(std::string& token); 
+	int		parseLocation(std::string& token);
 
 public:
 	ConfParser(void);

@@ -1,200 +1,588 @@
-http {
-    include       
-    mime.types
-------
+NATIVE LINE  : http    { #http block
+LINE w/o com.: http    { 
 
+TOKEN 1: http
+==> HTTP BLOCK
 
-------
-default_type
-------
-application/octet-stream;
+TOKEN 2: {
+==> HTTP BLOCK
 
-
-------
-sendfile
-------
-on;
-
-
-------
-#keepalive_timeout
-------
-0;
-
-------
-keepalive_timeout
-------
-65;
-
-
-------
-#gzip
-------
-on;
-
-
-------
-server
-------
-{
-
-------
-listen
-------
-8082;
-
-------
-server_name
-------
-localhosts;
-
-
-
-------
-autoindex
-------
-on;
-
-------
-root
-------
-/Users/bbrunet/.brew/var/www;
-
-------
-location
-------
-/
-------
-{
-
-------
-root
-------
-/Users/bbrunet/.brew/var/www;
-
-------
-index
-------
-readme.html
-------
-truc.machin;
-
-------
 ===================
-http {
-    include       
-    mime.types;
-    default_type  application/octet-stream;
+NATIVE LINE  :     include #http block
+LINE w/o com.:     include 
 
-    sendfile        on;
+TOKEN 1: include
+==> HTTP BLOCK
 
-    #keepalive_timeout  0;
-    keepalive_timeout  65;
-
-    #gzip  on;
-
-    server {
-        listen       8082;
-        server_name  localhosts;
-
-
-        autoindex on;
-        root   /Users/bbrunet/.brew/var/www;
-        location / {
-            root   /Users/bbrunet/.brew/var/www;
-            index  readme.html truc.machin;
-        
-
-        location /bla/ {
-            root   /Users/bbrunet/.brew/var/www/folder/
-------
-
-
-------
 ===================
+NATIVE LINE  :     mime.types;      #http block
+LINE w/o com.:     mime.types;      
 
-        location /bla/ {
-            root   /Users/bbrunet/.brew/var/www/folder/;
-        
+TOKEN 1: mime.types;
+==> HTTP BLOCK
 
-        location /blo/ {
-            root   /Users/bbrunet/.brew/var/www/folder/
-------
-
-
-------
-limit_except
-------
-POST
-------
-{
-------
-deny
-------
-all;
-------
 ===================
+NATIVE LINE  :     default_type  application/octet-stream; #http block
+LINE w/o com.:     default_type  application/octet-stream; 
 
-        location /blo/ {
-            root   /Users/bbrunet/.brew/var/www/folder/;
-            limit_except POST { deny all; 
+TOKEN 1: default_type
+==> HTTP BLOCK
 
-        
-------
+TOKEN 2: application/octet-stream;
+==> HTTP BLOCK
+
 ===================
+NATIVE LINE  : 
+LINE w/o com.: 
 
-        
-
-
-        error_page  404              /40x.html
-------
-
-
-
-------
-error_page
-------
-500
-------
-502
-------
-503
-------
-504
-------
-413
-------
-/50x.html;
-
-
-------
-client_max_body_size
-------
-1;
-
-------
 ===================
+NATIVE LINE  :     sendfile        on; #http block
+LINE w/o com.:     sendfile        on; 
 
+TOKEN 1: sendfile
+==> HTTP BLOCK
 
-        error_page  404              /40x.html;
+TOKEN 2: on;
+==> HTTP BLOCK
 
-        error_page   500 502 503 504 413  /50x.html;
-
-        client_max_body_size 1;
-    
-
-
-
-
-    include servers/*
-------
-
-
-------
 ===================
+NATIVE LINE  : 
+LINE w/o com.: 
 
+===================
+NATIVE LINE  :     #keepalive_timeout  0; #http block
+LINE w/o com.:     
 
+===================
+NATIVE LINE  :     keepalive_timeout  65; #http block
+LINE w/o com.:     keepalive_timeout  65; 
 
+TOKEN 1: keepalive_timeout
+==> HTTP BLOCK
 
-    include servers/*;
+TOKEN 2: 65;
+==> HTTP BLOCK
 
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :     #gzip  on; #http block
+LINE w/o com.:     
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :     server {   #server(1) block
+LINE w/o com.:     server {   
+
+TOKEN 1: server
+==> SERVER BLOCK
+
+TOKEN 2: {
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  :         listen       8082; #server(1) block
+LINE w/o com.:         listen       8082; 
+
+TOKEN 1: listen
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 2: 8082;
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  :         server(1)_name  localhosts;    #server(1) block
+LINE w/o com.:         server(1)_name  localhosts;    
+
+TOKEN 1: server(1)_name
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 2: localhosts;
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :         autoindex on;   #server(1) block
+LINE w/o com.:         autoindex on;   
+
+TOKEN 1: autoindex
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 2: on;
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  :         root   /Users/bbrunet/.brew/var/www;    #server(1) block
+LINE w/o com.:         root   /Users/bbrunet/.brew/var/www;    
+
+TOKEN 1: root
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 2: /Users/bbrunet/.brew/var/www;
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  :         location / { #location(1) block
+LINE w/o com.:         location / { 
+
+TOKEN 1: location
+==> LOCATION BLOCK
+
+TOKEN 2: /
+==> LOCATION BLOCK
+
+TOKEN 3: {
+-> LOCATION No 1
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  :             root   /Users/bbrunet/.brew/var/www; #location(1) block
+LINE w/o com.:             root   /Users/bbrunet/.brew/var/www; 
+
+TOKEN 1: root
+-> LOCATION No 1
+
+==> LOCATION BLOCK
+
+TOKEN 2: /Users/bbrunet/.brew/var/www;
+-> LOCATION No 1
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  :             index  readme.html truc.machin; #location(1) block
+LINE w/o com.:             index  readme.html truc.machin; 
+
+TOKEN 1: index
+-> LOCATION No 1
+
+==> LOCATION BLOCK
+
+TOKEN 2: readme.html
+-> LOCATION No 1
+
+==> LOCATION BLOCK
+
+TOKEN 3: truc.machin;
+-> LOCATION No 1
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  :         } #location(1) block
+LINE w/o com.:         } 
+
+TOKEN 1: }
+-> LOCATION No 1
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  :         location /bla/ { #location(2) block
+LINE w/o com.:         location /bla/ { 
+
+TOKEN 1: location
+-> LOCATION No 1
+
+==> LOCATION BLOCK
+
+TOKEN 2: /bla/
+-> LOCATION No 1
+
+==> LOCATION BLOCK
+
+TOKEN 3: {
+-> LOCATION No 2
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  :             root   /Users/bbrunet/.brew/var/www/folder/; #location(2) block
+LINE w/o com.:             root   /Users/bbrunet/.brew/var/www/folder/; 
+
+TOKEN 1: root
+-> LOCATION No 2
+
+==> LOCATION BLOCK
+
+TOKEN 2: /Users/bbrunet/.brew/var/www/folder/;
+-> LOCATION No 2
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  :         } #location(2) block
+LINE w/o com.:         } 
+
+TOKEN 1: }
+-> LOCATION No 2
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  :         location /blo/ { #location(3) block
+LINE w/o com.:         location /blo/ { 
+
+TOKEN 1: location
+-> LOCATION No 2
+
+==> LOCATION BLOCK
+
+TOKEN 2: /blo/
+-> LOCATION No 2
+
+==> LOCATION BLOCK
+
+TOKEN 3: {
+-> LOCATION No 3
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  :             root   /Users/bbrunet/.brew/var/www/folder/; #location(3) block
+LINE w/o com.:             root   /Users/bbrunet/.brew/var/www/folder/; 
+
+TOKEN 1: root
+-> LOCATION No 3
+
+==> LOCATION BLOCK
+
+TOKEN 2: /Users/bbrunet/.brew/var/www/folder/;
+-> LOCATION No 3
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  : #             limit_except POST { deny all; } #location(3) block
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :         } #location(3) block
+LINE w/o com.:         } 
+
+TOKEN 1: }
+-> LOCATION No 3
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :         error_page  404              /40x.html; #server(1) block
+LINE w/o com.:         error_page  404              /40x.html; 
+
+TOKEN 1: error_page
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 2: 404
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 3: /40x.html;
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :         error_page   500 502 503 504 413  /50x.html; #server(1) block
+LINE w/o com.:         error_page   500 502 503 504 413  /50x.html; 
+
+TOKEN 1: error_page
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 2: 500
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 3: 502
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 4: 503
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 5: 504
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 6: 413
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 7: /50x.html;
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :         client_max_body_size 1; #server(1) block
+LINE w/o com.:         client_max_body_size 1; 
+
+TOKEN 1: client_max_body_size
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 2: 1;
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  :     } #server(1) block
+LINE w/o com.:     } 
+
+TOKEN 1: }
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :     server { #server(2) block
+LINE w/o com.:     server { 
+
+TOKEN 1: server
+-> SERVER No 1
+
+==> SERVER BLOCK
+
+TOKEN 2: {
+-> SERVER No 2
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  :         listen 80 default_server; #server(2) block
+LINE w/o com.:         listen 80 default_server; 
+
+TOKEN 1: listen
+-> SERVER No 2
+
+==> SERVER BLOCK
+
+TOKEN 2: 80
+-> SERVER No 2
+
+==> SERVER BLOCK
+
+TOKEN 3: default_server;
+-> SERVER No 2
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  :         server_name _; #server(2) block
+LINE w/o com.:         server_name _; 
+
+TOKEN 1: server_name
+-> SERVER No 2
+
+==> SERVER BLOCK
+
+TOKEN 2: _;
+-> SERVER No 2
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :         root   /var/www/html/; #server(2) block
+LINE w/o com.:         root   /var/www/html/; 
+
+TOKEN 1: root
+-> SERVER No 2
+
+==> SERVER BLOCK
+
+TOKEN 2: /var/www/html/;
+-> SERVER No 2
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  :         index  default.html; #server(2) block
+LINE w/o com.:         index  default.html; 
+
+TOKEN 1: index
+-> SERVER No 2
+
+==> SERVER BLOCK
+
+TOKEN 2: default.html;
+-> SERVER No 2
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  :         
+LINE w/o com.:         
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :         location / { #location(1) block
+LINE w/o com.:         location / { 
+
+TOKEN 1: location
+-> LOCATION No 3
+
+==> LOCATION BLOCK
+
+TOKEN 2: /
+-> LOCATION No 3
+
+==> LOCATION BLOCK
+
+TOKEN 3: {
+-> LOCATION No 4
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :             try_files $uri $uri/ =404; #location(1) block
+LINE w/o com.:             try_files $uri $uri/ =404; 
+
+TOKEN 1: try_files
+-> LOCATION No 4
+
+==> LOCATION BLOCK
+
+TOKEN 2: $uri
+-> LOCATION No 4
+
+==> LOCATION BLOCK
+
+TOKEN 3: $uri/
+-> LOCATION No 4
+
+==> LOCATION BLOCK
+
+TOKEN 4: =404;
+-> LOCATION No 4
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  :         } #location(1) block
+LINE w/o com.:         } 
+
+TOKEN 1: }
+-> LOCATION No 4
+
+==> LOCATION BLOCK
+
+===================
+NATIVE LINE  :     } #server(2) block
+LINE w/o com.:     } 
+
+TOKEN 1: }
+-> SERVER No 2
+
+==> SERVER BLOCK
+
+===================
+NATIVE LINE  : } #http block
+LINE w/o com.: } 
+
+TOKEN 1: }
+==> HTTP BLOCK
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  : 
+LINE w/o com.: 
+
+===================
+NATIVE LINE  :     include servers/*;
+LINE w/o com.:     include servers/*;
+
+TOKEN 1: include
+==> HTTP BLOCK
+
+TOKEN 2: servers/*;
+==> HTTP BLOCK
+
+===================
+NATIVE LINE  : }
+LINE w/o com.: }
+
+TOKEN 1: }
+==> HTTP BLOCK
+
+===================
