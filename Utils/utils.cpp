@@ -24,6 +24,14 @@ int	ft_isdigit(int c)
 		return (0);
 }
 
+int	ft_isxdigit(int c)
+{
+	if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
+		return (1);
+	else
+		return (0);
+}
+
 int	ft_isdigit_str(const char *str)
 {
 	int i;
@@ -34,6 +42,22 @@ int	ft_isdigit_str(const char *str)
 	while (str[i])
 	{
 		if (!ft_isdigit(str[i]))
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+int	ft_isxdigit_str(const char *str)
+{
+	int i;
+
+	if (str == 0)
+		return (0);
+	i = 0;
+	while (str[i])
+	{
+		if (!ft_isxdigit(str[i]))
 			return (0);
 		i++;
 	}

@@ -33,7 +33,6 @@ void Request::read_from_socket()
 {
 
     // TO DO:
-    // - better way to handle ctrl-C on client side ?
     // - set a limit on buffer size ?
 
     long int ret;
@@ -49,9 +48,16 @@ void Request::read_from_socket()
         buf[ret] = 0;
         if (ret == 5 && strcmp(buf, "\xFF\xF4\xFF\xFD\x06") == 0)
             this->error_code = 400;
-        this->buffer += buf;
+        try
+        {
+            this->buffer += buf;
+        }
+        catch(const std::exception& e)
+        {
+		    this->error_message = "internal-error: " + std::string(e.what());
+		    this->error_code = 500;
+        }
     }
-
     free(buf);
     if (ret == 0)
         this->end_of_connection = true;
@@ -148,7 +154,9 @@ bool Request::read_chunked_size()
     std::string line;
     if (this->read_buf_line(line) == false)
         return false;
-    this->chunk_size = strtol(line.c_str(), NULL, 16);
+    this->store_chunk_size(line);
+    if (this->error_code)
+        return false;
     this->chunked_size_read = true;
     return true;
 }
@@ -295,6 +303,24 @@ bool Request::has_content_length()
     if (std::find_if(this->headers.begin(), this->headers.end(), content_length_present) != this->headers.end())
         return true;
     return false;
+}
+
+
+void Request::store_chunk_size(std::string line)
+{
+    if (ft_isxdigit_str(line.c_str()) == false)
+    {
+        this->error_message = "parsing error: chunk size value is invalid: " + line;
+        this->error_code = 400;
+        return ;
+    }
+    if (line.length() > 6) // > FFFFFF = 1,049 MB
+    {
+        this->error_message = "parsing error: chunk-size value is too big: " + line;
+        this->error_code = 400;
+        return ;
+    }
+    this->chunk_size = strtol(line.c_str(), NULL, 16);
 }
 
 void Request::store_encoding()

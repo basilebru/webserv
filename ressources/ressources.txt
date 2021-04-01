@@ -17,17 +17,17 @@ Upgrade-Insecure-Requests: 1
 
 ------
 
-# To test POST method
+# To test POST method on nginx container
 POST / HTTP/1.1
-Host: localhost
-Content-Type: text/html
-Content-Length: 7
+Host: php.local
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 7 OR transfer-encoding:chunked
 
 test=42
 
 ------
 
-# To test Chunked
+# To test Chunked on our webserv
 GET / HTTP/1.1
 transfer-encoding: chunked
 
@@ -39,7 +39,7 @@ abc
 
 ------
 
-# To test Content-Length
+# To test Content-Length on our webserv
 GET / HTTP/1.1
 Content-Length: 10
 

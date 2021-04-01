@@ -1,8 +1,3 @@
-
-// Class that doesnt use GNL to read(): use of an internal buffer to store successive reads (in case request doesnt arrive line by line)
-// : use of an internal buffer to store u (in case request doesnt arrive line by linecould rece)TO DO: read_chunked
-
-
 #ifndef REQUEST_CLASS_H
 # define REQUEST_CLASS_H
 
@@ -51,6 +46,7 @@ class Request
         bool has_transfer_encoding();
         bool has_content_length();
         void store_body_length();
+        void store_chunk_size(std::string line);
         void store_encoding();
         void store_req_line(std::string line);
         void store_header(std::string line);
