@@ -48,26 +48,29 @@ class Request
         bool end_of_connection;
         bool request_ready;
         
-        // processing methods
-        void check_body_headers();
+        // "storing" methods
+        void store_req_line(std::string line);
+        void store_header(std::string line);
+        void store_body_headers();
         void store_body_length();
         void store_chunk_size(std::string line);
         void store_encoding();
-        void store_req_line(std::string line);
-        void store_header(std::string line);
+        void store_host();
+
+        // utils
+        bool read_buf_line(std::string &line);
         bool has_transfer_encoding() const;
         bool has_content_length() const;
 
-        // parsing buf methods
+        // main parsing methods
         void parse_buffer();
         void parse_req_line();
         void parse_headers();
         void parse_body();
         void parse_body_normal();
         void parse_body_chunked();
-        bool read_buf_line(std::string &line);
-        bool read_chunked_size();
-        bool read_chunked_data();
+        bool parse_chunked_size();
+        bool parse_chunked_data();
 
         // reading from socket   
         void read_from_socket();

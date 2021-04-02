@@ -122,13 +122,16 @@ void Request::parse_headers()
         if (this->error_code)
             return ;
     }
+    this->store_host();
+    if (this->error_code)
+        return ;
     this->parse_body();
 }
 
 void Request::parse_body()
 {
     std::cout << "Parsing body..." << std::endl;
-    this->check_body_headers(); // will check the "content-length" and "transfer-encoding headers"
+    this->store_body_headers(); // will check the "content-length" and "transfer-encoding headers"
     if (this->error_code)
         return ;
 
@@ -158,7 +161,7 @@ void Request::parse_body_chunked()
         if (this->chunked_size_read)
         {
             std::cout << "Parsing chunked data..." << std::endl;
-            if (this->read_chunked_data() == false)
+            if (this->parse_chunked_data() == false)
                 return ;
             if (this->chunk_size == 0) // end of request, stop reading
             {
@@ -168,12 +171,12 @@ void Request::parse_body_chunked()
             this->chunked_size_read = false; // go on reading new chunk size
         }
         std::cout << "Parsing chunked size..." << std::endl;
-        if (this->read_chunked_size() == false) // not enough data in buffer
+        if (this->parse_chunked_size() == false) // not enough data in buffer
             return ;
     }
 }
 
-bool Request::read_chunked_size()
+bool Request::parse_chunked_size()
 {
     std::string line;
     if (this->read_buf_line(line) == false)
@@ -185,7 +188,7 @@ bool Request::read_chunked_size()
     return true;
 }
 
-bool Request::read_chunked_data()
+bool Request::parse_chunked_data()
 {
     if (this->buffer.size() < this->chunk_size + 2) // + 2 because we also want to read crlf after chunk data
         return false;
@@ -275,7 +278,14 @@ void Request::store_header(std::string line)
     this->headers.push_back(header(field_name, field_value));
 }
 
-void Request::check_body_headers()
+
+void Request::store_host()
+{
+    // check that there is a host header
+    // store host field valeu
+}
+
+void Request::store_body_headers()
 {
     if (this->has_transfer_encoding())
     {

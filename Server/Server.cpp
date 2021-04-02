@@ -89,7 +89,7 @@ int Server::launch(void)
 
 		// On parcourt notre fd_set (current socket): pour chaque fd on teste s'il est présent dans this->ready_sockets = disponible en lecture
 		rdy_fd = sret;
-		if (FD_ISSET(this->server_socket, &this->ready_sockets))
+		if (FD_ISSET(this->server_socket, &this->ready_sockets)) // accept new connection
 		{
 			rdy_fd--;
 			client_socket = this->accept_new_connection();
