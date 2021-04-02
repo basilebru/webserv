@@ -4,7 +4,7 @@
 #include <sys/socket.h> // recv
 #include <cstring> // strcmp
 
-Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunk_size(0), chunked_encoding(false), chunked_size_read(false), req_line_read(false), end_of_connection(false), request_ready(false)
+Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunk_size(0), host_port(0), chunked_encoding(false), chunked_size_read(false), req_line_read(false), end_of_connection(false), request_ready(false)
 {
 }
 
@@ -222,6 +222,8 @@ void Request::reset()
     this->body = "";
     this->body_size = 0;
     this->chunk_size = 0;
+    this->host_port = 0;
+    this->host_uri = "";
 }
 
 void Request::store_req_line(std::string line)
@@ -283,6 +285,33 @@ void Request::store_host()
 {
     // check that there is a host header
     // store host field valeu
+    if (!this->has_host())
+    {
+        this->error_message = "parsing error: no host header";
+        this->error_code = 400;
+        return ;
+    }
+    std::string host;
+    std::string port;
+    host = std::find_if(this->headers.begin(), this->headers.end(), host_present)->second;
+    size_t find;
+    if ((find = host.find(':')) == std::string::npos)
+    {
+        this->host_uri = host;
+        return;
+    }
+    else
+    {
+        this->host_uri = host.substr(0, find);
+        port = host.substr(find + 1);
+    }
+    if (!port.empty() && ft_isdigit_str(port.c_str()))
+        this->host_port = strtol(port.c_str(), NULL,10);
+    else
+    {
+        this->error_message = "parsing error: port number format";
+        this->error_code = 400;
+    }
 }
 
 void Request::store_body_headers()
@@ -306,6 +335,13 @@ bool Request::has_transfer_encoding() const
 bool Request::has_content_length() const
 {
     if (std::find_if(this->headers.begin(), this->headers.end(), content_length_present) != this->headers.end())
+        return true;
+    return false;
+}
+
+bool Request::has_host() const
+{
+    if (std::find_if(this->headers.begin(), this->headers.end(), host_present) != this->headers.end())
         return true;
     return false;
 }
@@ -403,7 +439,6 @@ void Request::print() const
     std::cout << std::endl;
     for (std::list<header>::const_iterator it = this->headers.begin(); it != this->headers.end(); it++)
     {
-        /* code */
         std::cout << "Header line:" << std::endl;
         std::cout << " . field_name: " << "[" << it->first << "]" << std::endl;
         std::cout << " . field_value: " << "[" << it->second << "]" << std::endl;
@@ -427,6 +462,14 @@ bool content_length_present(std::pair<std::string, std::string> header)
 bool transfer_encoding_present(std::pair<std::string, std::string> header)
 {
     if (header.first == "Transfer-Encoding" || header.first == "transfer-encoding")
+        return true;
+    else
+        return false;
+}
+
+bool host_present(std::pair<std::string, std::string> header)
+{
+    if (header.first == "Host" || header.first == "host")
         return true;
     else
         return false;

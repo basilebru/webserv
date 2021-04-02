@@ -40,6 +40,8 @@ class Request
         unsigned long body_size;
         unsigned long chunk_size;
         std::string body;
+        std::string host_uri;
+        int host_port;
         
         // bools
         bool chunked_encoding;
@@ -61,6 +63,7 @@ class Request
         bool read_buf_line(std::string &line);
         bool has_transfer_encoding() const;
         bool has_content_length() const;
+        bool has_host() const;
 
         // main parsing methods
         void parse_buffer();
@@ -101,5 +104,6 @@ class Request
 
 bool content_length_present(std::pair<std::string, std::string> header);
 bool transfer_encoding_present(std::pair<std::string, std::string> header);
+bool host_present(std::pair<std::string, std::string> header);
 
 #endif
