@@ -4,7 +4,7 @@
 #include <sys/socket.h> // recv
 #include <cstring> // strcmp
 
-Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunk_size(0), host_port(0), chunked_encoding(false), chunked_size_read(false), req_line_read(false), end_of_connection(false), request_ready(false)
+Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunk_size(0), chunked_encoding(false), chunked_size_read(false), req_line_read(false), end_of_connection(false), request_ready(false)
 {
 }
 
@@ -222,7 +222,7 @@ void Request::reset()
     this->body = "";
     this->body_size = 0;
     this->chunk_size = 0;
-    this->host_port = 0;
+    // this->host_port = 0;
     this->host_uri = "";
 }
 
@@ -293,25 +293,25 @@ void Request::store_host()
     }
     std::string host;
     std::string port;
-    host = std::find_if(this->headers.begin(), this->headers.end(), host_present)->second;
-    size_t find;
-    if ((find = host.find(':')) == std::string::npos)
-    {
-        this->host_uri = host;
-        return;
-    }
-    else
-    {
-        this->host_uri = host.substr(0, find);
-        port = host.substr(find + 1);
-    }
-    if (!port.empty() && ft_isdigit_str(port.c_str()))
-        this->host_port = strtol(port.c_str(), NULL,10);
-    else
-    {
-        this->error_message = "parsing error: port number format";
-        this->error_code = 400;
-    }
+    this->host_uri = std::find_if(this->headers.begin(), this->headers.end(), host_present)->second;
+    // size_t find;
+    // if ((find = host.find(':')) == std::string::npos)
+    // {
+    //     this->host_uri = host;
+    //     return;
+    // }
+    // else
+    // {
+    //     this->host_uri = host.substr(0, find);
+    //     port = host.substr(find + 1);
+    // }
+    // if (!port.empty() && ft_isdigit_str(port.c_str()))
+    //     this->host_port = strtol(port.c_str(), NULL,10);
+    // else
+    // {
+    //     this->error_message = "parsing error: port number format";
+    //     this->error_code = 400;
+    // }
 }
 
 void Request::store_body_headers()

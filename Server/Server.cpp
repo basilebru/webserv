@@ -144,7 +144,8 @@ int Server::launch(void)
 					else if (it->second->request_is_ready())
 					{
 						std::cout << "Request is ready" << std::endl;
-						// process request
+						// match server_block and location block
+						// "execute" request and generate response
 						it->second->reset();
 					}
 				}

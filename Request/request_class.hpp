@@ -41,7 +41,7 @@ class Request
         unsigned long chunk_size;
         std::string body;
         std::string host_uri;
-        int host_port;
+        // int host_port;
         
         // bools
         bool chunked_encoding;

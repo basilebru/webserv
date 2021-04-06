@@ -1,0 +1,27 @@
+what: match a request and a server_block (from configuration file)
+
+based on: [IP, port and "server name"]
+...to be found:
+    - in server_block: 
+        - "server_name" directive
+        - "listen" (= IP + port) directive
+    - in request:
+        - server IP and port the server is listening to (from server configuration)
+        - "host" header (= server_name)
+    Rq: le "server_name" peut aussi être donné sous forme d'IP[:port] (dans le "host" ou dans la directive "server_name")
+
+how:
+    1. based on listen directives (IP + port) vs server configuration
+        a. translate all "incomplete" listen directives (eg: 80 -> 0.0.0.0:80) 
+        -> one or more matching listen directives
+        b. if muliple matching listen directives, discard 0.0.0.0 IPs 
+        -> one or more matching listen directives
+        c. if muliple matching listen directives, evaluate server_name directive (2.)
+
+    2. based on server_name directive vs "host" header
+        a. if exact match between host and server_name 
+        -> if muliple exact match, chose the 1st server block in the configuration
+        (b. handle wildcards in "server_name" ? handle regex ? [ ... NO ? :) ...])
+        c. if no match in a. and b., select default server block: the first server block in the configuration
+
+source: https://www.digitalocean.com/community/tutorials/understanding-nginx-server-and-location-block-selection-algorithms
