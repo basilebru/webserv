@@ -1,5 +1,5 @@
-NATIVE LINE  : http    { #http block
-LINE w/o com.: http    { 
+NATIVE LINE  : http {
+LINE w/o com.: http {
 
 TOKEN 1: http
 ==> HTTP BLOCK
@@ -7,6 +7,7 @@ TOKEN 1: http
 TOKEN 2: {
 ==> HTTP BLOCK
 
+FOUND BRACKET
 ===================
 NATIVE LINE  :     include #http block
 LINE w/o com.:     include 
@@ -14,6 +15,7 @@ LINE w/o com.:     include
 TOKEN 1: include
 ==> HTTP BLOCK
 
+STORE DIRECTIVE
 ===================
 NATIVE LINE  :     mime.types;      #http block
 LINE w/o com.:     mime.types;      
@@ -21,29 +23,18 @@ LINE w/o com.:     mime.types;
 TOKEN 1: mime.types;
 ==> HTTP BLOCK
 
+STORE include VALUE
 ===================
-NATIVE LINE  :     default_type  application/octet-stream; #http block
-LINE w/o com.:     default_type  application/octet-stream; 
-
-TOKEN 1: default_type
-==> HTTP BLOCK
-
-TOKEN 2: application/octet-stream;
-==> HTTP BLOCK
+NATIVE LINE  : #     default_type  application/octet-stream; #http block
+LINE w/o com.: 
 
 ===================
 NATIVE LINE  : 
 LINE w/o com.: 
 
 ===================
-NATIVE LINE  :     sendfile        on; #http block
-LINE w/o com.:     sendfile        on; 
-
-TOKEN 1: sendfile
-==> HTTP BLOCK
-
-TOKEN 2: on;
-==> HTTP BLOCK
+NATIVE LINE  : #     sendfile        on; #http block
+LINE w/o com.: 
 
 ===================
 NATIVE LINE  : 
@@ -60,9 +51,11 @@ LINE w/o com.:     keepalive_timeout  65;
 TOKEN 1: keepalive_timeout
 ==> HTTP BLOCK
 
+STORE DIRECTIVE
 TOKEN 2: 65;
 ==> HTTP BLOCK
 
+STORE keepalive_timeout VALUE
 ===================
 NATIVE LINE  : 
 LINE w/o com.: 
@@ -80,7 +73,7 @@ NATIVE LINE  :     server {   #server(1) block
 LINE w/o com.:     server {   
 
 TOKEN 1: server
-==> SERVER BLOCK
+==> HTTP BLOCK
 
 TOKEN 2: {
 -> SERVER No 1
@@ -102,10 +95,10 @@ TOKEN 2: 8082;
 ==> SERVER BLOCK
 
 ===================
-NATIVE LINE  :         server(1)_name  localhosts;    #server(1) block
-LINE w/o com.:         server(1)_name  localhosts;    
+NATIVE LINE  :         server_name  localhosts;    #server(1) block
+LINE w/o com.:         server_name  localhosts;    
 
-TOKEN 1: server(1)_name
+TOKEN 1: server_name
 -> SERVER No 1
 
 ==> SERVER BLOCK
@@ -156,7 +149,9 @@ NATIVE LINE  :         location / { #location(1) block
 LINE w/o com.:         location / { 
 
 TOKEN 1: location
-==> LOCATION BLOCK
+-> SERVER No 1
+
+==> SERVER BLOCK
 
 TOKEN 2: /
 ==> LOCATION BLOCK
@@ -213,9 +208,9 @@ NATIVE LINE  :         location /bla/ { #location(2) block
 LINE w/o com.:         location /bla/ { 
 
 TOKEN 1: location
--> LOCATION No 1
+-> SERVER No 1
 
-==> LOCATION BLOCK
+==> SERVER BLOCK
 
 TOKEN 2: /bla/
 -> LOCATION No 1
@@ -255,9 +250,9 @@ NATIVE LINE  :         location /blo/ { #location(3) block
 LINE w/o com.:         location /blo/ { 
 
 TOKEN 1: location
--> LOCATION No 2
+-> SERVER No 1
 
-==> LOCATION BLOCK
+==> SERVER BLOCK
 
 TOKEN 2: /blo/
 -> LOCATION No 2
@@ -398,9 +393,7 @@ NATIVE LINE  :     server { #server(2) block
 LINE w/o com.:     server { 
 
 TOKEN 1: server
--> SERVER No 1
-
-==> SERVER BLOCK
+==> HTTP BLOCK
 
 TOKEN 2: {
 -> SERVER No 2
@@ -485,9 +478,9 @@ NATIVE LINE  :         location / { #location(1) block
 LINE w/o com.:         location / { 
 
 TOKEN 1: location
--> LOCATION No 3
+-> SERVER No 2
 
-==> LOCATION BLOCK
+==> SERVER BLOCK
 
 TOKEN 2: /
 -> LOCATION No 3
@@ -552,37 +545,6 @@ LINE w/o com.: }
 TOKEN 1: }
 ==> HTTP BLOCK
 
+[32;1mFIIIIIIIIIINNNNNNNN[0m
 ===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  :     include servers/*;
-LINE w/o com.:     include servers/*;
-
-TOKEN 1: include
-==> HTTP BLOCK
-
-TOKEN 2: servers/*;
-==> HTTP BLOCK
-
-===================
-NATIVE LINE  : }
-LINE w/o com.: }
-
-TOKEN 1: }
-==> HTTP BLOCK
-
-===================
+DESTRUCTOR CALLED

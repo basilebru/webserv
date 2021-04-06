@@ -6,7 +6,7 @@
 #    By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/16 17:10:11 by julnolle          #+#    #+#              #
-#    Updated: 2021/03/18 09:44:36 by julnolle         ###   ########.fr        #
+#    Updated: 2021/04/06 17:34:41 by julnolle         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,18 @@ ifneq ($(err), no)
 endif
 
 EXTRAFLAGS	=	--std=c++98
-SANITIZE	=	-g3 -fsanitize=address
+
+ifeq ($(leak), yes)
+	SANITIZE	=	-g
+else
+	SANITIZE	=	-g3 -fsanitize=address,undefined
+endif
+
+# -------------- INCLUDES ------------ #
+
+INCLUDES 		=	../includes/
+
+ALL_INC			= 	-I$(INCLUDES)
 
 # ---------------- SRC --------------- #
 
@@ -45,11 +56,11 @@ OBJS		= $(patsubst %.cpp, $(DIR_OBJS)%.o, $(SRCS))
 all: $(NAME)
 
 $(NAME):	$(OBJS)
-			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(SANITIZE) $(OBJS) -o $@
+			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(SANITIZE) $(OBJS) $(ALL_INC) -o $@
 # 			echo "$(_BOLD)$(_YELLOW)==> $@ linked$(_END)"
 
 $(OBJS): 	$(DIR_OBJS)%.o: %.cpp | $(DIR_OBJS)
-			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(SANITIZE) -c $< -o $@
+			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(SANITIZE) $(ALL_INC) -c $< -o $@
 # 			echo "$(_BOLD)$(_GREEN)--> $@ made$(_END)"
 
 $(DIR_OBJS):
