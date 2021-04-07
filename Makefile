@@ -6,7 +6,7 @@
 #    By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/16 17:10:11 by julnolle          #+#    #+#              #
-#    Updated: 2021/03/31 15:11:41 by julnolle         ###   ########.fr        #
+#    Updated: 2021/04/03 10:08:37 by julnolle         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,12 @@ ifneq ($(err), no)
 endif
 
 EXTRAFLAGS	=	-std=c++98
-SANITIZE	=	-g3 -fsanitize=address
+
+ifeq ($(leak), yes)
+	SANITIZE	=	-g
+else
+	SANITIZE	=	-g3 -fsanitize=address,undefined
+endif
 
 
 

@@ -12,6 +12,8 @@
 # include <fcntl.h> // For fcntl --> non_blocking fd
 # include <map>
 
+# include <sstream>
+
 // #include <fstream> // ifstream
 // #include <sstream> // sstream
 
