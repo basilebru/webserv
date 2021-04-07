@@ -56,11 +56,12 @@ class Request
 
         // config
         size_t max_body_size;
+        std::vector<std::string> allow_methods;
         std::string root;
         std::vector<std::string> index;
         
         // config (experimental)
-        void init_config(); // just to try using some config params
+        void init_config(); // just to try using some config params. Called in Request::parse_headers()
 
         // "storing" methods
         void store_req_line(std::string line);

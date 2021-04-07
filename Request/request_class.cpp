@@ -24,9 +24,34 @@ std::vector<std::string> Request::known_methods = Request::build_known_methods()
 
 void Request::init_config()
 {
+    // get host header (needed to find config)
+    this->store_host();
+    if (this->error_code)
+        return ;
+    
+    // retrieve config
+    
     this->max_body_size = 10;
     this->root = "/root";
     this->index.push_back("index.html");
+    this->allow_methods.push_back("GET");
+    this->allow_methods.push_back("POST");
+
+    // check that request is ok with config:
+    
+    // "max_body_size": check the "content-length" and "transfer-encoding headers"
+    this->store_body_headers(); 
+    if (this->error_code)
+        return ;
+    
+    // "allow methods": check req_line.method
+    if (std::find(allow_methods.begin(), allow_methods.end(), this->req_line.method) == allow_methods.end())
+    {
+        this->error_message = "method not allowed: " + this->req_line.method;
+        this->error_code = 405;
+        return ;
+    }
+
 }
 
 Request::Request(int fd): fd(fd), error_code(0), end_of_connection(false)
@@ -151,13 +176,11 @@ void Request::parse_headers()
         if (this->error_code)
             return ;
     }
-    this->store_host();
-    if (this->error_code)
-        return ;
+
     this->init_config();
-    this->store_body_headers(); // will check the "content-length" and "transfer-encoding headers"
     if (this->error_code)
         return ;
+
     this->parse_body();
 }
 
