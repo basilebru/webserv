@@ -27,6 +27,9 @@ class Request
 
         // attributes
 
+        static std::vector<std::string> known_methods;
+        static std::vector<std::string> build_known_methods();
+
         // reading from connection
         int fd;
         std::string buffer;
@@ -55,12 +58,15 @@ class Request
         size_t max_body_size;
         std::string root;
         std::vector<std::string> index;
+        
+        // config (experimental)
+        void init_config(); // just to try using some config params
 
         // "storing" methods
         void store_req_line(std::string line);
         void store_header(std::string line);
         void store_body_headers();
-        void store_body_length();
+        void store_body_size();
         void store_chunk_size(std::string line);
         void store_encoding();
         void store_host();
@@ -84,8 +90,6 @@ class Request
         // reading from socket   
         void read_from_socket();
 
-        // config (experimental)
-        void init_config(); // just to try using some config params
 
     
     public:
@@ -115,5 +119,6 @@ class Request
 bool content_length_present(std::pair<std::string, std::string> header);
 bool transfer_encoding_present(std::pair<std::string, std::string> header);
 bool host_present(std::pair<std::string, std::string> header);
+
 
 #endif

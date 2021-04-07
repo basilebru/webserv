@@ -5,6 +5,23 @@
 #include <cstring> // strcmp
 
 
+std::vector<std::string> Request::build_known_methods()
+{
+    std::vector<std::string> methods;
+    methods.push_back("GET");
+    methods.push_back("HEAD");
+    methods.push_back("POST");
+    methods.push_back("PUT");
+    methods.push_back("DELETE");
+    methods.push_back("OPTIONS");
+    methods.push_back("TRACE");
+    // methods.push_back("CONNECT");
+    // methods.push_back("PATCH");
+    return methods;
+}
+
+std::vector<std::string> Request::known_methods = Request::build_known_methods();
+
 void Request::init_config()
 {
     this->max_body_size = 10;
@@ -12,8 +29,13 @@ void Request::init_config()
     this->index.push_back("index.html");
 }
 
-Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunk_size(0), chunked_encoding(false), chunked_size_read(false), req_line_read(false), end_of_connection(false), request_ready(false)
+Request::Request(int fd): fd(fd), error_code(0), end_of_connection(false)
 {
+    // error_code and end_of_connection are not set in Request::reset, as they imply the end of the connection
+    this->error_code = 0;
+    this->end_of_connection = false;
+
+    this->reset();
 }
 
 // Request::Request(const Request &copy) 
@@ -232,6 +254,10 @@ void Request::reset()
     this->chunk_size = 0;
     // this->host_port = 0;
     this->host_uri = "";
+    // config
+    this->root = "";
+    this->max_body_size = 0;
+    this->index.erase(this->index.begin(), this->index.end());
 }
 
 void Request::store_req_line(std::string line)
@@ -256,6 +282,21 @@ void Request::store_req_line(std::string line)
         count++;
     }
     this->req_line.version = line.substr(pos);
+
+    // check that method is known
+    if (std::find(Request::known_methods.begin(), Request::known_methods.end(), this->req_line.method) == Request::known_methods.end())
+    {
+        this->error_message = "method not implemented: " + this->req_line.method;
+        this->error_code = 501;
+        return ;
+    }
+    // check that HTTP version is 1.1
+    if (this->req_line.version != "HTTP/1.1")
+    {
+        this->error_message = "version not supported: " + this->req_line.version;
+        this->error_code = 505;
+    }
+        return;
 }
 
 void Request::store_header(std::string line)
@@ -331,7 +372,7 @@ void Request::store_body_headers()
         return ; // priorité au transfer-encoding header sur le body-length header
     }
     if (this->has_content_length())
-        this->store_body_length();
+        this->store_body_size();
 }
 
 bool Request::has_transfer_encoding() const
@@ -393,31 +434,31 @@ void Request::store_encoding()
     }
 }
 
-void Request::store_body_length()
+void Request::store_body_size()
 {
-    std::string body_length;
-    body_length =  std::find_if(this->headers.begin(), this->headers.end(), content_length_present)->second;
-    if (ft_isdigit_str(body_length.c_str()) == false)
+    std::string body_size;
+    body_size =  std::find_if(this->headers.begin(), this->headers.end(), content_length_present)->second;
+    if (ft_isdigit_str(body_size.c_str()) == false)
     {
-        this->error_message = "parsing error: Content-length header value is invalid: " + body_length;
+        this->error_message = "parsing error: Content-length header value is invalid: " + body_size;
         this->error_code = 400;
         return ;
     }
-    if (body_length.length() > 7) // > 9.9999 MB
+    if (body_size.length() > 7) // > 9.9999 MB
     {
-        this->error_message = "parsing error: Content-length header value is too big: " + body_length;
+        this->error_message = "parsing error: Content-length header value is too big: " + body_size;
         this->error_code = 400;
         return ;
     }
     // int ret(0);
     // int i(0);
-	// while (body_length[i])
+	// while (body_size[i])
 	// {
-	// 	ret = ret * 10 + body_length[i] - 48;
+	// 	ret = ret * 10 + body_size[i] - 48;
 	// 	i++;
 	// }
     // this->body_size = ret;
-    this->body_size = strtol(body_length.c_str(), NULL, 10);
+    this->body_size = strtol(body_size.c_str(), NULL, 10);
     if (this->max_body_size && this->body_size > this->max_body_size)
     {
         this->error_message = "body size > max_body_size";
