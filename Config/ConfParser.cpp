@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/06 18:33:13 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/07 12:09:05 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 ConfParser::ConfParser(void)
 : _configFile("nginx.conf"), _httpBlock(new HttpBlock()),
 _block_type(HTTP), _line_nb(1), _nbr_of_srv(0),
-_nbr_of_loc(0), _in_http_block(false), _semi_col_not_found(0),
+_nbr_of_loc(0), _in_block(FALSE), _semi_col_not_found(0),
 _curr_dir(-1)
 {
 	return;
@@ -26,7 +26,7 @@ _curr_dir(-1)
 ConfParser::ConfParser(const std::string filename)
 : _configFile(filename), _httpBlock(new HttpBlock()),
 _block_type(HTTP), _line_nb(1), _nbr_of_srv(0),
-_nbr_of_loc(0), _in_http_block(false), _semi_col_not_found(0),
+_nbr_of_loc(0), _in_block(FALSE), _semi_col_not_found(0),
 _curr_dir(-1)
 {
 	return; 
@@ -38,6 +38,72 @@ ConfParser::~ConfParser(void)
 	delete this->_httpBlock;
 	return ;
 }
+
+/**
+ * Static attributs
+ *
+ * Contains directive listing assiociated
+ * with their function handler 
+ */
+
+typedef std::map<std::string, int (ConfParser::*)(std::string&)>	dirMap; //move this typedef in higher level ?
+
+dirMap	ConfParser::http_map = setHttpMap();
+dirMap	ConfParser::srv_map = setSrvMap();
+dirMap	ConfParser::loc_map = setLocMap();
+
+dirMap	ConfParser::setHttpMap()
+{
+	dirMap map;
+
+	map["root"] = &ConfParser::setRoot;
+	map["error_page"] = &ConfParser::setErrorPage;
+	map["keepalive_timeout"] = &ConfParser::setTimeout;
+	map["client_max_body_size"] = &ConfParser::setMaxBdySize;
+	map["cgi_param"] = &ConfParser::setCgiParam;
+	map["cgi_pass"] = &ConfParser::setCgiPass;
+	map["allow_methods"] = &ConfParser::setAllowedMethods;
+	map["index"] = &ConfParser::setIndex;
+	map["autoindex"] = &ConfParser::setAutoIndex;
+
+	return map;
+}
+
+dirMap	ConfParser::setSrvMap()
+{
+	dirMap map;
+
+	map["listen"] = &ConfParser::setListen;
+	map["root"] = &ConfParser::setRoot;
+	map["server_name"] = &ConfParser::setServerName;
+	map["error_page"] = &ConfParser::setErrorPage;
+	map["cgi_param"] = &ConfParser::setCgiParam;
+	map["cgi_pass"] = &ConfParser::setCgiPass;
+	map["allow_methods"] = &ConfParser::setAllowedMethods;
+	map["index"] = &ConfParser::setIndex;
+	map["autoindex"] = &ConfParser::setAutoIndex;
+
+	return map;
+}
+
+dirMap	ConfParser::setLocMap()
+{
+	dirMap map;
+
+	map["listen"] = &ConfParser::setListen;
+	map["root"] = &ConfParser::setRoot;
+	map["error_page"] = &ConfParser::setErrorPage;
+	map["cgi_param"] = &ConfParser::setCgiParam;
+	map["cgi_pass"] = &ConfParser::setCgiPass;
+	map["allow_methods"] = &ConfParser::setAllowedMethods;
+	map["index"] = &ConfParser::setIndex;
+	map["autoindex"] = &ConfParser::setAutoIndex;
+
+	return map;
+}
+
+
+
 
 std::string	ConfParser::http_dir[NB_HTTP_DIR] = {
 	"server",
@@ -59,8 +125,77 @@ std::string	ConfParser::srv_dir[NB_SRV_DIR] = {
 
 std::string	ConfParser::loc_dir[NB_LOC_DIR] = {
 	"root",
-	"location"
+	"location",
+	"cgi_pass"
 };
+
+
+int ConfParser::setListen(std::string& token)
+{
+	(void)token;
+	std::cout << "SET LISTEN FUNCTION" << std::endl;
+	return 0;
+}
+int ConfParser::setServerName(std::string& token)
+{
+	(void)token;
+	std::cout << "SET SRVNAME FUNCTION" << std::endl;
+	return 0;
+}
+int ConfParser::setRoot(std::string& token)
+{
+	(void)token;
+	std::cout << "SET ROOT FUNCTION" << std::endl;
+	return 0;
+}
+int ConfParser::setErrorPage(std::string& token)
+{
+	(void)token;
+	std::cout << "SET ERROPAGE FUNCTION" << std::endl;
+	return 0;
+}
+int ConfParser::setTimeout(std::string& token)
+{
+	(void)token;
+	std::cout << "SET TIME FUNCTION" << std::endl;
+	return 0;
+}
+int ConfParser::setMaxBdySize(std::string& token)
+{
+	(void)token;
+	std::cout << "SET MAXBDYSIZE FUNCTION" << std::endl;
+	return 0;
+}
+int ConfParser::setCgiParam(std::string& token)
+{
+	(void)token;
+	std::cout << "SET CGIPARAM FUNCTION" << std::endl;
+	return 0;
+}
+int ConfParser::setCgiPass(std::string& token)
+{
+	(void)token;
+	std::cout << "SET CGIPASS FUNCTION" << std::endl;
+	return 0;
+}
+int ConfParser::setAllowedMethods(std::string& token)
+{
+	(void)token;
+	std::cout << "SET ALLMETH FUNCTION" << std::endl;
+	return 0;
+}
+int ConfParser::setIndex(std::string& token)
+{
+	(void)token;
+	std::cout << "SET INDX FUNCTION" << std::endl;
+	return 0;
+}
+int ConfParser::setAutoIndex(std::string& token)
+{
+	(void)token;
+	std::cout << "SET AUTOIDX FUNCTION" << std::endl;
+	return 0;
+}
 
 
 int ConfParser::readConfFile()
@@ -68,6 +203,7 @@ int ConfParser::readConfFile()
 	std::ifstream	file;
 	std::string		line;
 	size_t			ret = 0;
+
 
 	file.open(this->_configFile.c_str());
 	if (file.fail())
@@ -85,7 +221,7 @@ int ConfParser::readConfFile()
 				break;
 			this->_line_nb++;
 		}
-		if (this->_in_http_block == true)
+		if (this->_in_block[HTTP] == TRUE)
 			throw NoClosingBracket("http", this->_line_nb);
 		else
 		std::cout << GREEN << "FIIIIIIIIIINNNNNNNN" << NOCOLOR << std::endl;
@@ -116,9 +252,6 @@ void erase_comments(std::string& line)
 	if (pos != std::string::npos)
 		line.erase(pos, len);
 }
-
-/*	static std::string	blocks[NB_BLOCKS] = {"http", "server", "location"};
-*/
 
 /*void ConfParser::identify_block(std::string& token)
 {
@@ -225,20 +358,20 @@ int ConfParser::parseHttp(std::string& token)
 	}
 	if (token == "{")
 	{
-		if (this->_in_http_block == false)
+		if (this->_in_block[HTTP] == FALSE)
 		{
 			std::cout << "FOUND BRACKET" << std::endl;
-			this->_in_http_block = true;
+			this->_in_block[HTTP] = TRUE;
 			return 0;			
 		}
 		else
 			throw UnexpectedTocken("{", this->_line_nb);
 	}
-	if (this->_in_http_block == false)
+	if (this->_in_block[HTTP] == FALSE)
 		throw NoOpeningBracket("http", this->_line_nb);
 	if (this->_curr_dir == FAILIURE)
 	{
-		if (((i = isHttpDirective(token)) != FAILIURE) && this->_in_http_block == true)
+		if (((i = isHttpDirective(token)) != FAILIURE) && this->_in_block[HTTP] == TRUE)
 		{
 			std::cout << "STORE DIRECTIVE" << std::endl;
 			this->_curr_dir = i;
@@ -257,7 +390,7 @@ int ConfParser::parseHttp(std::string& token)
 		return 0;
 	}
 	if (token == "}")
-		this->_in_http_block = false;
+		this->_in_block[HTTP] = FALSE;
 	return 0;
 }
 

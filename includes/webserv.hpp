@@ -13,6 +13,7 @@
 # include <map>
 
 # include <sstream>
+# include <bitset>
 
 // #include <fstream> // ifstream
 // #include <sstream> // sstream
