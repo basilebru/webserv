@@ -4,6 +4,14 @@
 #include <sys/socket.h> // recv
 #include <cstring> // strcmp
 
+
+void Request::init_config()
+{
+    this->max_body_size = 10;
+    this->root = "/root";
+    this->index.push_back("index.html");
+}
+
 Request::Request(int fd): fd(fd), error_code(0), body_size(0), chunk_size(0), chunked_encoding(false), chunked_size_read(false), req_line_read(false), end_of_connection(false), request_ready(false)
 {
 }
@@ -35,7 +43,6 @@ void Request::parse()
         this->error_code = 500;
 		this->error_message = "internal-error: " + std::string(e.what());
     }
-    
 }
 
 void Request::read_from_socket()
@@ -125,15 +132,16 @@ void Request::parse_headers()
     this->store_host();
     if (this->error_code)
         return ;
+    this->init_config();
+    this->store_body_headers(); // will check the "content-length" and "transfer-encoding headers"
+    if (this->error_code)
+        return ;
     this->parse_body();
 }
 
 void Request::parse_body()
 {
     std::cout << "Parsing body..." << std::endl;
-    this->store_body_headers(); // will check the "content-length" and "transfer-encoding headers"
-    if (this->error_code)
-        return ;
 
     if (!this->chunked_encoding)
         this->parse_body_normal();
@@ -319,6 +327,7 @@ void Request::store_body_headers()
     if (this->has_transfer_encoding())
     {
         this->store_encoding();
+        this->body_size = 0;
         return ; // priorité au transfer-encoding header sur le body-length header
     }
     if (this->has_content_length())
@@ -362,6 +371,13 @@ void Request::store_chunk_size(std::string line)
         return ;
     }
     this->chunk_size = strtol(line.c_str(), NULL, 16);
+    this->body_size += this->chunk_size;
+    std::cout << "body size: " << this->body_size << std::endl;
+    if (this->max_body_size && this->body_size > this->max_body_size)
+    {
+        this->error_message = "body size > max_body_size";
+        this->error_code = 413;
+    }
 }
 
 void Request::store_encoding()
@@ -393,15 +409,20 @@ void Request::store_body_length()
         this->error_code = 400;
         return ;
     }
-    int ret(0);
-    int i(0);
-	while (body_length[i])
-	{
-		ret = ret * 10 + body_length[i] - 48;
-		i++;
-	}
-    this->body_size = ret;
-    // std::cout << "body length is: " << this->body_size << std::endl;
+    // int ret(0);
+    // int i(0);
+	// while (body_length[i])
+	// {
+	// 	ret = ret * 10 + body_length[i] - 48;
+	// 	i++;
+	// }
+    // this->body_size = ret;
+    this->body_size = strtol(body_length.c_str(), NULL, 10);
+    if (this->max_body_size && this->body_size > this->max_body_size)
+    {
+        this->error_message = "body size > max_body_size";
+        this->error_code = 413;
+    }
 }
 
 int Request::get_error_code() const

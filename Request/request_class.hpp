@@ -7,6 +7,7 @@
 #include <unistd.h> //read
 #include "../Utils/get_next_line.h"
 #include "../Utils/utils.hpp"
+#include <vector>
 
 #define BUF_SIZE 1024
 #define SUCCESS 1
@@ -32,7 +33,7 @@ class Request
         
         // error
         int error_code;
-        std::string error_message;
+        std::string error_message; // for debug purpose
         
         // storing request
         request_line req_line;
@@ -49,7 +50,12 @@ class Request
         bool req_line_read;
         bool end_of_connection;
         bool request_ready;
-        
+
+        // config
+        size_t max_body_size;
+        std::string root;
+        std::vector<std::string> index;
+
         // "storing" methods
         void store_req_line(std::string line);
         void store_header(std::string line);
@@ -78,6 +84,9 @@ class Request
         // reading from socket   
         void read_from_socket();
 
+        // config (experimental)
+        void init_config(); // just to try using some config params
+
     
     public:
         // constructor & destructor
@@ -100,6 +109,7 @@ class Request
         bool request_is_ready() const;
         bool connection_end() const;
         // void set_error_code(int code);
+        
 };
 
 bool content_length_present(std::pair<std::string, std::string> header);

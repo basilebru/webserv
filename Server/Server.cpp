@@ -114,12 +114,12 @@ int Server::launch(void)
 					this->max_socket = client_socket;
 			}
 		}
-		else // read from existing connection
+		else
 		{
 			std::map<int, Request*>::iterator end = this->requests.end();
 			for (std::map<int, Request*>::iterator it = this->requests.begin(); it != end && rdy_fd > 0; it++)
 			{
-				if (FD_ISSET(it->first, &this->ready_sockets))
+				if (FD_ISSET(it->first, &this->ready_sockets)) // read from existing connection
 				{
 					std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
 					
@@ -140,12 +140,15 @@ int Server::launch(void)
 							this->max_socket--;
 						
 						this->close_socket(it);
+						continue;
 					}
-					else if (it->second->request_is_ready())
+					if (it->second->request_is_ready())
 					{
 						std::cout << "Request is ready" << std::endl;
-						// match server_block and location block
-						// "execute" request and generate response
+						// 1. match server_block and location block
+						// 2. "execute" request based on config
+						// 3. send response
+
 						it->second->reset();
 					}
 				}
