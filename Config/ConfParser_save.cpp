@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/07 20:00:41 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/07 19:10:22 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,8 +235,8 @@ int ConfParser::parseLine(std::string& line)
 	size_t	line_nb = 1;
 	int		ret = 0;
 
-	typedef	int		(ConfParser::*t_parse)();
-	static t_parse	func[NB_BLOCKS] = {&ConfParser::parseHttp, &ConfParser::parseServer, &ConfParser::parseLocation};
+	// typedef	int		(ConfParser::*t_parse)(std::string&);
+	// static t_parse	func[NB_BLOCKS] = {&ConfParser::parseHttp, &ConfParser::parseServer, &ConfParser::parseLocation};
 
 	std::cout << "NATIVE LINE  : " << line << std::endl;
 	erase_comments(line);
@@ -251,7 +251,8 @@ int ConfParser::parseLine(std::string& line)
 			|| this->_dir_line->back().find("}") != std::string::npos
 			|| this->_dir_line->back().find("{") != std::string::npos)
 		{
-			ret = (this->*func[this->_block_type])();
+			displayVec(this->_dir_line);
+			// ret = (this->*func[this->_block_type])(token);
 			this->_dir_line->clear();
 
 		}
@@ -264,23 +265,18 @@ int ConfParser::parseLine(std::string& line)
 	return ret;
 }
 
-int ConfParser::parseHttp()
+int ConfParser::parseHttp(std::string& token)
 {
 	dirMap::iterator it;
 	std::cout << "==> HTTP BLOCK" << std::endl << std::endl;
-	displayVec(this->_dir_line);
-
-
-	if (this->_dir_line->at(0) == "http")
+	
+	if (token == "http")
 		return 0;
-	if (this->_dir_line->at(0) == "server")
+	if (token == "server")
 	{
 		this->_block_type = SERVER;
-		if (this->_dir_line->at(1) == "{")
-			this->_nbr_of_srv++;
 		return 0;
 	}
-/*	
 	if (token == "{")
 	{
 		if (this->_in_block[HTTP] == FALSE)
@@ -315,38 +311,35 @@ int ConfParser::parseHttp()
 		return 0;
 	}
 	if (token == "}")
-		this->_in_block[HTTP] = FALSE;*/
+		this->_in_block[HTTP] = FALSE;
 	return 0;
 }
 
-int ConfParser::parseServer()
+int ConfParser::parseServer(std::string& token)
 {
-	displayVec(this->_dir_line);
+	if (token == "{")
+		this->_nbr_of_srv++;
 	if (this->_nbr_of_srv != 0)
 		std::cout << "-> SERVER No " << this->_nbr_of_srv << std::endl << std::endl;
 
 	std::cout << "==> SERVER BLOCK" << std::endl << std::endl;
-	if (this->_dir_line->at(0) == "}")
+	if (token == "}")
 		this->_block_type = HTTP;
 
-	if (this->_dir_line->at(0) == "location")
-	{
+	if (token == "location")
 		this->_block_type = LOCATION;
-		if (this->_dir_line->at(2) == "{")
-			this->_nbr_of_loc++;
-	}
 
 	return 0;
 }
 
-int ConfParser::parseLocation()
+int ConfParser::parseLocation(std::string& token)
 {
-	displayVec(this->_dir_line);
-
+	if (token == "{")
+		this->_nbr_of_loc++;
 	if (this->_nbr_of_loc != 0)
 		std::cout << "-> LOCATION No " << this->_nbr_of_loc << std::endl << std::endl;
 	std::cout << "==> LOCATION BLOCK" << std::endl << std::endl;
-	if (this->_dir_line->at(0) == "}")
+	if (token == "}")
 		this->_block_type = SERVER;
 
 	return 0;

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/07 12:31:52 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/07 19:20:52 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,19 +48,20 @@ public:
 typedef std::map<std::string, int (ConfParser::*)(std::string&)>	dirMap;
 
 private:
-	const std::string		_configFile;
-	HttpBlock				*_httpBlock; // will certainely be removed, ConfParser will be called from HttpBlock
-	int						_block_type;
-	size_t					_line_nb;
-	size_t					_nbr_of_srv;
-	size_t					_nbr_of_loc;
-	std::bitset<3>			_in_block;
-	bool					_semi_col_not_found;
-	std::string				_curr_dir;
+	const std::string			_configFile;
+	HttpBlock					*_httpBlock; // will certainely be removed, ConfParser will be called from HttpBlock
+	int							_block_type;
+	size_t						_line_nb;
+	size_t						_nbr_of_srv;
+	size_t						_nbr_of_loc;
+	std::bitset<3>				_in_block;
+	bool						_semi_col_not_found;
+	std::string					_curr_dir;
+	std::vector<std::string>	*_dir_line;
 
-	int		parseHttp(std::string& token);
-	int		parseServer(std::string& token);
-	int		parseLocation(std::string& token);
+	int		parseHttp(void);
+	int		parseServer(void);
+	int		parseLocation(void);
 	int 	isHttpDirective(std::string& token) const;
 	bool 	isSrvDirective(std::string& token) const;
 	bool 	isLocDirective(std::string& token) const;
