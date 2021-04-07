@@ -4,10 +4,13 @@
 #include <iostream>
 #include <string>
 #include <list>
-#include <unistd.h> //read
 #include "../Utils/get_next_line.h"
 #include "../Utils/utils.hpp"
 #include <vector>
+#include <algorithm> // find functions
+#include <sys/socket.h> // recv
+#include <cstring> // strcmp
+#include <cstdlib> // strtol
 
 #define BUF_SIZE 1024
 #define SUCCESS 1
@@ -25,8 +28,9 @@ class Request
     private:
         typedef std::pair<std::string, std::string> header;
 
-        // attributes
+        // ATTRIBUTES
 
+        // known HTTP methods
         static std::vector<std::string> known_methods;
         static std::vector<std::string> build_known_methods();
 
@@ -62,8 +66,8 @@ class Request
 
         std::string target_uri; // concatenation of root and request target
         
-        // config (experimental)
-        void init_config(); // just to try using some config params. Called in Request::parse_headers()
+
+        // METHODS
 
         // "storing" methods
         void store_req_line(std::string line);
@@ -73,9 +77,6 @@ class Request
         void store_chunk_size(std::string line);
         void store_encoding();
         void store_host();
-
-        // utils
-        bool read_buf_line(std::string &line);
         bool has_transfer_encoding() const;
         bool has_content_length() const;
         bool has_host() const;
@@ -89,10 +90,11 @@ class Request
         void parse_body_chunked();
         bool parse_chunked_size();
         bool parse_chunked_data();
-
-        // reading from socket   
+        bool read_buf_line(std::string &line);
         void read_from_socket();
 
+        // config (experimental)
+        void init_config(); // just to try using some config params. Called in Request::parse_headers()
 
     
     public:
@@ -103,14 +105,11 @@ class Request
         virtual ~Request(void);
         Request&  operator=(const Request &copy); // not defined
 
-
         // main functions
         void parse();
         void reset();
-
         // utils
         void print() const;
-
         // getters & setters
         int get_error_code() const;
         bool request_is_ready() const;

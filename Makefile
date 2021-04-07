@@ -52,6 +52,8 @@ SRCS += webserv.cpp
 # core sources
 SRCS += Server.cpp
 SRCS += request_class.cpp
+SRCS += request_class_store.cpp
+SRCS += request_class_utils.cpp
 
 # Utils sources
 SRCS += get_next_line.cpp
