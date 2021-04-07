@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/07 12:07:07 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/07 12:31:52 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@
 
 # define TRUE		0
 # define FALSE		1
-# define FAILIURE	-1
+# define FAILURE	-1
 
 # define IN_HTTP_BLOCK      0x00000001
 # define IN_SRV_BLOCK       0x00000002
@@ -56,9 +56,8 @@ private:
 	size_t					_nbr_of_loc;
 	std::bitset<3>			_in_block;
 	bool					_semi_col_not_found;
-	int						_curr_dir;
+	std::string				_curr_dir;
 
-	// void	identify_block(std::string& token);
 	int		parseHttp(std::string& token);
 	int		parseServer(std::string& token);
 	int		parseLocation(std::string& token);

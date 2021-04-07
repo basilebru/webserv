@@ -9,21 +9,13 @@ TOKEN 2: {
 
 FOUND BRACKET
 ===================
-NATIVE LINE  :     include #http block
-LINE w/o com.:     include 
+NATIVE LINE  : #     include #http block
+LINE w/o com.: 
 
-TOKEN 1: include
-==> HTTP BLOCK
-
-STORE DIRECTIVE
 ===================
-NATIVE LINE  :     mime.types;      #http block
-LINE w/o com.:     mime.types;      
+NATIVE LINE  : #     mime.types;      #http block
+LINE w/o com.: 
 
-TOKEN 1: mime.types;
-==> HTTP BLOCK
-
-STORE include VALUE
 ===================
 NATIVE LINE  : #     default_type  application/octet-stream; #http block
 LINE w/o com.: 
@@ -41,9 +33,17 @@ NATIVE LINE  :
 LINE w/o com.: 
 
 ===================
-NATIVE LINE  :     #keepalive_timeout  0; #http block
-LINE w/o com.:     
+NATIVE LINE  :     client_max_body_size 10000;
+LINE w/o com.:     client_max_body_size 10000;
 
+TOKEN 1: client_max_body_size
+==> HTTP BLOCK
+
+STORE DIRECTIVE
+TOKEN 2: 10000;
+==> HTTP BLOCK
+
+STORE client_max_body_size VALUE
 ===================
 NATIVE LINE  :     keepalive_timeout  65; #http block
 LINE w/o com.:     keepalive_timeout  65; 
@@ -545,6 +545,6 @@ LINE w/o com.: }
 TOKEN 1: }
 ==> HTTP BLOCK
 
-[32;1mFIIIIIIIIIINNNNNNNN[0m
 ===================
+[32;1mFIIIIIIIIIINNNNNNNN[0m
 DESTRUCTOR CALLED

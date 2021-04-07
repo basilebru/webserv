@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/07 12:09:05 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/07 12:33:49 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ ConfParser::ConfParser(void)
 : _configFile("nginx.conf"), _httpBlock(new HttpBlock()),
 _block_type(HTTP), _line_nb(1), _nbr_of_srv(0),
 _nbr_of_loc(0), _in_block(FALSE), _semi_col_not_found(0),
-_curr_dir(-1)
+_curr_dir()
 {
 	return;
 }
@@ -27,7 +27,7 @@ ConfParser::ConfParser(const std::string filename)
 : _configFile(filename), _httpBlock(new HttpBlock()),
 _block_type(HTTP), _line_nb(1), _nbr_of_srv(0),
 _nbr_of_loc(0), _in_block(FALSE), _semi_col_not_found(0),
-_curr_dir(-1)
+_curr_dir()
 {
 	return; 
 }
@@ -102,34 +102,6 @@ dirMap	ConfParser::setLocMap()
 	return map;
 }
 
-
-
-
-std::string	ConfParser::http_dir[NB_HTTP_DIR] = {
-	"server",
-	"keepalive_timeout",
-	"client_max_body_size",
-	"include",
-};
-
-std::string	ConfParser::srv_dir[NB_SRV_DIR] = {
-	"listen",
-	"server_name",
-	"autoindex",
-	"root",
-	"location",
-	"index",
-	"error_page",
-	"client_max_body_size",
-};
-
-std::string	ConfParser::loc_dir[NB_LOC_DIR] = {
-	"root",
-	"location",
-	"cgi_pass"
-};
-
-
 int ConfParser::setListen(std::string& token)
 {
 	(void)token;
@@ -197,7 +169,6 @@ int ConfParser::setAutoIndex(std::string& token)
 	return 0;
 }
 
-
 int ConfParser::readConfFile()
 {
 	std::ifstream	file;
@@ -233,14 +204,6 @@ int ConfParser::readConfFile()
 	return ret;
 }
 
-/*void trim_whitespace(std::string & line)
-{
-	size_t pos;
-
-	pos = line.find_first_not_of(" ");
-	line.erase(0, pos);
-}*/
-
 void erase_comments(std::string& line)
 {
 	size_t pos;
@@ -251,69 +214,6 @@ void erase_comments(std::string& line)
 
 	if (pos != std::string::npos)
 		line.erase(pos, len);
-}
-
-/*void ConfParser::identify_block(std::string& token)
-{
-	typedef	int			(ConfParser::*t_parse)(std::string&);
-	static t_parse		func[NB_BLOCKS] = {&ConfParser::parseHttp, &ConfParser::parseServer, &ConfParser::parseLocation};
-	static std::string	blocks[NB_BLOCKS] = {"http", "server", "location"};
-	// static int			ret[NB_BLOCKS] = {HTTP, SERVER, LOCATION};
-
-	size_t i(0);
-	while (i < NB_BLOCKS)
-	{
-		if (blocks[i] == token)
-		{
-			(this->*func[i])(token);
-			return ;
-		}
-		++i;
-	}
-	return ;
-}
-*/
-
-int ConfParser::isHttpDirective(std::string& token) const
-{
-	int i(0);
-	while (i < NB_HTTP_DIR)
-	{
-		if (ConfParser::http_dir[i] == token)
-		{
-			return i;
-		}
-		++i;
-	}
-	return FAILIURE;
-}
-
-bool ConfParser::isSrvDirective(std::string& token) const
-{
-	size_t i(0);
-	while (i < NB_SRV_DIR)
-	{
-		if (ConfParser::srv_dir[i] == token)
-		{
-			return true;
-		}
-		++i;
-	}
-	return false;
-}
-
-bool ConfParser::isLocDirective(std::string& token) const
-{
-	size_t i(0);
-	while (i < NB_LOC_DIR)
-	{
-		if (ConfParser::loc_dir[i] == token)
-		{
-			return true;
-		}
-		++i;
-	}
-	return false;
 }
 
 int ConfParser::parseLine(std::string& line)
@@ -343,10 +243,9 @@ int ConfParser::parseLine(std::string& line)
 	return ret;
 }
 
-
 int ConfParser::parseHttp(std::string& token)
 {
-	int i = FAILIURE;
+	dirMap::iterator it;
 	std::cout << "==> HTTP BLOCK" << std::endl << std::endl;
 	
 	if (token == "http")
@@ -369,23 +268,23 @@ int ConfParser::parseHttp(std::string& token)
 	}
 	if (this->_in_block[HTTP] == FALSE)
 		throw NoOpeningBracket("http", this->_line_nb);
-	if (this->_curr_dir == FAILIURE)
+	if (this->_curr_dir == "")
 	{
-		if (((i = isHttpDirective(token)) != FAILIURE) && this->_in_block[HTTP] == TRUE)
+		if ((it = ConfParser::http_map.find(token)) != http_map.end() && this->_in_block[HTTP] == TRUE)
 		{
 			std::cout << "STORE DIRECTIVE" << std::endl;
-			this->_curr_dir = i;
+			this->_curr_dir = it->first;
 			return 0;
 		}
 		else if (token != "}")
 			throw UnknownDirective(token, this->_line_nb);
 	}
-	if (this->_curr_dir != FAILIURE)
+	if (this->_curr_dir != "")
 	{
-		std::cout << "STORE " << ConfParser::http_dir[this->_curr_dir] << " VALUE" << std::endl;
+		std::cout << "STORE " << this->_curr_dir << " VALUE" << std::endl;
 		if (token.find(";"))
 		{	
-			this->_curr_dir = FAILIURE;
+			this->_curr_dir.clear();
 		}
 		return 0;
 	}
