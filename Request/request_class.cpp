@@ -32,8 +32,8 @@ void Request::init_config()
     // retrieve config
     
     this->max_body_size = 10;
-    this->root = "/root";
-    this->index.push_back("index.html");
+    this->root = "html";
+    // this->index.push_back("index.html");
     this->allow_methods.push_back("GET");
     this->allow_methods.push_back("POST");
 
@@ -51,6 +51,12 @@ void Request::init_config()
         this->error_code = 405;
         return ;
     }
+
+    // build target_uri
+    if (this->root[this->root.size() - 1] == '/')
+        this->root.erase(this->root.end() - 1);
+    this->target_uri = this->root + this->req_line.target;
+    std::cout << "[target uri:] " << this->target_uri << std::endl;
 
 }
 
@@ -77,6 +83,18 @@ Request::~Request(void)
 
 void Request::parse()
 {
+
+    // first we read from socket (as much as we can), and store what we've read into a buffer
+    // then we parse this buffer:
+    // 1. read req_line
+    // 2. read_headers
+    // 3. find configuration block, import config
+    // 4. read body
+    // notes:
+    //  ->  while parsing the buffer, we check that the request synthax is ok and compliant with configuration directives
+    //  ->  If the buffer does not contain the whole request, we return back to select() and wait for new data to read()
+    //      so we should be able to pick up where we left off
+
     try
     {
         this->read_from_socket();
@@ -280,7 +298,8 @@ void Request::reset()
     // config
     this->root = "";
     this->max_body_size = 0;
-    this->index.erase(this->index.begin(), this->index.end());
+    // this->index.erase(this->index.begin(), this->index.end());
+    this->allow_methods.erase(this->allow_methods.begin(), this->allow_methods.end());
 }
 
 void Request::store_req_line(std::string line)

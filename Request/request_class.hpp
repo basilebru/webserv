@@ -58,7 +58,9 @@ class Request
         size_t max_body_size;
         std::vector<std::string> allow_methods;
         std::string root;
-        std::vector<std::string> index;
+        // std::vector<std::string> index;
+
+        std::string target_uri; // concatenation of root and request target
         
         // config (experimental)
         void init_config(); // just to try using some config params. Called in Request::parse_headers()
