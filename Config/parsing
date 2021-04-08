@@ -1,440 +1,168 @@
-NATIVE LINE  : http {
-LINE w/o com.: http {
-
-TOKEN 1: http
-TOKEN 2: {
 ==> HTTP BLOCK
 
 VECTOR: http { 
 ===================
-NATIVE LINE  : #     include #http block
-LINE w/o com.: 
-
-===================
-NATIVE LINE  : #     mime.types;      #http block
-LINE w/o com.: 
-
-===================
-NATIVE LINE  : #     default_type  application/octet-stream; #http block
-LINE w/o com.: 
-
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  : #     sendfile        on; #http block
-LINE w/o com.: 
-
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  :     client_max_body_size 10000;
-LINE w/o com.:     client_max_body_size 10000;
-
-TOKEN 1: client_max_body_size
-TOKEN 2: 10000;
 ==> HTTP BLOCK
 
 VECTOR: client_max_body_size 10000; 
+SET MAXBDYSIZE FUNCTION
 ===================
-NATIVE LINE  :     keepalive_timeout  65; #http block
-LINE w/o com.:     keepalive_timeout  65; 
-
-TOKEN 1: keepalive_timeout
-TOKEN 2: 65;
 ==> HTTP BLOCK
 
 VECTOR: keepalive_timeout 65; 
+SET keepalive FUNCTION
 ===================
-NATIVE LINE  :     error_page   500 502 503 504 413  /50x.html; #server(1) block
-LINE w/o com.:     error_page   500 502 503 504 413  /50x.html; 
-
-TOKEN 1: error_page
-TOKEN 2: 500
-TOKEN 3: 502
-TOKEN 4: 503
-TOKEN 5: 504
-TOKEN 6: 413
-TOKEN 7: /50x.html;
 ==> HTTP BLOCK
 
 VECTOR: error_page 500 502 503 504 413 /50x.html; 
+SET ERROPAGE FUNCTION
 ===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
 ===================
-NATIVE LINE  :     #gzip  on; #http block
-LINE w/o com.:     
-
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  :     server {   #server(1) block
-LINE w/o com.:     server {   
-
-TOKEN 1: server
-TOKEN 2: {
 ==> HTTP BLOCK
 
 VECTOR: server { 
-===================
-NATIVE LINE  :         listen       8082; #server(1) block
-LINE w/o com.:         listen       8082; 
+-> SERVER No 1
 
-TOKEN 1: listen
-TOKEN 2: 8082;
+===================
+==> SERVER BLOCK
+
 VECTOR: listen 8082; 
--> SERVER No 1
-
+SET LISTEN FUNCTION
+===================
 ==> SERVER BLOCK
 
-===================
-NATIVE LINE  :         server_name  localhosts;    #server(1) block
-LINE w/o com.:         server_name  localhosts;    
-
-TOKEN 1: server_name
-TOKEN 2: localhosts;
 VECTOR: server_name localhosts; 
--> SERVER No 1
-
+SET SRVNAME FUNCTION
+===================
 ==> SERVER BLOCK
 
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  :         autoindex on;   #server(1) block
-LINE w/o com.:         autoindex on;   
-
-TOKEN 1: autoindex
-TOKEN 2: on;
 VECTOR: autoindex on; 
--> SERVER No 1
-
+SET AUTOIDX FUNCTION
+===================
 ==> SERVER BLOCK
 
-===================
-NATIVE LINE  :         root   /Users/bbrunet/.brew/var/www;    #server(1) block
-LINE w/o com.:         root   /Users/bbrunet/.brew/var/www;    
-
-TOKEN 1: root
-TOKEN 2: /Users/bbrunet/.brew/var/www;
 VECTOR: root /Users/bbrunet/.brew/var/www; 
--> SERVER No 1
-
+SET ROOT FUNCTION
+===================
 ==> SERVER BLOCK
 
-===================
-NATIVE LINE  :         location / { #location(1) block
-LINE w/o com.:         location / { 
-
-TOKEN 1: location
-TOKEN 2: /
-TOKEN 3: {
 VECTOR: location / { 
--> SERVER No 1
+-> LOCATION No 1
 
-==> SERVER BLOCK
-
+SET LOCATION FUNCTION
 ===================
-NATIVE LINE  :             root   /Users/bbrunet/.brew/var/www; #location(1) block
-LINE w/o com.:             root   /Users/bbrunet/.brew/var/www; 
+==> LOCATION BLOCK
 
-TOKEN 1: root
-TOKEN 2: /Users/bbrunet/.brew/var/www;
 VECTOR: root /Users/bbrunet/.brew/var/www; 
--> LOCATION No 1
-
+SET ROOT FUNCTION
+===================
 ==> LOCATION BLOCK
 
-===================
-NATIVE LINE  :             index  readme.html truc.machin; #location(1) block
-LINE w/o com.:             index  readme.html truc.machin; 
-
-TOKEN 1: index
-TOKEN 2: readme.html
-TOKEN 3: truc.machin;
 VECTOR: index readme.html truc.machin; 
--> LOCATION No 1
-
+SET INDX FUNCTION
+===================
 ==> LOCATION BLOCK
 
-===================
-NATIVE LINE  :         } #location(1) block
-LINE w/o com.:         } 
-
-TOKEN 1: }
 VECTOR: } 
--> LOCATION No 1
-
-==> LOCATION BLOCK
-
 ===================
-NATIVE LINE  :         location /bla/ { #location(2) block
-LINE w/o com.:         location /bla/ { 
+==> SERVER BLOCK
 
-TOKEN 1: location
-TOKEN 2: /bla/
-TOKEN 3: {
 VECTOR: location /bla/ { 
--> SERVER No 1
+-> LOCATION No 2
 
+SET LOCATION FUNCTION
+===================
+==> LOCATION BLOCK
+
+VECTOR: root /Users/bbrunet/.brew/var/www/folder/; 
+SET ROOT FUNCTION
+===================
+==> LOCATION BLOCK
+
+VECTOR: } 
+===================
 ==> SERVER BLOCK
 
-===================
-NATIVE LINE  :             root   /Users/bbrunet/.brew/var/www/folder/; #location(2) block
-LINE w/o com.:             root   /Users/bbrunet/.brew/var/www/folder/; 
-
-TOKEN 1: root
-TOKEN 2: /Users/bbrunet/.brew/var/www/folder/;
-VECTOR: root /Users/bbrunet/.brew/var/www/folder/; 
--> LOCATION No 2
-
-==> LOCATION BLOCK
-
-===================
-NATIVE LINE  :         } #location(2) block
-LINE w/o com.:         } 
-
-TOKEN 1: }
-VECTOR: } 
--> LOCATION No 2
-
-==> LOCATION BLOCK
-
-===================
-NATIVE LINE  :         location /blo/ { #location(3) block
-LINE w/o com.:         location /blo/ { 
-
-TOKEN 1: location
-TOKEN 2: /blo/
-TOKEN 3: {
 VECTOR: location /blo/ { 
--> SERVER No 1
+-> LOCATION No 3
 
-==> SERVER BLOCK
-
+SET LOCATION FUNCTION
 ===================
-NATIVE LINE  :             root   /Users/bbrunet/.brew/var/www/folder/; #location(3) block
-LINE w/o com.:             root   /Users/bbrunet/.brew/var/www/folder/; 
+==> LOCATION BLOCK
 
-TOKEN 1: root
-TOKEN 2: /Users/bbrunet/.brew/var/www/folder/;
 VECTOR: root /Users/bbrunet/.brew/var/www/folder/; 
--> LOCATION No 3
-
+SET ROOT FUNCTION
+===================
 ==> LOCATION BLOCK
 
-===================
-NATIVE LINE  : #             limit_except POST { deny all; } #location(3) block
-LINE w/o com.: 
-
-===================
-NATIVE LINE  :         } #location(3) block
-LINE w/o com.:         } 
-
-TOKEN 1: }
 VECTOR: } 
--> LOCATION No 3
-
-==> LOCATION BLOCK
-
 ===================
-NATIVE LINE  : 
-LINE w/o com.: 
+==> SERVER BLOCK
 
-===================
-NATIVE LINE  :         error_page  404              /40x.html; #server(1) block
-LINE w/o com.:         error_page  404              /40x.html; 
-
-TOKEN 1: error_page
-TOKEN 2: 404
-TOKEN 3: /40x.html;
 VECTOR: error_page 404 /40x.html; 
--> SERVER No 1
-
+SET ERROPAGE FUNCTION
+===================
 ==> SERVER BLOCK
 
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  :         error_page   500 502 503 504 413  /50x.html; #server(1) block
-LINE w/o com.:         error_page   500 502 503 504 413  /50x.html; 
-
-TOKEN 1: error_page
-TOKEN 2: 500
-TOKEN 3: 502
-TOKEN 4: 503
-TOKEN 5: 504
-TOKEN 6: 413
-TOKEN 7: /50x.html;
 VECTOR: error_page 500 502 503 504 413 /50x.html; 
--> SERVER No 1
-
+SET ERROPAGE FUNCTION
+===================
 ==> SERVER BLOCK
 
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  :         client_max_body_size 1; #server(1) block
-LINE w/o com.:         client_max_body_size 1; 
-
-TOKEN 1: client_max_body_size
-TOKEN 2: 1;
 VECTOR: client_max_body_size 1; 
--> SERVER No 1
-
+SET MAXBDYSIZE FUNCTION
+===================
 ==> SERVER BLOCK
 
-===================
-NATIVE LINE  :     } #server(1) block
-LINE w/o com.:     } 
-
-TOKEN 1: }
 VECTOR: } 
--> SERVER No 1
-
-==> SERVER BLOCK
-
 ===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  :     server { #server(2) block
-LINE w/o com.:     server { 
-
-TOKEN 1: server
-TOKEN 2: {
 ==> HTTP BLOCK
 
 VECTOR: server { 
-===================
-NATIVE LINE  :         listen 80 default_server; #server(2) block
-LINE w/o com.:         listen 80 default_server; 
-
-TOKEN 1: listen
-TOKEN 2: 80
-TOKEN 3: default_server;
-VECTOR: listen 80 default_server; 
 -> SERVER No 2
 
+===================
 ==> SERVER BLOCK
 
+VECTOR: listen 80; 
+SET LISTEN FUNCTION
 ===================
-NATIVE LINE  :         server_name _; #server(2) block
-LINE w/o com.:         server_name _; 
+==> SERVER BLOCK
 
-TOKEN 1: server_name
-TOKEN 2: _;
 VECTOR: server_name _; 
--> SERVER No 2
-
+SET SRVNAME FUNCTION
+===================
 ==> SERVER BLOCK
 
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  :         root   /var/www/html/; #server(2) block
-LINE w/o com.:         root   /var/www/html/; 
-
-TOKEN 1: root
-TOKEN 2: /var/www/html/;
 VECTOR: root /var/www/html/; 
--> SERVER No 2
-
+SET ROOT FUNCTION
+===================
 ==> SERVER BLOCK
 
-===================
-NATIVE LINE  :         index  default.html; #server(2) block
-LINE w/o com.:         index  default.html; 
-
-TOKEN 1: index
-TOKEN 2: default.html;
 VECTOR: index default.html; 
--> SERVER No 2
-
+SET INDX FUNCTION
+===================
+===================
 ==> SERVER BLOCK
 
-===================
-NATIVE LINE  :         
-LINE w/o com.:         
-
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  :         location / { #location(1) block
-LINE w/o com.:         location / { 
-
-TOKEN 1: location
-TOKEN 2: /
-TOKEN 3: {
 VECTOR: location / { 
--> SERVER No 2
-
-==> SERVER BLOCK
-
-===================
-NATIVE LINE  : 
-LINE w/o com.: 
-
-===================
-NATIVE LINE  :             try_files $uri $uri/ =404; #location(1) block
-LINE w/o com.:             try_files $uri $uri/ =404; 
-
-TOKEN 1: try_files
-TOKEN 2: $uri
-TOKEN 3: $uri/
-TOKEN 4: =404;
-VECTOR: try_files $uri $uri/ =404; 
 -> LOCATION No 4
 
+SET LOCATION FUNCTION
+===================
 ==> LOCATION BLOCK
 
+VECTOR: index index.html; 
+SET INDX FUNCTION
 ===================
-NATIVE LINE  :         } #location(1) block
-LINE w/o com.:         } 
-
-TOKEN 1: }
-VECTOR: } 
--> LOCATION No 4
-
 ==> LOCATION BLOCK
 
-===================
-NATIVE LINE  :     } #server(2) block
-LINE w/o com.:     } 
-
-TOKEN 1: }
 VECTOR: } 
--> SERVER No 2
-
+===================
 ==> SERVER BLOCK
 
+VECTOR: } 
 ===================
-NATIVE LINE  : } #http block
-LINE w/o com.: } 
-
-TOKEN 1: }
 ==> HTTP BLOCK
 
 VECTOR: } 

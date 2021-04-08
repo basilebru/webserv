@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/07 19:20:52 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/08 20:13:50 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 # include "HttpBlock.hpp"
 
 # define NB_BLOCKS		3
-# define NB_HTTP_DIR		4
+# define NB_HTTP_DIR	4
 # define NB_SRV_DIR		8
 # define NB_LOC_DIR		3
 
@@ -27,8 +27,8 @@
 # define LOCATION	2
 // # define NOBLOCK	   -1
 
-# define TRUE		0
-# define FALSE		1
+# define TRUE		1
+# define FALSE		0
 # define FAILURE	-1
 
 # define IN_HTTP_BLOCK      0x00000001
@@ -45,11 +45,11 @@ class ConfParser {
 
 public:
 // typedef	int	(ConfParser::*t_parse)(std::string&);
-typedef std::map<std::string, int (ConfParser::*)(std::string&)>	dirMap;
+typedef std::map<std::string, int (ConfParser::*)(void)>	dirMap;
 
 private:
 	const std::string			_configFile;
-	HttpBlock					*_httpBlock; // will certainely be removed, ConfParser will be called from HttpBlock
+	HttpBlock					_httpBlock; // will certainely be removed, ConfParser will be called from HttpBlock
 	int							_block_type;
 	size_t						_line_nb;
 	size_t						_nbr_of_srv;
@@ -57,26 +57,29 @@ private:
 	std::bitset<3>				_in_block;
 	bool						_semi_col_not_found;
 	std::string					_curr_dir;
-	std::vector<std::string>	*_dir_line;
+	std::vector<std::string>	_dir_line;
 
-	int		parseHttp(void);
-	int		parseServer(void);
-	int		parseLocation(void);
-	int 	isHttpDirective(std::string& token) const;
-	bool 	isSrvDirective(std::string& token) const;
-	bool 	isLocDirective(std::string& token) const;
+	void	parseDirective(void);
+	void	handleBlockIn(const std::string&);
+	void	handleBlockOut(void);
 
-	int		setListen(std::string& token);
-	int		setServerName(std::string& token);
-	int		setRoot(std::string& token);
-	int		setErrorPage(std::string& token);
-	int		setTimeout(std::string& token);
-	int		setMaxBdySize(std::string& token);
-	int		setCgiParam(std::string& token);
-	int		setCgiPass(std::string& token);
-	int		setAllowedMethods(std::string& token);
-	int		setIndex(std::string& token);
-	int		setAutoIndex(std::string& token);
+	// Directive handling functions	
+	int		setListen();
+	int		setServerName();
+	int		setRoot();
+	int		setErrorPage();
+	int		setKeepAlive();
+	int		setMaxBdySize();
+	int		setCgiParam();
+	int		setCgiPass();
+	int		setAllowedMethods();
+	int		setIndex();
+	int		setAutoIndex();
+
+	// Store the location URI	
+	void	setLocation();
+
+	void checkNbrOfArgs(size_t expected_nbr);
 
 	
 	static	std::string	http_dir[NB_HTTP_DIR];
@@ -99,18 +102,17 @@ public:
 	ConfParser& operator=(ConfParser const & rhs);
 
 	int	 readConfFile(void);
-	int parseLine(std::string& line);
-	void setDirective(std::string &);
+	void parseLine(std::string& line);
 
 	
-	/*Excetpions*/
+	/*Exceptions*/
 	
 	class UnexpectedTocken : public std::exception {
 
 	private:
 		std::string _msg;
 	public:
-		UnexpectedTocken(const std::string token, const size_t line_nb);
+		UnexpectedTocken(const std::string token, ConfParser *);
 		virtual ~UnexpectedTocken() throw() {};
 		virtual const char* what() const throw();
 	};
@@ -120,7 +122,7 @@ public:
 	private:
 		std::string _msg;
 	public:
-		NoOpeningBracket(const std::string token, const size_t line_nb);
+		NoOpeningBracket(const std::string token, ConfParser *);
 		virtual ~NoOpeningBracket() throw() {};
 		virtual const char* what() const throw();
 	};
@@ -130,8 +132,18 @@ public:
 	private:
 		std::string _msg;
 	public:
-		NoClosingBracket(const std::string token, const size_t line_nb);
+		NoClosingBracket(const std::string token, ConfParser *);
 		virtual ~NoClosingBracket() throw() {};
+		virtual const char* what() const throw();
+	};
+
+	class UnexpectedEOF : public std::exception {
+
+	private:
+		std::string _msg;
+	public:
+		UnexpectedEOF(const std::string token, ConfParser *);
+		virtual ~UnexpectedEOF() throw() {};
 		virtual const char* what() const throw();
 	};
 
@@ -140,8 +152,18 @@ public:
 	private:
 		std::string _msg;
 	public:
-		UnknownDirective(const std::string token, const size_t line_nb);
+		UnknownDirective(const std::string token, ConfParser *);
 		virtual ~UnknownDirective() throw() {};
+		virtual const char* what() const throw();
+	};
+
+	class InvalidNbrOfArgs : public std::exception {
+
+	private:
+		std::string _msg;
+	public:
+		InvalidNbrOfArgs(const std::string token, ConfParser *);
+		virtual ~InvalidNbrOfArgs() throw() {};
 		virtual const char* what() const throw();
 	};
 

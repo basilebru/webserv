@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:23:44 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/18 09:13:47 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/08 20:33:16 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,11 @@ public:
 	ServerBlock(ServerBlock const & copy);
 	~ServerBlock(void);
 	ServerBlock& operator=(ServerBlock const & rhs);
+
+	
+	// Setters
+	void	setMaxBdySize(size_type size);
+
 	
 };
 
