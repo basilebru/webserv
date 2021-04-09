@@ -7,7 +7,7 @@
 
 # include <sys/socket.h> // For socket functions
 # include <netinet/in.h> // For sockaddr_in
-# include <cstdlib> // For exit() and EXIT_FAILURE
+# include <cstdlib> // For exit() and EXIT_FAILURE an atoi(char*)
 # include <fstream> // ifstream
 # include <fcntl.h> // For fcntl --> non_blocking fd
 # include <map>

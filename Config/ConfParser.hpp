@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/08 20:13:50 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/09 12:37:03 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,10 @@ public:
 	int	 readConfFile(void);
 	void parseLine(std::string& line);
 
+	// Getters
+	HttpBlock&		getHttpBlock(void);
+
+
 	
 	/*Exceptions*/
 	
@@ -164,6 +168,16 @@ public:
 	public:
 		InvalidNbrOfArgs(const std::string token, ConfParser *);
 		virtual ~InvalidNbrOfArgs() throw() {};
+		virtual const char* what() const throw();
+	};
+
+	class InvalidValue : public std::exception {
+
+	private:
+		std::string _msg;
+	public:
+		InvalidValue(const std::string token, ConfParser *);
+		virtual ~InvalidValue() throw() {};
 		virtual const char* what() const throw();
 	};
 

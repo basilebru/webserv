@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/08 20:37:12 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/09 14:31:06 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,21 +131,44 @@ int ConfParser::setErrorPage(void)
 int ConfParser::setKeepAlive(void)
 {
 	this->checkNbrOfArgs(2);
+
+	if (this->_dir_line[1].find_first_not_of("0123456789") != std::string::npos)
+		throw InvalidValue(this->_dir_line[1], this);
+
+	int mbs = atoi(this->_dir_line[0].c_str());
+
+	if (this->_block_type == HTTP)
+		this->_httpBlock.setKeepaliveTimeout(mbs);
+	else if (this->_block_type == SERVER)
+	{
+		this->_httpBlock.getLastServer().setKeepaliveTimeout(mbs);
+	}
+	if (this->_block_type == LOCATION)
+	{
+		this->_httpBlock.getLastServer().getLastLocation().setKeepaliveTimeout(mbs);
+	}
+
 	std::cout << "SET keepalive FUNCTION" << std::endl;
 	return 0;
 }
 int ConfParser::setMaxBdySize(void)
 {
 	this->checkNbrOfArgs(2);
+
+	if (this->_dir_line[1].find_first_not_of("0123456789") != std::string::npos)
+		throw InvalidValue(this->_dir_line[0], this);
+
+	int mbs = atoi(this->_dir_line[1].c_str());
+
 	if (this->_block_type == HTTP)
-		this->_httpBlock.setMaxBdySize(1000);
+		this->_httpBlock.setMaxBdySize(mbs);
 	else if (this->_block_type == SERVER)
 	{
-		this->_httpBlock.getLastServer().setMaxBdySize(1000);
+		this->_httpBlock.getLastServer().setMaxBdySize(mbs);
 	}
 	if (this->_block_type == LOCATION)
 	{
-		this->_httpBlock.setMaxBdySize(1000);
+		this->_httpBlock.getLastServer().getLastLocation().setMaxBdySize(mbs);
 	}
 	std::cout << "SET MAXBDYSIZE FUNCTION" << std::endl;
 	return 0;
@@ -351,6 +374,10 @@ void ConfParser::parseDirective()
 		std::cout << "==> SERVER BLOCK" << std::endl << std::endl;
 	if (this->_block_type == LOCATION)
 		std::cout << "==> LOCATION BLOCK" << std::endl << std::endl;
+
+	size_t pos = this->_dir_line.back().find_last_of(";");
+	if (pos != std::string::npos)
+		this->_dir_line.back().erase(pos, 1);
 	displayVec(this->_dir_line);
 	
 	if (directive == "http" || directive == "server" || directive == "location")
@@ -368,6 +395,8 @@ void ConfParser::parseDirective()
 		return ;
 	}
 
+
+	
 	if (this->_block_type == HTTP)
 	{
 		if (ConfParser::http_map.find(directive) != http_map.end())
@@ -389,82 +418,14 @@ void ConfParser::parseDirective()
 		else
 			throw UnknownDirective(directive, this);
 	}
-
-
-
-
-/*	
-	if (token == "{")
-	{
-		if (this->_in_block[HTTP] == FALSE)
-		{
-			std::cout << "FOUND BRACKET" << std::endl;
-			this->_in_block[HTTP] = TRUE;
-			return 0;			
-		}
-		else
-			throw UnexpectedTocken("{", this);
-	}
-	if (this->_in_block[HTTP] == FALSE)
-		throw NoOpeningBracket("http", this);
-	if (this->_curr_dir == "")
-	{
-		if ((it = ConfParser::http_map.find(token)) != http_map.end() && this->_in_block[HTTP] == TRUE)
-		{
-			std::cout << "STORE DIRECTIVE" << std::endl;
-			this->_curr_dir = token;
-			return 0;
-		}
-		else if (token != "}")
-			throw UnknownDirective(token, this->_line_nb);
-	}
-	if (this->_curr_dir != "")
-	{
-		std::cout << "STORE " << this->_curr_dir << " VALUE: " << token << std::endl;
-		if (token.find(";") != std::string::npos)
-		{	
-			this->_curr_dir.clear();
-		}
-		return 0;
-	}
-	if (token == "}")
-		this->_in_block[HTTP] = FALSE;*/
-	// return ;
 }
 
-/*int ConfParser::parseServer()
+/*Getters*/
+
+HttpBlock&		ConfParser::getHttpBlock(void)
 {
-	displayVec(this->_dir_line);
-	if (this->_nbr_of_srv != 0)
-		std::cout << "-> SERVER No " << this->_nbr_of_srv << std::endl << std::endl;
-
-	std::cout << "==> SERVER BLOCK" << std::endl << std::endl;
-	if (this->_dir_line.at(0) == "}")
-		this->_block_type = HTTP;
-
-	if (this->_dir_line.at(0) == "location")
-	{
-		this->_block_type = LOCATION;
-		if (this->_dir_line.at(2) == "{")
-			this->_nbr_of_loc++;
-	}
-
-	return 0;
+	return this->_httpBlock;
 }
-
-int ConfParser::parseLocation()
-{
-	displayVec(this->_dir_line);
-
-	if (this->_nbr_of_loc != 0)
-	std::cout << "==> LOCATION BLOCK" << std::endl << std::endl;
-	if (this->_dir_line.at(0) == "}")
-		this->_block_type = SERVER;
-
-	return 0;
-}
-*/
-
 
 
 /*Exceptions*/
@@ -556,6 +517,21 @@ ConfParser::InvalidNbrOfArgs::InvalidNbrOfArgs(const std::string token, ConfPars
 }
 
 const char* ConfParser::InvalidNbrOfArgs::what() const throw()
+{
+	return (this->_msg.c_str());
+}
+
+ConfParser::InvalidValue::InvalidValue(const std::string token, ConfParser *p)
+: _msg("webserv: \"" + token + "\" directive invalid value in " + p->_configFile + ":")
+{
+	std::ostringstream tmp;
+	tmp << p->_line_nb;
+	this->_msg += tmp.str();
+
+	return;
+}
+
+const char* ConfParser::InvalidValue::what() const throw()
 {
 	return (this->_msg.c_str());
 }

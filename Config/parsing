@@ -4,17 +4,17 @@ VECTOR: http {
 ===================
 ==> HTTP BLOCK
 
-VECTOR: client_max_body_size 10000; 
+VECTOR: client_max_body_size 10000 
 SET MAXBDYSIZE FUNCTION
 ===================
 ==> HTTP BLOCK
 
-VECTOR: keepalive_timeout 65; 
+VECTOR: keepalive_timeout 65 
 SET keepalive FUNCTION
 ===================
 ==> HTTP BLOCK
 
-VECTOR: error_page 500 502 503 504 413 /50x.html; 
+VECTOR: error_page 500 502 503 504 413 /50x.html 
 SET ERROPAGE FUNCTION
 ===================
 ===================
@@ -26,22 +26,22 @@ VECTOR: server {
 ===================
 ==> SERVER BLOCK
 
-VECTOR: listen 8082; 
+VECTOR: listen 8082 
 SET LISTEN FUNCTION
 ===================
 ==> SERVER BLOCK
 
-VECTOR: server_name localhosts; 
+VECTOR: server_name localhosts 
 SET SRVNAME FUNCTION
 ===================
 ==> SERVER BLOCK
 
-VECTOR: autoindex on; 
+VECTOR: autoindex on 
 SET AUTOIDX FUNCTION
 ===================
 ==> SERVER BLOCK
 
-VECTOR: root /Users/bbrunet/.brew/var/www; 
+VECTOR: root /Users/bbrunet/.brew/var/www 
 SET ROOT FUNCTION
 ===================
 ==> SERVER BLOCK
@@ -53,12 +53,12 @@ SET LOCATION FUNCTION
 ===================
 ==> LOCATION BLOCK
 
-VECTOR: root /Users/bbrunet/.brew/var/www; 
+VECTOR: root /Users/bbrunet/.brew/var/www 
 SET ROOT FUNCTION
 ===================
 ==> LOCATION BLOCK
 
-VECTOR: index readme.html truc.machin; 
+VECTOR: index readme.html truc.machin 
 SET INDX FUNCTION
 ===================
 ==> LOCATION BLOCK
@@ -74,7 +74,7 @@ SET LOCATION FUNCTION
 ===================
 ==> LOCATION BLOCK
 
-VECTOR: root /Users/bbrunet/.brew/var/www/folder/; 
+VECTOR: root /Users/bbrunet/.brew/var/www/folder/ 
 SET ROOT FUNCTION
 ===================
 ==> LOCATION BLOCK
@@ -90,7 +90,7 @@ SET LOCATION FUNCTION
 ===================
 ==> LOCATION BLOCK
 
-VECTOR: root /Users/bbrunet/.brew/var/www/folder/; 
+VECTOR: root /Users/bbrunet/.brew/var/www/folder/ 
 SET ROOT FUNCTION
 ===================
 ==> LOCATION BLOCK
@@ -99,17 +99,17 @@ VECTOR: }
 ===================
 ==> SERVER BLOCK
 
-VECTOR: error_page 404 /40x.html; 
+VECTOR: error_page 404 /40x.html 
 SET ERROPAGE FUNCTION
 ===================
 ==> SERVER BLOCK
 
-VECTOR: error_page 500 502 503 504 413 /50x.html; 
+VECTOR: error_page 500 502 503 504 413 /50x.html 
 SET ERROPAGE FUNCTION
 ===================
 ==> SERVER BLOCK
 
-VECTOR: client_max_body_size 1; 
+VECTOR: client_max_body_size 1 
 SET MAXBDYSIZE FUNCTION
 ===================
 ==> SERVER BLOCK
@@ -124,22 +124,22 @@ VECTOR: server {
 ===================
 ==> SERVER BLOCK
 
-VECTOR: listen 80; 
+VECTOR: listen 80 
 SET LISTEN FUNCTION
 ===================
 ==> SERVER BLOCK
 
-VECTOR: server_name _; 
+VECTOR: server_name _ 
 SET SRVNAME FUNCTION
 ===================
 ==> SERVER BLOCK
 
-VECTOR: root /var/www/html/; 
+VECTOR: root /var/www/html/ 
 SET ROOT FUNCTION
 ===================
 ==> SERVER BLOCK
 
-VECTOR: index default.html; 
+VECTOR: index default.html 
 SET INDX FUNCTION
 ===================
 ===================
@@ -152,7 +152,7 @@ SET LOCATION FUNCTION
 ===================
 ==> LOCATION BLOCK
 
-VECTOR: index index.html; 
+VECTOR: index index.html 
 SET INDX FUNCTION
 ===================
 ==> LOCATION BLOCK
@@ -168,4 +168,9 @@ VECTOR: }
 VECTOR: } 
 ===================
 [32;1mFIIIIIIIIIINNNNNNNN[0m
+
+EXTRACT CONFIG AND GET ALL SERVER BLOCKS: 
+Number of servers: 2
+MAX BODY SIZE: 0
+MAX BODY SIZE: 100000
 DESTRUCTOR CALLED

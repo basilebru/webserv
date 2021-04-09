@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:59:09 by julnolle          #+#    #+#             */
-/*   Updated: 2021/03/18 09:13:36 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/09 12:07:37 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ private:
 	std::vector<std::string>		_index;
 	bool							_chunked_transfer_encoding; // on | off
 	size_type						_client_max_body_size;
+	size_type						_keepalive_timeout;
 
 	/*For CGI*/
 	std::string							_cgi_pass;
@@ -42,6 +43,11 @@ public:
 	LocationBlock(LocationBlock const & copy);
 	~LocationBlock(void);
 	LocationBlock& operator=(LocationBlock const & rhs);
+
+	// Setters
+	void	setMaxBdySize(size_type size);
+	void	setKeepaliveTimeout(size_type timeout);
+
 };
 
 std::ostream & operator<<(std::ostream & o, LocationBlock const & rhs);

@@ -6,7 +6,7 @@
 #    By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/16 17:10:11 by julnolle          #+#    #+#              #
-#    Updated: 2021/04/06 17:34:41 by julnolle         ###   ########.fr        #
+#    Updated: 2021/04/09 12:50:57 by julnolle         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,6 +37,11 @@ INCLUDES 		=	../includes/
 
 ALL_INC			= 	-I$(INCLUDES)
 
+HEAD += ConfParser.hpp
+HEAD += HttpBlock.hpp
+HEAD += ServerBlock.hpp
+HEAD += LocationBlock.hpp
+
 # ---------------- SRC --------------- #
 
 SRCS += ConfParser.cpp
@@ -53,13 +58,18 @@ DIR_OBJS	= ./objs/
 OBJS		= $(patsubst %.cpp, $(DIR_OBJS)%.o, $(SRCS))
 
 
+TEST		= $(patsubst %.cpp, %.hpp, $(SRCS))
+
+
+# --------------- RULES -------------- #
+
 all: $(NAME)
 
 $(NAME):	$(OBJS)
 			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(SANITIZE) $(OBJS) $(ALL_INC) -o $@
 # 			echo "$(_BOLD)$(_YELLOW)==> $@ linked$(_END)"
 
-$(OBJS): 	$(DIR_OBJS)%.o: %.cpp | $(DIR_OBJS)
+$(OBJS): 	$(DIR_OBJS)%.o: %.cpp $(HEAD) | $(DIR_OBJS)
 			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(SANITIZE) $(ALL_INC) -c $< -o $@
 # 			echo "$(_BOLD)$(_GREEN)--> $@ made$(_END)"
 
