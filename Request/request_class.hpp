@@ -25,7 +25,7 @@ struct request_line
 
 class Request
 {
-    private:
+    public:
         typedef std::pair<std::string, std::string> header;
 
         // ATTRIBUTES
