@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/09 12:37:03 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/12 19:40:30 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include "webserv.hpp"
 # include "HttpBlock.hpp"
+# include "utils.hpp"
 
 # define NB_BLOCKS		3
 # define NB_HTTP_DIR	4
@@ -79,7 +80,8 @@ private:
 	// Store the location URI	
 	void	setLocation();
 
-	void checkNbrOfArgs(size_t expected_nbr);
+	template <class Compare>
+	void checkNbrOfArgs(size_t expected_nbr, Compare comp);
 
 	
 	static	std::string	http_dir[NB_HTTP_DIR];
@@ -101,7 +103,7 @@ public:
 	~ConfParser(void);
 	ConfParser& operator=(ConfParser const & rhs);
 
-	int	 readConfFile(void);
+	void readConfFile(void);
 	void parseLine(std::string& line);
 
 	// Getters
@@ -178,6 +180,16 @@ public:
 	public:
 		InvalidValue(const std::string token, ConfParser *);
 		virtual ~InvalidValue() throw() {};
+		virtual const char* what() const throw();
+	};
+
+	class CannotOpenFile : public std::exception {
+
+	private:
+		std::string _msg;
+	public:
+		CannotOpenFile(ConfParser *);
+		virtual ~CannotOpenFile() throw() {};
 		virtual const char* what() const throw();
 	};
 

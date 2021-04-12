@@ -6,7 +6,7 @@
 #    By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/16 17:10:11 by julnolle          #+#    #+#              #
-#    Updated: 2021/04/09 12:50:57 by julnolle         ###   ########.fr        #
+#    Updated: 2021/04/12 19:51:09 by julnolle         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,8 +34,9 @@ endif
 # -------------- INCLUDES ------------ #
 
 INCLUDES 		=	../includes/
+UTILS	 		=	../Utils/
 
-ALL_INC			= 	-I$(INCLUDES)
+ALL_INC			= 	-I$(INCLUDES) -I$(UTILS)
 
 HEAD += ConfParser.hpp
 HEAD += HttpBlock.hpp
@@ -48,9 +49,11 @@ SRCS += ConfParser.cpp
 SRCS += HttpBlock.cpp
 SRCS += ServerBlock.cpp
 SRCS += LocationBlock.cpp
+# SRCS += utils.cpp
 SRCS += main.cpp
 
 vpath %.cpp ./
+# vpath %.cpp ../Utils/
 
 # ---------------- OBJ --------------- #
 

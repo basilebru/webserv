@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:59:09 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/09 12:07:37 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/12 16:11:49 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,13 @@
 # include <iostream>
 # include <vector>
 # include <map>
+# include "webserv.hpp"
+
 
 class LocationBlock {
 
-	typedef size_t					size_type;
+	typedef size_t									size_type;
+	typedef std::map<std::string, std::string>		mapCgiParams;
 
 private:
 	std::string						_path;
@@ -31,12 +34,13 @@ private:
 	bool							_chunked_transfer_encoding; // on | off
 	size_type						_client_max_body_size;
 	size_type						_keepalive_timeout;
+	std::vector<std::string>		_auth_basic; // string | off + httpasswd paths
 
 	/*For CGI*/
-	std::string							_cgi_pass;
-	unsigned int						_cgi_port; //mixer en std::string avec _cgi_pass
-	std::string							_cgi_index;
-	std::map<std::string, std::string>	_cgi_params;
+	std::string						_cgi_pass;
+	size_type						_cgi_port; //mixer en std::string avec _cgi_pass ?
+	std::string						_cgi_index;
+	mapCgiParams					_cgi_params;
 
 public:
 	LocationBlock(void);

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/09 12:03:41 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/12 16:43:25 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,16 @@
 LocationBlock::LocationBlock(void)
 {
 	this->_path = "";
-	this->_root = "";
-	this->_chunked_transfer_encoding = true;
-	this->_client_max_body_size = 1000000;
-	this->_keepalive_timeout = 0;
+	this->_root = DEFAULT_ROOT;
+	this->_chunked_transfer_encoding = DEFAULT_CHUNKED_ENC;
+	this->_client_max_body_size = DEFAULT_MAX_BDY_SIZE;
+	this->_keepalive_timeout = DEFAULT_KEEPALIVE_T;
 	this->_cgi_pass = "";
 	this->_cgi_port = 9000;
 	this->_cgi_index = "";
+	this->_index.push_back(DEFAULT_INDEX);
+	this->_auth_basic.push_back(DEFAULT_AUTH_BASIC);
+
 	return;
 }
 

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/09 14:31:06 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/12 19:52:08 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,19 +107,19 @@ dirMap	ConfParser::setLocMap()
 
 int ConfParser::setListen(void)
 {
-	this->checkNbrOfArgs(2);
+	this->checkNbrOfArgs(2, &same_as<size_t>);
 	std::cout << "SET LISTEN FUNCTION" << std::endl;
 	return 0;
 }
 int ConfParser::setServerName(void)
 {
-	this->checkNbrOfArgs(2);
+	this->checkNbrOfArgs(1, &is_higher<size_t>);
 	std::cout << "SET SRVNAME FUNCTION" << std::endl;
 	return 0;
 }
 int ConfParser::setRoot(void)
 {
-	this->checkNbrOfArgs(2);
+	this->checkNbrOfArgs(2, &same_as<size_t>);
 	std::cout << "SET ROOT FUNCTION" << std::endl;
 	return 0;
 }
@@ -130,12 +130,12 @@ int ConfParser::setErrorPage(void)
 }
 int ConfParser::setKeepAlive(void)
 {
-	this->checkNbrOfArgs(2);
+	this->checkNbrOfArgs(2, &same_as<size_t>);
 
 	if (this->_dir_line[1].find_first_not_of("0123456789") != std::string::npos)
-		throw InvalidValue(this->_dir_line[1], this);
+		throw InvalidValue(this->_dir_line[0], this);
 
-	int mbs = atoi(this->_dir_line[0].c_str());
+	int mbs = atoi(this->_dir_line[1].c_str());
 
 	if (this->_block_type == HTTP)
 		this->_httpBlock.setKeepaliveTimeout(mbs);
@@ -153,7 +153,7 @@ int ConfParser::setKeepAlive(void)
 }
 int ConfParser::setMaxBdySize(void)
 {
-	this->checkNbrOfArgs(2);
+	this->checkNbrOfArgs(2, &same_as<size_t>);
 
 	if (this->_dir_line[1].find_first_not_of("0123456789") != std::string::npos)
 		throw InvalidValue(this->_dir_line[0], this);
@@ -161,7 +161,10 @@ int ConfParser::setMaxBdySize(void)
 	int mbs = atoi(this->_dir_line[1].c_str());
 
 	if (this->_block_type == HTTP)
+	{
 		this->_httpBlock.setMaxBdySize(mbs);
+		// this->_httpBlock.getLastServer().setMaxBdySize(mbs);
+	}
 	else if (this->_block_type == SERVER)
 	{
 		this->_httpBlock.getLastServer().setMaxBdySize(mbs);
@@ -195,7 +198,7 @@ int ConfParser::setIndex(void)
 }
 int ConfParser::setAutoIndex(void)
 {
-	this->checkNbrOfArgs(2);
+	this->checkNbrOfArgs(2, &same_as<size_t>);
 
 	std::cout << "SET AUTOIDX FUNCTION" << std::endl;
 	return 0;
@@ -203,49 +206,38 @@ int ConfParser::setAutoIndex(void)
 
 void ConfParser::setLocation()
 {
-	this->checkNbrOfArgs(3);
+	this->checkNbrOfArgs(3, &same_as<size_t>);
 	std::cout << "SET LOCATION FUNCTION" << std::endl;
 }
 
-void ConfParser::checkNbrOfArgs(size_t expected_nbr)
+template <class Compare>
+void ConfParser::checkNbrOfArgs(size_t expected_nbr, Compare comp)
 {
-	if (this->_dir_line.size() != expected_nbr)
+	if (!comp(expected_nbr, this->_dir_line.size()))
 		throw InvalidNbrOfArgs(this->_dir_line[0], this);
 }
 
-int ConfParser::readConfFile()
+void ConfParser::readConfFile()
 {
 	std::ifstream	file;
 	std::string		line;
-	size_t			ret = 0;
-
 
 	file.open(this->_configFile.c_str());
 	if (file.fail())
+		throw CannotOpenFile(this);
+
+	while (getline(file, line))
 	{
-		std::cerr << "webserv: cannot open file \"" << this->_configFile << "\"" << std::endl;
-		return 1;
+		this->parseLine(line);
+
+		file.clear();
+		this->_line_nb++;
 	}
-	try {
-		while (getline(file, line))
-		{
-			this->parseLine(line);
-			
-			file.clear();
-			if (ret == 1)
-				break;
-			this->_line_nb++;
-		}
-		if (this->_in_block.any())
-			throw UnexpectedEOF("end of file", this);
-		else
-			std::cout << GREEN << "FIIIIIIIIIINNNNNNNN" << NOCOLOR << std::endl;
-	}
-	catch(const std::exception& e) {
-		std::cerr << e.what() << '\n';
-		ret = 1;
-	}
-	return ret;
+	if (this->_in_block.any())
+		throw UnexpectedEOF("end of file", this);
+	else
+		std::cout << GREEN << "FIIIIIIIIIINNNNNNNN" << NOCOLOR << std::endl;
+	return ;
 }
 
 void erase_comments(std::string& line)
@@ -258,19 +250,6 @@ void erase_comments(std::string& line)
 
 	if (pos != std::string::npos)
 		line.erase(pos, len);
-}
-
-template<typename T>
-void displayVec(std::vector<T> v)
-{
-	typename std::vector<T>::iterator it = v.begin();
-	std::cout << "VECTOR: ";
-	while (it != v.end())
-	{
-		std::cout << *it << ' ';
-		++it;
-	}
-	std::cout << std::endl;
 }
 
 void ConfParser::parseLine(std::string& line)
@@ -378,7 +357,8 @@ void ConfParser::parseDirective()
 	size_t pos = this->_dir_line.back().find_last_of(";");
 	if (pos != std::string::npos)
 		this->_dir_line.back().erase(pos, 1);
-	displayVec(this->_dir_line);
+	
+	std::cout << "VECTOR: "; displayVec(this->_dir_line);
 	
 	if (directive == "http" || directive == "server" || directive == "location")
 	{
@@ -532,6 +512,17 @@ ConfParser::InvalidValue::InvalidValue(const std::string token, ConfParser *p)
 }
 
 const char* ConfParser::InvalidValue::what() const throw()
+{
+	return (this->_msg.c_str());
+}
+
+ConfParser::CannotOpenFile::CannotOpenFile(ConfParser *p)
+: _msg("webserv: cannot open file \"" + p->_configFile + "\"")
+{
+	return;
+}
+
+const char* ConfParser::CannotOpenFile::what() const throw()
 {
 	return (this->_msg.c_str());
 }

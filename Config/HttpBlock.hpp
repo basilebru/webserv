@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/09 12:46:30 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/12 15:32:20 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@
 # include <vector>
 # include "ServerBlock.hpp"
 
-# define ON		0
-# define OFF	1
+# define ON		true
+# define OFF	false
 
 class HttpBlock {
 
@@ -36,6 +36,7 @@ private:
 	std::vector<std::string>		_index;
 	// std::vector<std::string>		_includes;
 	std::vector<ServerBlock>		_servers;  /*Plusieurs ServerBlocks possibles dans l'HttpBlock */
+	std::vector<std::string>		_auth_basic; // string | off + httpasswd paths
 
 public:
 	HttpBlock(void);
@@ -53,6 +54,9 @@ public:
 
 	
 	void	addServer();
+	
+
+	ServerBlock& selectServer(std::string ip, int port, std::string host);
 
 
 };
