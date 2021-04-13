@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/12 15:32:20 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/13 18:49:23 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,15 @@ public:
 	HttpBlock& operator=(HttpBlock const & rhs);
 
 	// Setters
+	void	setAutoIndex(char state);
+	void	setChunkedEncoding(char state);
+	void	setRoot(std::string path);
+	void	setErrorPages(std::map<int, std::string>);
 	void	setMaxBdySize(size_type size);
 	void	setKeepaliveTimeout(size_type timeout);
+	void	setIndex(std::string index);
+	void	setAuthBasic(std::string value);
+	// void	setServers(std::string index);
 
 	// Getters
 	std::vector<ServerBlock>& getServers();

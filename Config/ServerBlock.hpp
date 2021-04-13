@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:23:44 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/12 18:25:45 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/13 19:01:05 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,11 +35,12 @@ private:
 	std::string						_root;
 	std::vector<LocationBlock>		_locations; /*Plusieurs LocationBlocks possibles dans un ServerBlock */
 	std::map<int, std::string>		_error_pages; /* num error, error file path */
+	stringVec						_index;
 	size_type						_client_max_body_size;
 	size_type						_keepalive_timeout;
-	stringVec						_index;
 	bool							_chunked_transfer_encoding; // on | off
 	stringVec						_auth_basic; // string | off + httpasswd paths
+	stringVec						_limit_except; // GET POST ...
 
 public:
 	ServerBlock(void);
@@ -49,8 +50,20 @@ public:
 
 	
 	// Setters
+	int		setListenIp(std::string ip);
+	int		setListenPort(size_type port);
+	void	setServerNames(stringVec servers);
+	void	setAutoIndex(char state);
+	void	setRoot(std::string path);
+	void	setLimitExcept(std::string method);
+	void	setErrorPages(std::map<int, std::string>);
+	void	setIndex(std::string index);
 	void	setMaxBdySize(size_type size);
 	void	setKeepaliveTimeout(size_type timeout);
+	void	setChunkedEncoding(char state);
+	void	setAuthBasic(std::string value);
+
+	void	addLocation(void);
 
 	// Getters
 	const std::string&					getListenIP(void) const;

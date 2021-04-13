@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/12 18:38:23 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/13 19:06:43 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ ServerBlock::ServerBlock(ServerBlock const & copy)
 	this->_keepalive_timeout = copy._keepalive_timeout;
 	this->_index = copy._index;
 	this->_chunked_transfer_encoding = copy._chunked_transfer_encoding;
+	this->_limit_except = copy._limit_except;
 
 	return ;
 }
@@ -61,20 +62,89 @@ ServerBlock& ServerBlock::operator=(ServerBlock const & rhs)
 	this->_keepalive_timeout = rhs._keepalive_timeout;
 	this->_index = rhs._index;
 	this->_chunked_transfer_encoding = rhs._chunked_transfer_encoding;
+	this->_limit_except = rhs._limit_except;
 
 	return *this;
 }
 
 
 // Setters
+
+int	ServerBlock::setListenIp(std::string ip)
+{
+	if (ip == "localhost")
+		ip = "127.0.0.1";
+	if (ip.find_first_not_of("0123456789.") == std::string::npos && !ip.empty())
+	{
+		this->_listenIP = ip;
+		return SUCCESS;
+	}
+	return FAILURE;
+}
+
+int	ServerBlock::setListenPort(size_type port)
+{
+	if (port)
+	{
+		this->_listenPort = port;
+		return SUCCESS;
+	}
+	return FAILURE;
+}
+
+void	ServerBlock::setServerNames(stringVec servers)
+{
+	this->_server_names = servers;
+}
+
+void	ServerBlock::setAutoIndex(char state)
+{
+	this->_autoindex = state;
+}
+
+void	ServerBlock::setRoot(std::string path)
+{
+	this->_root = path;
+}
+
+void	ServerBlock::setLimitExcept(std::string method)
+{
+	this->_limit_except.push_back(method);
+}
+
+void	ServerBlock::setErrorPages(std::map<int, std::string> map)
+{
+	(void)map;
+}
+
+void	ServerBlock::setIndex(std::string index)
+{
+	this->_index.push_back(index);
+}
+
 void	ServerBlock::setMaxBdySize(size_type size)
 {
 	this->_client_max_body_size = size;
 }
+
 void	ServerBlock::setKeepaliveTimeout(size_type timeout)
 {
 	this->_keepalive_timeout = timeout;
 }
+
+void	ServerBlock::setChunkedEncoding(char state)
+{
+	if (state == '1')
+		this->_chunked_transfer_encoding = true;
+	if (state == '0')
+		this->_chunked_transfer_encoding = false;
+}
+
+void	ServerBlock::setAuthBasic(std::string value)
+{
+	this->_auth_basic.push_back(value);
+}
+
 
 // Getters
 
@@ -148,15 +218,21 @@ std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs)
 	o << "LISTEN IP: " << rhs.getListenIP() << std::endl;
 	o << "LISTEN PORT: " << rhs.getListenPort() << std::endl;
 	// o << "SERVER NAMES: " << rhs.getServerNames() << std::endl;
-	o << "AUTOINDEX: " << rhs.getAutoindex() << std::endl;
+	o << "AUTOINDEX: " << std::boolalpha << rhs.getAutoindex() << std::endl;
 	o << "ROOT: " << rhs.getRoot() << std::endl;
 	// o << "LOCATIONS: " << rhs.getLocations() << std::endl;
 	// o << "ERROR PAGES: " << rhs.getErrorPages() << std::endl;
 	o << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
 	o << "KEEP. TIMEOUT: " << rhs.getKeepaliveTime() << std::endl;
 	// o << "INDEXES: " << rhs.getIndexes() << std::endl;
-	o << "CHUNKED ENC.: " << rhs.getChunkedEncoding() << std::endl;
+	o << "CHUNKED ENC.: " << std::boolalpha << rhs.getChunkedEncoding() << std::endl;
 	// o << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
 
 	return o;
+}
+
+void ServerBlock::addLocation(void)
+{
+	LocationBlock loc;
+	this->_locations.push_back(loc);
 }

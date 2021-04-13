@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/12 16:43:25 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/13 16:38:06 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ LocationBlock::LocationBlock(void)
 {
 	this->_path = "";
 	this->_root = DEFAULT_ROOT;
+	this->_autoindex = DEFAULT_AUTOINDEX;
 	this->_chunked_transfer_encoding = DEFAULT_CHUNKED_ENC;
 	this->_client_max_body_size = DEFAULT_MAX_BDY_SIZE;
 	this->_keepalive_timeout = DEFAULT_KEEPALIVE_T;
@@ -32,6 +33,7 @@ LocationBlock::LocationBlock(LocationBlock const & copy)
 {
 	this->_path = copy._path;
 	this->_root = copy._root;
+	this->_autoindex = copy._autoindex;
 	this->_limit_except = copy._limit_except;
 	this->_error_pages = copy._error_pages;
 	this->_index = copy._index;
@@ -55,6 +57,7 @@ LocationBlock& LocationBlock::operator=(LocationBlock const & rhs)
 {
 	this->_path = rhs._path;
 	this->_root = rhs._root;
+	this->_autoindex = rhs._autoindex;
 	this->_limit_except = rhs._limit_except;
 	this->_error_pages = rhs._error_pages;
 	this->_index = rhs._index;
@@ -70,11 +73,16 @@ LocationBlock& LocationBlock::operator=(LocationBlock const & rhs)
 }
 
 // Setters
-void	LocationBlock::setMaxBdySize(size_type size)
+void LocationBlock::setMaxBdySize(size_type size)
 {
 	this->_client_max_body_size = size;
 }
-void	LocationBlock::setKeepaliveTimeout(size_type timeout)
+void LocationBlock::setKeepaliveTimeout(size_type timeout)
 {
 	this->_keepalive_timeout = timeout;
+}
+
+void LocationBlock::setRoot(std::string path)
+{
+	this->_root = path;
 }

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:59:09 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/12 16:11:49 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/13 16:38:45 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class LocationBlock {
 private:
 	std::string						_path;
 	std::string						_root;
+	bool							_autoindex; // on | off
 	std::vector<std::string>		_limit_except; //ou allow_methods ?
 	std::map<int, std::string>		_error_pages; /* num error, error file path */
 	std::vector<std::string>		_index;
@@ -49,8 +50,21 @@ public:
 	LocationBlock& operator=(LocationBlock const & rhs);
 
 	// Setters
+	void	setPath(std::string path);
+	void	setRoot(std::string path);
+	void	setAutoIndex(char state);
+	void	setLimitExcept(std::string path);
+	void	setErrorPages(std::map<int, std::string>);
+	void	setIndex(std::string index);
+	void	setChunkedEncoding(char state);
 	void	setMaxBdySize(size_type size);
 	void	setKeepaliveTimeout(size_type timeout);
+	void	setAuthBasic(std::string value);
+	
+	void	setCgiPass(std::string value);
+	void	setCgiPort(std::string port);
+	void	setCgiIndex(std::string index);
+	void	setCgiParams(mapCgiParams params);
 
 };
 

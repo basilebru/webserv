@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/12 19:52:08 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/13 19:00:49 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,6 @@ dirMap	ConfParser::setLocMap()
 {
 	dirMap map;
 
-	map["listen"] = &ConfParser::setListen;
 	map["root"] = &ConfParser::setRoot;
 	map["error_page"] = &ConfParser::setErrorPage;
 	map["client_max_body_size"] = &ConfParser::setMaxBdySize;
@@ -108,6 +107,31 @@ dirMap	ConfParser::setLocMap()
 int ConfParser::setListen(void)
 {
 	this->checkNbrOfArgs(2, &same_as<size_t>);
+
+	// if (this->_dir_line[1].find_first_not_of("0123456789:.") != std::string::npos)
+	// 	throw InvalidValue(this->_dir_line[0], this);
+
+	size_t pos = this->_dir_line[1].find(":");
+	if (pos != std::string::npos)
+	{
+		if (this->_httpBlock.getLastServer().setListenIp(this->_dir_line[1].substr(0, pos)) == FAILURE)
+			throw UnknownHost(this->_dir_line[1], this);
+		if (this->_httpBlock.getLastServer().setListenPort(atoi(this->_dir_line[1].substr(pos + 1).c_str())) == FAILURE)
+			throw InvalidPort(this->_dir_line[1], this);
+	}
+	else if  (pos == std::string::npos && this->_dir_line[1].find_first_not_of("0123456789") == std::string::npos) 
+	{
+		if (this->_httpBlock.getLastServer().setListenPort(atoi(this->_dir_line[1].c_str())) == FAILURE)
+			throw InvalidPort(this->_dir_line[1], this);
+	}
+	else if (pos == std::string::npos)
+	{
+		if (this->_httpBlock.getLastServer().setListenIp(this->_dir_line[1]) == FAILURE)
+			throw UnknownHost(this->_dir_line[1], this);
+	}
+	else
+		throw InvalidValue(this->_dir_line[0], this);
+	
 	std::cout << "SET LISTEN FUNCTION" << std::endl;
 	return 0;
 }
@@ -120,6 +144,23 @@ int ConfParser::setServerName(void)
 int ConfParser::setRoot(void)
 {
 	this->checkNbrOfArgs(2, &same_as<size_t>);
+	if (this->_dir_line[1] == "")
+		throw InvalidValue(this->_dir_line[0], this);
+
+	if (this->_block_type == HTTP)
+	{
+		this->_httpBlock.setRoot(this->_dir_line[1]);
+		// this->_httpBlock.getLastServer().setMaxBdySize(mbs);
+	}
+	else if (this->_block_type == SERVER)
+	{
+		this->_httpBlock.getLastServer().setRoot(this->_dir_line[1]);
+	}
+	if (this->_block_type == LOCATION)
+	{
+		this->_httpBlock.getLastServer().getLastLocation().setRoot(this->_dir_line[1]);
+	}
+
 	std::cout << "SET ROOT FUNCTION" << std::endl;
 	return 0;
 }
@@ -314,6 +355,7 @@ void ConfParser::handleBlockIn(const std::string& directive)
 				this->_in_block[LOCATION] = TRUE;
 			else
 				throw NoClosingBracket("location", this);
+			this->_httpBlock.getLastServer().addLocation();
 			this->_nbr_of_loc++;
 			std::cout << "-> LOCATION No " << this->_nbr_of_loc << std::endl << std::endl;
 		}
@@ -356,7 +398,11 @@ void ConfParser::parseDirective()
 
 	size_t pos = this->_dir_line.back().find_last_of(";");
 	if (pos != std::string::npos)
+	{
 		this->_dir_line.back().erase(pos, 1);
+		if (this->_dir_line.back().empty())
+			this->_dir_line.pop_back();
+	}
 	
 	std::cout << "VECTOR: "; displayVec(this->_dir_line);
 	
@@ -523,6 +569,28 @@ ConfParser::CannotOpenFile::CannotOpenFile(ConfParser *p)
 }
 
 const char* ConfParser::CannotOpenFile::what() const throw()
+{
+	return (this->_msg.c_str());
+}
+
+ConfParser::UnknownHost::UnknownHost(const std::string token, ConfParser *p)
+: _msg("webserv: host not found in \"" + token + "\" of the \"listen\" directive in " + p->_configFile + ":")
+{
+	return;
+}
+
+const char* ConfParser::UnknownHost::what() const throw()
+{
+	return (this->_msg.c_str());
+}
+
+ConfParser::InvalidPort::InvalidPort(const std::string token, ConfParser *p)
+: _msg("webserv: invalid port in \"" + token + "\" of the \"listen\" directive in " + p->_configFile + ":")
+{
+	return;
+}
+
+const char* ConfParser::InvalidPort::what() const throw()
 {
 	return (this->_msg.c_str());
 }

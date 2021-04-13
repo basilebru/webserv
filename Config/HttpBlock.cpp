@@ -6,22 +6,22 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/12 15:31:18 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/13 16:39:36 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpBlock.hpp"
 
 HttpBlock::HttpBlock(void)
-    : _autoindex(DEFAULT_AUTOINDEX),
-	_chunked_transfer_encoding(DEFAULT_CHUNKED_ENC),
-	_root(DEFAULT_ROOT),
-	_error_pages(),
-	_client_max_body_size(DEFAULT_MAX_BDY_SIZE),
-	_keepalive_timeout(DEFAULT_KEEPALIVE_T),
-	_index(),
-	_servers(),
-	_auth_basic() {
+: _autoindex(DEFAULT_AUTOINDEX),
+_chunked_transfer_encoding(DEFAULT_CHUNKED_ENC),
+_root(DEFAULT_ROOT),
+_error_pages(),
+_client_max_body_size(DEFAULT_MAX_BDY_SIZE),
+_keepalive_timeout(DEFAULT_KEEPALIVE_T),
+_index(),
+_servers(),
+_auth_basic() {
 
 	this->_index.push_back(DEFAULT_INDEX);
 	this->_auth_basic.push_back(DEFAULT_AUTH_BASIC);
@@ -59,6 +59,11 @@ HttpBlock::~HttpBlock(void)
 */
 
 // Setters
+void HttpBlock::setRoot(std::string path)
+{
+	this->_root = path;
+}
+
 void	HttpBlock::setMaxBdySize(size_type size)
 {
 	this->_client_max_body_size = size;
@@ -88,4 +93,5 @@ void HttpBlock::addServer()
 	ServerBlock srv;
 	this->_servers.push_back(srv);
 }
+
 

@@ -16,6 +16,12 @@
 # include <bitset>
 
 
+// Utils
+# define TRUE		1
+# define FALSE		0
+# define SUCCESS	0
+# define FAILURE	-1
+
 // Default server config values
 # define DEFAULT_INDEX			"index.html"
 # define DEFAULT_AUTOINDEX		false

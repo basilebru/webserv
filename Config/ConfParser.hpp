@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/12 19:40:30 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/13 18:59:25 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,6 @@
 # define SERVER		1
 # define LOCATION	2
 // # define NOBLOCK	   -1
-
-# define TRUE		1
-# define FALSE		0
-# define FAILURE	-1
 
 # define IN_HTTP_BLOCK      0x00000001
 # define IN_SRV_BLOCK       0x00000002
@@ -84,9 +80,9 @@ private:
 	void checkNbrOfArgs(size_t expected_nbr, Compare comp);
 
 	
-	static	std::string	http_dir[NB_HTTP_DIR];
-	static	std::string	srv_dir[NB_SRV_DIR];
-	static	std::string	loc_dir[NB_LOC_DIR];
+	// static	std::string	http_dir[NB_HTTP_DIR];
+	// static	std::string	srv_dir[NB_SRV_DIR];
+	// static	std::string	loc_dir[NB_LOC_DIR];
 
 	static	dirMap	setHttpMap();
 	static	dirMap	setSrvMap();
@@ -190,6 +186,26 @@ public:
 	public:
 		CannotOpenFile(ConfParser *);
 		virtual ~CannotOpenFile() throw() {};
+		virtual const char* what() const throw();
+	};
+
+	class UnknownHost : public std::exception {
+
+	private:
+		std::string _msg;
+	public:
+		UnknownHost(const std::string token, ConfParser *);
+		virtual ~UnknownHost() throw() {};
+		virtual const char* what() const throw();
+	};
+
+	class InvalidPort : public std::exception {
+
+	private:
+		std::string _msg;
+	public:
+		InvalidPort(const std::string token, ConfParser *);
+		virtual ~InvalidPort() throw() {};
 		virtual const char* what() const throw();
 	};
 
