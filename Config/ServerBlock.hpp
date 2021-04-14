@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:23:44 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/13 19:01:05 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/14 17:51:08 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,26 +21,29 @@
 # include "webserv.hpp"
 # include "LocationBlock.hpp"
 
-typedef size_t						size_type;
-typedef std::vector<std::string>	stringVec;
-typedef std::map<int, std::string>	errorMap;
+typedef size_t									size_type;
+typedef std::vector<std::string>				stringVec;
+typedef std::map<int, std::string>				errorMap;
+typedef std::vector<std::string>::iterator		strVecIterator;
 
 class ServerBlock {
+
+	typedef std::vector<std::string>::iterator	strVecIterator;
 
 private:
 	std::string						_listenIP;
 	size_type						_listenPort;
 	stringVec						_server_names;
-	bool							_autoindex;
 	std::string						_root;
-	std::vector<LocationBlock>		_locations; /*Plusieurs LocationBlocks possibles dans un ServerBlock */
+	bool							_autoindex;
+	stringVec						_indexes;
+	stringVec						_limit_except; // GET POST ...
 	std::map<int, std::string>		_error_pages; /* num error, error file path */
-	stringVec						_index;
 	size_type						_client_max_body_size;
 	size_type						_keepalive_timeout;
 	bool							_chunked_transfer_encoding; // on | off
 	stringVec						_auth_basic; // string | off + httpasswd paths
-	stringVec						_limit_except; // GET POST ...
+	std::vector<LocationBlock>		_locations; /*Plusieurs LocationBlocks possibles dans un ServerBlock */
 
 public:
 	ServerBlock(void);
@@ -52,12 +55,12 @@ public:
 	// Setters
 	int		setListenIp(std::string ip);
 	int		setListenPort(size_type port);
-	void	setServerNames(stringVec servers);
-	void	setAutoIndex(char state);
+	void	setServerNames(strVecIterator first, strVecIterator last);
 	void	setRoot(std::string path);
+	void	setAutoIndex(std::string state);
+	void	setIndex(strVecIterator first, strVecIterator last);
 	void	setLimitExcept(std::string method);
-	void	setErrorPages(std::map<int, std::string>);
-	void	setIndex(std::string index);
+	void	setErrorPages(strVecIterator first, strVecIterator last, std::string& val);
 	void	setMaxBdySize(size_type size);
 	void	setKeepaliveTimeout(size_type timeout);
 	void	setChunkedEncoding(char state);

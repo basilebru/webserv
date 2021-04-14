@@ -15,6 +15,8 @@
 # include <sstream>
 # include <bitset>
 
+# include <algorithm>
+
 
 // Utils
 # define TRUE		1

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/13 19:06:43 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/14 17:51:01 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ ServerBlock::ServerBlock(void)
 	this->_root = DEFAULT_ROOT;
 	this->_client_max_body_size = DEFAULT_MAX_BDY_SIZE;
 	this->_keepalive_timeout = DEFAULT_KEEPALIVE_T;
-	this->_index.push_back(DEFAULT_INDEX);
+	this->_indexes.push_back(DEFAULT_INDEX);
 	this->_chunked_transfer_encoding = DEFAULT_CHUNKED_ENC;
 	this->_auth_basic.push_back(DEFAULT_AUTH_BASIC);
 	return ;
@@ -37,7 +37,7 @@ ServerBlock::ServerBlock(ServerBlock const & copy)
 	this->_error_pages = copy._error_pages;
 	this->_client_max_body_size = copy._client_max_body_size;
 	this->_keepalive_timeout = copy._keepalive_timeout;
-	this->_index = copy._index;
+	this->_indexes = copy._indexes;
 	this->_chunked_transfer_encoding = copy._chunked_transfer_encoding;
 	this->_limit_except = copy._limit_except;
 
@@ -60,7 +60,7 @@ ServerBlock& ServerBlock::operator=(ServerBlock const & rhs)
 	this->_error_pages = rhs._error_pages;
 	this->_client_max_body_size = rhs._client_max_body_size;
 	this->_keepalive_timeout = rhs._keepalive_timeout;
-	this->_index = rhs._index;
+	this->_indexes = rhs._indexes;
 	this->_chunked_transfer_encoding = rhs._chunked_transfer_encoding;
 	this->_limit_except = rhs._limit_except;
 
@@ -92,14 +92,22 @@ int	ServerBlock::setListenPort(size_type port)
 	return FAILURE;
 }
 
-void	ServerBlock::setServerNames(stringVec servers)
+void	ServerBlock::setServerNames(strVecIterator first, strVecIterator last)
 {
-	this->_server_names = servers;
+	this->_server_names.assign(first, last);
 }
 
-void	ServerBlock::setAutoIndex(char state)
+void	ServerBlock::setAutoIndex(std::string state)
 {
-	this->_autoindex = state;
+	if (state == "on")
+		this->_autoindex = true;
+	else if (state == "off")
+		this->_autoindex = false;
+}
+
+void	ServerBlock::setIndex(strVecIterator first, strVecIterator last)
+{
+	this->_indexes.assign(first, last);
 }
 
 void	ServerBlock::setRoot(std::string path)
@@ -112,14 +120,13 @@ void	ServerBlock::setLimitExcept(std::string method)
 	this->_limit_except.push_back(method);
 }
 
-void	ServerBlock::setErrorPages(std::map<int, std::string> map)
+void	ServerBlock::setErrorPages(strVecIterator first, strVecIterator last, std::string& val)
 {
-	(void)map;
-}
-
-void	ServerBlock::setIndex(std::string index)
-{
-	this->_index.push_back(index);
+	while (first != last)
+	{
+		this->_error_pages.insert(std::make_pair(atoi(first->c_str()), val));
+		++first;
+	}
 }
 
 void	ServerBlock::setMaxBdySize(size_type size)
@@ -163,14 +170,19 @@ const stringVec&		ServerBlock::getServerNames(void) const
 	return this->_server_names;
 }
 
+const std::string&		ServerBlock::getRoot(void) const
+{
+	return this->_root;
+}
+
 const bool&		ServerBlock::getAutoindex(void) const
 {
 	return this->_autoindex;
 }
 
-const std::string&		ServerBlock::getRoot(void) const
+const stringVec&	ServerBlock::getIndexes(void) const
 {
-	return this->_root;
+	return this->_indexes;
 }
 
 const size_type&		ServerBlock::getMaxBdySize(void) const
@@ -198,11 +210,6 @@ const size_type&	ServerBlock::getKeepaliveTime(void) const
 	return this->_keepalive_timeout;
 }
 
-const stringVec&	ServerBlock::getIndexes(void) const
-{
-	return this->_index;
-}
-
 const bool&			ServerBlock::getChunkedEncoding(void) const
 {
 	return this->_chunked_transfer_encoding;
@@ -213,20 +220,52 @@ const stringVec&	ServerBlock::getAuthBasic(void) const
 	return this->_auth_basic;
 }
 
+
+template<typename InputIterator>
+void putVecToOstream(std::ostream& o, InputIterator first, InputIterator last)
+{
+	while(first != last) {
+	    o << *first << ' ';
+	    ++first;
+	}
+	o << std::endl;	
+}
+
+template<typename InputIterator>
+void putMapToOstream(std::ostream& o, InputIterator first, InputIterator last)
+{
+	while(first != last) {
+	    o << first->first << "->" << first->second << ' ';
+	    ++first;
+	}
+	o << std::endl;	
+}
+
 std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs)
 {
 	o << "LISTEN IP: " << rhs.getListenIP() << std::endl;
 	o << "LISTEN PORT: " << rhs.getListenPort() << std::endl;
-	// o << "SERVER NAMES: " << rhs.getServerNames() << std::endl;
+	
+	o << "SERVER NAMES: ";
+	putVecToOstream(o, rhs.getServerNames().begin(), rhs.getServerNames().end());
+
 	o << "AUTOINDEX: " << std::boolalpha << rhs.getAutoindex() << std::endl;
 	o << "ROOT: " << rhs.getRoot() << std::endl;
 	// o << "LOCATIONS: " << rhs.getLocations() << std::endl;
-	// o << "ERROR PAGES: " << rhs.getErrorPages() << std::endl;
+	
+	o << "ERROR PAGES: ";
+	putMapToOstream(o, rhs.getErrorPages().begin(), rhs.getErrorPages().end());
+	
 	o << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
 	o << "KEEP. TIMEOUT: " << rhs.getKeepaliveTime() << std::endl;
-	// o << "INDEXES: " << rhs.getIndexes() << std::endl;
+	
+	o << "INDEXES: ";
+	putVecToOstream(o, rhs.getIndexes().begin(), rhs.getIndexes().end());
+
 	o << "CHUNKED ENC.: " << std::boolalpha << rhs.getChunkedEncoding() << std::endl;
-	// o << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
+	
+	o << "AUTH BASIC: ";
+	putVecToOstream(o, rhs.getAuthBasic().begin(), rhs.getAuthBasic().end());
 
 	return o;
 }

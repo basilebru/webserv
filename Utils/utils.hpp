@@ -44,4 +44,11 @@ bool same_as (const T& value1, const T& value2)
 	return (value2 == value1);
 }
 
+template <class UnaryOperator>
+void changeCaseString(std::string& str, UnaryOperator op)
+{
+	std::transform(str.begin(), str.end(),str.begin(), op);
+}
+
+
 #endif

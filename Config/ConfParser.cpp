@@ -6,13 +6,11 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/13 19:00:49 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/14 18:07:59 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfParser.hpp"
-#include <stdio.h>
-#include <cstring>
 
 ConfParser::ConfParser(void)
 : _configFile("nginx.conf"), _httpBlock(),
@@ -138,6 +136,11 @@ int ConfParser::setListen(void)
 int ConfParser::setServerName(void)
 {
 	this->checkNbrOfArgs(1, &is_higher<size_t>);
+
+	std::vector<std::string>::iterator first = this->_dir_line.begin();
+
+	this->_httpBlock.getLastServer().setServerNames(++first, this->_dir_line.end());
+
 	std::cout << "SET SRVNAME FUNCTION" << std::endl;
 	return 0;
 }
@@ -166,6 +169,27 @@ int ConfParser::setRoot(void)
 }
 int ConfParser::setErrorPage(void)
 {
+	this->checkNbrOfArgs(2, &is_higher<size_t>);
+
+	std::vector<std::string>::iterator first = this->_dir_line.begin();
+	std::vector<std::string>::iterator end = this->_dir_line.end();
+
+	for (size_t i = 1; i < this->_dir_line.size() - 1; ++i)
+	{
+		if (this->_dir_line[i].find_first_not_of("0123456789") != std::string::npos)
+			throw InvalidValue(this->_dir_line[0], this);
+	}
+
+	if (this->_block_type == HTTP)
+		this->_httpBlock.setErrorPages(++first, --end, this->_dir_line.back());
+	else if (this->_block_type == SERVER)
+	{
+		this->_httpBlock.getLastServer().setErrorPages(++first, --end, this->_dir_line.back());
+	}
+	if (this->_block_type == LOCATION)
+	{
+		this->_httpBlock.getLastServer().getLastLocation().setErrorPages(++first, --end, this->_dir_line.back());
+	}
 	std::cout << "SET ERROPAGE FUNCTION" << std::endl;
 	return 0;
 }
@@ -234,13 +258,35 @@ int ConfParser::setAllowedMethods(void)
 }
 int ConfParser::setIndex(void)
 {
+	this->checkNbrOfArgs(1, &is_higher<size_t>);
+
+	std::vector<std::string>::iterator first = this->_dir_line.begin();
+	if (this->_block_type == HTTP)
+		this->_httpBlock.setIndex(++first, this->_dir_line.end());
+	else if (this->_block_type == SERVER)
+		this->_httpBlock.getLastServer().setIndex(++first, this->_dir_line.end());
+	if (this->_block_type == LOCATION)
+		this->_httpBlock.getLastServer().getLastLocation().setIndex(++first, this->_dir_line.end());
+
 	std::cout << "SET INDX FUNCTION" << std::endl;
 	return 0;
 }
+
 int ConfParser::setAutoIndex(void)
 {
 	this->checkNbrOfArgs(2, &same_as<size_t>);
 
+	changeCaseString(this->_dir_line[1], ::tolower);
+
+	if (this->_dir_line[1] != "on" && this->_dir_line[1] != "off")
+		throw InvalidValue(this->_dir_line[0], this);
+
+	if (this->_block_type == HTTP)
+		this->_httpBlock.setAutoIndex(this->_dir_line[1]);
+	else if (this->_block_type == SERVER)
+		this->_httpBlock.getLastServer().setAutoIndex(this->_dir_line[1]);
+	if (this->_block_type == LOCATION)
+		this->_httpBlock.getLastServer().getLastLocation().setAutoIndex(this->_dir_line[1]);
 	std::cout << "SET AUTOIDX FUNCTION" << std::endl;
 	return 0;
 }
@@ -248,6 +294,7 @@ int ConfParser::setAutoIndex(void)
 void ConfParser::setLocation()
 {
 	this->checkNbrOfArgs(3, &same_as<size_t>);
+	this->_httpBlock.getLastServer().getLastLocation().setPath(this->_dir_line[1]);
 	std::cout << "SET LOCATION FUNCTION" << std::endl;
 }
 
@@ -314,8 +361,8 @@ void ConfParser::parseLine(std::string& line)
 			this->_dir_line.clear();
 		}
 	}
-	if (line != "")
-		std::cout << "===================" << std::endl;
+	// if (line != "")
+	// 	std::cout << "===================" << std::endl;
 }
 
 void ConfParser::handleBlockIn(const std::string& directive)
@@ -339,8 +386,8 @@ void ConfParser::handleBlockIn(const std::string& directive)
 				throw NoClosingBracket("server", this);
 
 			this->_httpBlock.addServer();
-			this->_nbr_of_srv++;
-			std::cout << "-> SERVER No " << this->_nbr_of_srv << std::endl << std::endl;
+			// this->_nbr_of_srv++;
+			// std::cout << "-> SERVER No " << this->_nbr_of_srv << std::endl << std::endl;
 		}
 		else
 			throw NoOpeningBracket("server", this);
@@ -356,8 +403,8 @@ void ConfParser::handleBlockIn(const std::string& directive)
 			else
 				throw NoClosingBracket("location", this);
 			this->_httpBlock.getLastServer().addLocation();
-			this->_nbr_of_loc++;
-			std::cout << "-> LOCATION No " << this->_nbr_of_loc << std::endl << std::endl;
+			// this->_nbr_of_loc++;
+			// std::cout << "-> LOCATION No " << this->_nbr_of_loc << std::endl << std::endl;
 		}
 		else
 			throw NoOpeningBracket("location", this);
@@ -389,12 +436,12 @@ void ConfParser::parseDirective()
 	dirMap::iterator it;
 	std::string directive = this->_dir_line.at(0);
 	
-	if (this->_block_type == HTTP)
-		std::cout << "==> HTTP BLOCK" << std::endl << std::endl;
-	else if (this->_block_type == SERVER)
-		std::cout << "==> SERVER BLOCK" << std::endl << std::endl;
-	if (this->_block_type == LOCATION)
-		std::cout << "==> LOCATION BLOCK" << std::endl << std::endl;
+	// if (this->_block_type == HTTP)
+	// 	std::cout << "==> HTTP BLOCK" << std::endl << std::endl;
+	// else if (this->_block_type == SERVER)
+	// 	std::cout << "==> SERVER BLOCK" << std::endl << std::endl;
+	// if (this->_block_type == LOCATION)
+	// 	std::cout << "==> LOCATION BLOCK" << std::endl << std::endl;
 
 	size_t pos = this->_dir_line.back().find_last_of(";");
 	if (pos != std::string::npos)
@@ -404,8 +451,8 @@ void ConfParser::parseDirective()
 			this->_dir_line.pop_back();
 	}
 	
-	std::cout << "VECTOR: "; displayVec(this->_dir_line);
-	
+	displayVec(this->_dir_line);
+
 	if (directive == "http" || directive == "server" || directive == "location")
 	{
 		this->handleBlockIn(directive);
@@ -576,6 +623,10 @@ const char* ConfParser::CannotOpenFile::what() const throw()
 ConfParser::UnknownHost::UnknownHost(const std::string token, ConfParser *p)
 : _msg("webserv: host not found in \"" + token + "\" of the \"listen\" directive in " + p->_configFile + ":")
 {
+	std::ostringstream tmp;
+	tmp << p->_line_nb;
+	this->_msg += tmp.str();
+
 	return;
 }
 
@@ -587,6 +638,10 @@ const char* ConfParser::UnknownHost::what() const throw()
 ConfParser::InvalidPort::InvalidPort(const std::string token, ConfParser *p)
 : _msg("webserv: invalid port in \"" + token + "\" of the \"listen\" directive in " + p->_configFile + ":")
 {
+	std::ostringstream tmp;
+	tmp << p->_line_nb;
+	this->_msg += tmp.str();
+
 	return;
 }
 

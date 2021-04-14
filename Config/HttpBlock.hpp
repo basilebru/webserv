@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/13 18:49:23 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/14 17:35:49 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,25 +18,27 @@
 # include <map>
 # include <vector>
 # include "ServerBlock.hpp"
+# include "webserv.hpp"
 
 # define ON		true
 # define OFF	false
 
 class HttpBlock {
 
-	typedef size_t					size_type;
+	typedef size_t								size_type;
+	typedef std::vector<std::string>::iterator	strVecIterator;
 
 private:
-	bool							_autoindex; // on | off
-	bool							_chunked_transfer_encoding; // on | off
 	std::string						_root;
+	bool							_autoindex; // on | off
+	std::vector<std::string>		_index;
+	std::vector<std::string>		_limit_except; //ou allow_methods ?
 	std::map<int, std::string>		_error_pages; /* num error, error file path */
 	size_type						_client_max_body_size;
 	size_type						_keepalive_timeout;
-	std::vector<std::string>		_index;
-	// std::vector<std::string>		_includes;
-	std::vector<ServerBlock>		_servers;  /*Plusieurs ServerBlocks possibles dans l'HttpBlock */
+	bool							_chunked_transfer_encoding; // on | off
 	std::vector<std::string>		_auth_basic; // string | off + httpasswd paths
+	std::vector<ServerBlock>		_servers;  /*Plusieurs ServerBlocks possibles dans l'HttpBlock */
 
 public:
 	HttpBlock(void);
@@ -45,13 +47,14 @@ public:
 	HttpBlock& operator=(HttpBlock const & rhs);
 
 	// Setters
-	void	setAutoIndex(char state);
-	void	setChunkedEncoding(char state);
 	void	setRoot(std::string path);
-	void	setErrorPages(std::map<int, std::string>);
+	void	setAutoIndex(std::string state);
+	void	setIndex(strVecIterator first, strVecIterator last);
+	void	setLimitExcept(std::string state);
+	void	setErrorPages(strVecIterator first, strVecIterator last, std::string& val);
 	void	setMaxBdySize(size_type size);
 	void	setKeepaliveTimeout(size_type timeout);
-	void	setIndex(std::string index);
+	void	setChunkedEncoding(char state);
 	void	setAuthBasic(std::string value);
 	// void	setServers(std::string index);
 
