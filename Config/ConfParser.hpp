@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/14 13:01:16 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/15 15:43:37 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,17 +26,6 @@
 # define HTTP		0
 # define SERVER		1
 # define LOCATION	2
-// # define NOBLOCK	   -1
-
-# define IN_HTTP_BLOCK      0x00000001
-# define IN_SRV_BLOCK       0x00000002
-# define IN_LOC_BLOCK       0x00000004
-# define XXXXXXXXXXX3       0x00000008
-# define XXXXXXXXXXX4       0x00000010
-# define XXXXXXXXXXX5       0x00000020
-# define XXXXXXXXXXX6       0x00000040
-# define XXXXXXXXXXX7       0x00000080
-
 
 class ConfParser {
 
@@ -64,17 +53,20 @@ private:
 	int		setListen();
 	int		setServerName();
 	int		setRoot();
+	int		setAutoIndex();
+	int		setIndex();
 	int		setErrorPage();
-	int		setKeepAlive();
 	int		setMaxBdySize();
+	int		setKeepAlive();
+	int		setAllowedMethods();
+	int		setChunkEnc();
+	int		setAuthBasic();
+	int		setAuthBasicFile();
 	int		setCgiParam();
 	int		setCgiPass();
-	int		setAllowedMethods();
-	int		setIndex();
-	int		setAutoIndex();
 
 	// Store the location URI	
-	void	setLocation();
+	void	setLocationPath();
 
 	template <class Compare>
 	void checkNbrOfArgs(size_t expected_nbr, Compare comp);

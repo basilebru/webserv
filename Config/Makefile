@@ -6,7 +6,7 @@
 #    By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/16 17:10:11 by julnolle          #+#    #+#              #
-#    Updated: 2021/04/12 19:51:09 by julnolle         ###   ########.fr        #
+#    Updated: 2021/04/15 16:00:40 by julnolle         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ ifneq ($(err), no)
 	CFLAGS +=	-Werror
 endif
 
-EXTRAFLAGS	=	--std=c++98
+EXTRAFLAGS	=	-std=c++98
 
 ifeq ($(leak), yes)
 	SANITIZE	=	-g

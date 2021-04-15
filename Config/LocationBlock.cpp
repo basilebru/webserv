@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/14 17:41:04 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/15 17:16:10 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,9 @@ LocationBlock::LocationBlock(void)
 	this->_cgi_pass = "";
 	this->_cgi_port = 9000;
 	this->_cgi_index = "";
-	this->_index.push_back(DEFAULT_INDEX);
-	this->_auth_basic.push_back(DEFAULT_AUTH_BASIC);
+	this->_chunked_transfer_encoding = DEFAULT_CHUNKED_ENC;
+	this->_auth_basic = DEFAULT_AUTH_BASIC;
+	this->_indexes.push_back(DEFAULT_INDEX);
 
 	return;
 }
@@ -34,13 +35,14 @@ LocationBlock::LocationBlock(LocationBlock const & copy)
 	this->_path = copy._path;
 	this->_root = copy._root;
 	this->_autoindex = copy._autoindex;
-	this->_index = copy._index;
+	this->_indexes = copy._indexes;
 	this->_limit_except = copy._limit_except;
 	this->_error_pages = copy._error_pages;
 	this->_client_max_body_size = copy._client_max_body_size;
 	this->_keepalive_timeout = copy._keepalive_timeout;
 	this->_chunked_transfer_encoding = copy._chunked_transfer_encoding;
 	this->_auth_basic = copy._auth_basic;
+	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_cgi_pass = copy._cgi_pass;
 	this->_cgi_port = copy._cgi_port;
 	this->_cgi_index = copy._cgi_index;
@@ -59,13 +61,14 @@ LocationBlock& LocationBlock::operator=(LocationBlock const & rhs)
 	this->_path = rhs._path;
 	this->_root = rhs._root;
 	this->_autoindex = rhs._autoindex;
-	this->_index = rhs._index;
+	this->_indexes = rhs._indexes;
 	this->_limit_except = rhs._limit_except;
 	this->_error_pages = rhs._error_pages;
 	this->_client_max_body_size = rhs._client_max_body_size;
 	this->_keepalive_timeout = rhs._keepalive_timeout;
 	this->_chunked_transfer_encoding = rhs._chunked_transfer_encoding;
 	this->_auth_basic = rhs._auth_basic;
+	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_cgi_pass = rhs._cgi_pass;
 	this->_cgi_port = rhs._cgi_port;
 	this->_cgi_index = rhs._cgi_index;
@@ -86,7 +89,7 @@ void	LocationBlock::setRoot(std::string path)
 	this->_root = path;
 }
 
-void	LocationBlock::setAutoIndex(std::string state)
+void	LocationBlock::setAutoIndex(std::string& state)
 {
 	if (state == "on")
 		this->_autoindex = true;
@@ -94,14 +97,14 @@ void	LocationBlock::setAutoIndex(std::string state)
 		this->_autoindex = false;
 }
 
-void	LocationBlock::setIndex(strVecIterator first, strVecIterator last)
+void	LocationBlock::setIndexes(strVecIterator first, strVecIterator last)
 {
-	this->_index.assign(first, last);
+	this->_indexes.assign(first, last);
 }
 
-void	LocationBlock::setLimitExcept(std::string method)
+void	LocationBlock::setLimitExcept(strVecIterator first, strVecIterator last)
 {
-	this->_limit_except.push_back(method) ;
+	this->_limit_except.assign(first, last);
 }
 
 void	LocationBlock::setErrorPages(strVecIterator first, strVecIterator last, std::string& val)
@@ -124,17 +127,22 @@ void LocationBlock::setKeepaliveTimeout(size_type timeout)
 
 }
 
-void	LocationBlock::setChunkedEncoding(char state)
+void	LocationBlock::setChunkedEncoding(std::string& state)
 {
-	if (state == '1')
+	if (state == "on")
 		this->_chunked_transfer_encoding = true;
-	if (state == '0')
+	if (state == "off")
 		this->_chunked_transfer_encoding = false;
 }
 
 void	LocationBlock::setAuthBasic(std::string value)
 {
-	this->_auth_basic.push_back(value);
+	this->_auth_basic = value;
+}
+
+void	LocationBlock::setAuthBasicFile(std::string path)
+{
+	this->_auth_basic_user_file = path;
 }
 
 void	LocationBlock::setCgiPass(std::string value)
@@ -156,4 +164,92 @@ void	LocationBlock::setCgiParams(mapCgiParams params)
 {
 	(void)params;
 	// this->_;
+}
+
+// Setters
+const std::string&		LocationBlock::getPath(void) const
+{
+	return this->_path;
+}
+
+const std::string&		LocationBlock::getRoot(void) const
+{
+	return this->_root;
+}
+
+const bool&		LocationBlock::getAutoindex(void) const
+{
+	return this->_autoindex;
+}
+
+const stringVec&	LocationBlock::getIndexes(void) const
+{
+	return this->_indexes;
+}
+
+const stringVec&	LocationBlock::getLimitExcept(void) const
+{
+	return this->_limit_except;
+}
+
+const errorMap&		LocationBlock::getErrorPages(void) const
+{
+	return this->_error_pages;
+}
+
+const size_type&		LocationBlock::getMaxBdySize(void) const
+{
+	return this->_client_max_body_size;
+}
+
+const size_type&	LocationBlock::getKeepaliveTime(void) const
+{
+	return this->_keepalive_timeout;
+}
+
+const bool&			LocationBlock::getChunkedEncoding(void) const
+{
+	return this->_chunked_transfer_encoding;
+}
+
+const std::string&	LocationBlock::getAuthBasic(void) const
+{
+	return this->_auth_basic;
+}
+
+const std::string&	LocationBlock::getAuthBasicFile(void) const
+{
+	return this->_auth_basic_user_file;
+}
+
+std::ostream & operator<<(std::ostream & o, LocationBlock const & rhs)
+{
+	static int i = 0;
+	char pad('\t') ;
+
+	o << std::endl << "  --> LOCATION N°" << ++i << std::endl;
+	o << pad << "------------" << std::endl;
+
+	o << pad << "PATH: " << rhs.getPath() << std::endl;
+	o << pad << "ROOT: " << rhs.getRoot() << std::endl;
+	o << pad << "AUTOINDEX: " << std::boolalpha << rhs.getAutoindex() << std::endl;
+
+	o << pad << "INDEXES: ";
+	putVecToOstream(o, rhs.getIndexes().begin(), rhs.getIndexes().end());
+	
+	o << pad << "LIMIT_EXCEPT: ";
+	putVecToOstream(o, rhs.getLimitExcept().begin(), rhs.getLimitExcept().end());
+
+	o << pad << "ERROR PAGES: ";
+	putMapToOstream(o, rhs.getErrorPages().begin(), rhs.getErrorPages().end());	
+
+	o << pad << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
+	o << pad << "KEEP. TIMEOUT: " << rhs.getKeepaliveTime() << std::endl;
+
+	o << pad << "CHUNKED ENC.: " << std::boolalpha << rhs.getChunkedEncoding() << std::endl;
+	
+	o << pad << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
+	o << pad << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;
+
+	return o;
 }

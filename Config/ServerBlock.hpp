@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:23:44 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/14 17:51:08 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/15 15:47:54 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <map>
 # include <vector>
 # include "webserv.hpp"
+# include "utils.hpp"
 # include "LocationBlock.hpp"
 
 typedef size_t									size_type;
@@ -27,8 +28,6 @@ typedef std::map<int, std::string>				errorMap;
 typedef std::vector<std::string>::iterator		strVecIterator;
 
 class ServerBlock {
-
-	typedef std::vector<std::string>::iterator	strVecIterator;
 
 private:
 	std::string						_listenIP;
@@ -42,7 +41,8 @@ private:
 	size_type						_client_max_body_size;
 	size_type						_keepalive_timeout;
 	bool							_chunked_transfer_encoding; // on | off
-	stringVec						_auth_basic; // string | off + httpasswd paths
+	std::string						_auth_basic; // string | off
+	std::string						_auth_basic_user_file; //httpasswd paths
 	std::vector<LocationBlock>		_locations; /*Plusieurs LocationBlocks possibles dans un ServerBlock */
 
 public:
@@ -57,14 +57,15 @@ public:
 	int		setListenPort(size_type port);
 	void	setServerNames(strVecIterator first, strVecIterator last);
 	void	setRoot(std::string path);
-	void	setAutoIndex(std::string state);
-	void	setIndex(strVecIterator first, strVecIterator last);
-	void	setLimitExcept(std::string method);
+	void	setAutoIndex(std::string& state);
+	void	setIndexes(strVecIterator first, strVecIterator last);
+	void	setLimitExcept(strVecIterator first, strVecIterator last);
 	void	setErrorPages(strVecIterator first, strVecIterator last, std::string& val);
 	void	setMaxBdySize(size_type size);
 	void	setKeepaliveTimeout(size_type timeout);
-	void	setChunkedEncoding(char state);
+	void	setChunkedEncoding(std::string& state);
 	void	setAuthBasic(std::string value);
+	void	setAuthBasicFile(std::string path);
 
 	void	addLocation(void);
 
@@ -72,17 +73,19 @@ public:
 	const std::string&					getListenIP(void) const;
 	const size_type&					getListenPort(void) const;
 	const stringVec&					getServerNames(void) const;
-	const bool&							getAutoindex(void) const;
 	const std::string&					getRoot(void) const;
-	const std::vector<LocationBlock>&	getLocations(void) const;
-	LocationBlock&						getLastLocation(void);
+	const bool&							getAutoindex(void) const;
+	const stringVec&					getIndexes(void) const;
+	const stringVec&					getLimitExcept(void) const;
 	const errorMap&						getErrorPages(void) const;
 	const size_type&					getMaxBdySize(void) const;
 	const size_type&					getKeepaliveTime(void) const;
-	const stringVec&					getIndexes(void) const;
 	const bool&							getChunkedEncoding(void) const;
-	const stringVec&					getAuthBasic(void) const;
-
+	const std::string&					getAuthBasic(void) const;
+	const std::string&					getAuthBasicFile(void) const;
+	
+	const std::vector<LocationBlock>&	getLocations(void) const;
+	LocationBlock&						getLastLocation(void);
 };
 
 std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs);

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/14 18:07:59 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/15 17:01:44 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,14 +56,17 @@ dirMap	ConfParser::setHttpMap()
 	dirMap map;
 
 	map["root"] = &ConfParser::setRoot;
+	map["autoindex"] = &ConfParser::setAutoIndex;
+	map["index"] = &ConfParser::setIndex;
+	map["limit_except"] = &ConfParser::setAllowedMethods;
 	map["error_page"] = &ConfParser::setErrorPage;
-	map["keepalive_timeout"] = &ConfParser::setKeepAlive;
 	map["client_max_body_size"] = &ConfParser::setMaxBdySize;
+	map["keepalive_timeout"] = &ConfParser::setKeepAlive;
+	map["chunked_enc"] = &ConfParser::setChunkEnc;
+	map["auth_basic"] = &ConfParser::setAuthBasic;
+	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_param"] = &ConfParser::setCgiParam;
 	map["cgi_pass"] = &ConfParser::setCgiPass;
-	map["allow_methods"] = &ConfParser::setAllowedMethods;
-	map["index"] = &ConfParser::setIndex;
-	map["autoindex"] = &ConfParser::setAutoIndex;
 
 	return map;
 }
@@ -75,13 +78,17 @@ dirMap	ConfParser::setSrvMap()
 	map["listen"] = &ConfParser::setListen;
 	map["root"] = &ConfParser::setRoot;
 	map["server_name"] = &ConfParser::setServerName;
+	map["autoindex"] = &ConfParser::setAutoIndex;
+	map["index"] = &ConfParser::setIndex;
+	map["limit_except"] = &ConfParser::setAllowedMethods;
 	map["error_page"] = &ConfParser::setErrorPage;
 	map["client_max_body_size"] = &ConfParser::setMaxBdySize;
+	map["keepalive_timeout"] = &ConfParser::setKeepAlive;
+	map["chunked_enc"] = &ConfParser::setChunkEnc;
+	map["auth_basic"] = &ConfParser::setAuthBasic;
+	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_param"] = &ConfParser::setCgiParam;
 	map["cgi_pass"] = &ConfParser::setCgiPass;
-	map["allow_methods"] = &ConfParser::setAllowedMethods;
-	map["index"] = &ConfParser::setIndex;
-	map["autoindex"] = &ConfParser::setAutoIndex;
 
 	return map;
 }
@@ -91,13 +98,17 @@ dirMap	ConfParser::setLocMap()
 	dirMap map;
 
 	map["root"] = &ConfParser::setRoot;
+	map["autoindex"] = &ConfParser::setAutoIndex;
+	map["index"] = &ConfParser::setIndex;
+	map["limit_except"] = &ConfParser::setAllowedMethods;
 	map["error_page"] = &ConfParser::setErrorPage;
 	map["client_max_body_size"] = &ConfParser::setMaxBdySize;
+	map["keepalive_timeout"] = &ConfParser::setKeepAlive;
+	map["chunked_enc"] = &ConfParser::setChunkEnc;
+	map["auth_basic"] = &ConfParser::setAuthBasic;
+	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_param"] = &ConfParser::setCgiParam;
 	map["cgi_pass"] = &ConfParser::setCgiPass;
-	map["allow_methods"] = &ConfParser::setAllowedMethods;
-	map["index"] = &ConfParser::setIndex;
-	map["autoindex"] = &ConfParser::setAutoIndex;
 
 	return map;
 }
@@ -106,10 +117,8 @@ int ConfParser::setListen(void)
 {
 	this->checkNbrOfArgs(2, &same_as<size_t>);
 
-	// if (this->_dir_line[1].find_first_not_of("0123456789:.") != std::string::npos)
-	// 	throw InvalidValue(this->_dir_line[0], this);
-
 	size_t pos = this->_dir_line[1].find(":");
+
 	if (pos != std::string::npos)
 	{
 		if (this->_httpBlock.getLastServer().setListenIp(this->_dir_line[1].substr(0, pos)) == FAILURE)
@@ -130,7 +139,7 @@ int ConfParser::setListen(void)
 	else
 		throw InvalidValue(this->_dir_line[0], this);
 	
-	std::cout << "SET LISTEN FUNCTION" << std::endl;
+	// std::cout << "SET LISTEN FUNCTION" << std::endl;
 	return 0;
 }
 int ConfParser::setServerName(void)
@@ -141,14 +150,13 @@ int ConfParser::setServerName(void)
 
 	this->_httpBlock.getLastServer().setServerNames(++first, this->_dir_line.end());
 
-	std::cout << "SET SRVNAME FUNCTION" << std::endl;
+	// std::cout << "SET SRVNAME FUNCTION" << std::endl;
 	return 0;
 }
+
 int ConfParser::setRoot(void)
 {
 	this->checkNbrOfArgs(2, &same_as<size_t>);
-	if (this->_dir_line[1] == "")
-		throw InvalidValue(this->_dir_line[0], this);
 
 	if (this->_block_type == HTTP)
 	{
@@ -164,9 +172,60 @@ int ConfParser::setRoot(void)
 		this->_httpBlock.getLastServer().getLastLocation().setRoot(this->_dir_line[1]);
 	}
 
-	std::cout << "SET ROOT FUNCTION" << std::endl;
+	// std::cout << "SET ROOT FUNCTION" << std::endl;
 	return 0;
 }
+
+int ConfParser::setAutoIndex(void)
+{
+	this->checkNbrOfArgs(2, &same_as<size_t>);
+
+	changeCaseString(this->_dir_line[1], ::tolower);
+
+	if (this->_dir_line[1] != "on" && this->_dir_line[1] != "off")
+		throw InvalidValue(this->_dir_line[0], this);
+
+	if (this->_block_type == HTTP)
+		this->_httpBlock.setAutoIndex(this->_dir_line[1]);
+	else if (this->_block_type == SERVER)
+		this->_httpBlock.getLastServer().setAutoIndex(this->_dir_line[1]);
+	if (this->_block_type == LOCATION)
+		this->_httpBlock.getLastServer().getLastLocation().setAutoIndex(this->_dir_line[1]);
+	// std::cout << "SET AUTOIDX FUNCTION" << std::endl;
+	return 0;
+}
+
+int ConfParser::setIndex(void)
+{
+	this->checkNbrOfArgs(1, &is_higher<size_t>);
+
+	std::vector<std::string>::iterator first = this->_dir_line.begin();
+	if (this->_block_type == HTTP)
+		this->_httpBlock.setIndexes(++first, this->_dir_line.end());
+	else if (this->_block_type == SERVER)
+		this->_httpBlock.getLastServer().setIndexes(++first, this->_dir_line.end());
+	if (this->_block_type == LOCATION)
+		this->_httpBlock.getLastServer().getLastLocation().setIndexes(++first, this->_dir_line.end());
+
+	// std::cout << "SET INDX FUNCTION" << std::endl;
+	return 0;
+}
+
+int ConfParser::setAllowedMethods(void)
+{
+	this->checkNbrOfArgs(1, &is_higher<size_t>);
+
+	std::vector<std::string>::iterator first = this->_dir_line.begin();
+	if (this->_block_type == HTTP)
+		this->_httpBlock.setLimitExcept(++first, this->_dir_line.end());
+	else if (this->_block_type == SERVER)
+		this->_httpBlock.getLastServer().setLimitExcept(++first, this->_dir_line.end());
+	if (this->_block_type == LOCATION)
+		this->_httpBlock.getLastServer().getLastLocation().setLimitExcept(++first, this->_dir_line.end());
+	// std::cout << "SET ALLMETH FUNCTION" << std::endl;
+	return 0;
+}
+
 int ConfParser::setErrorPage(void)
 {
 	this->checkNbrOfArgs(2, &is_higher<size_t>);
@@ -190,32 +249,10 @@ int ConfParser::setErrorPage(void)
 	{
 		this->_httpBlock.getLastServer().getLastLocation().setErrorPages(++first, --end, this->_dir_line.back());
 	}
-	std::cout << "SET ERROPAGE FUNCTION" << std::endl;
+	// std::cout << "SET ERROPAGE FUNCTION" << std::endl;
 	return 0;
 }
-int ConfParser::setKeepAlive(void)
-{
-	this->checkNbrOfArgs(2, &same_as<size_t>);
 
-	if (this->_dir_line[1].find_first_not_of("0123456789") != std::string::npos)
-		throw InvalidValue(this->_dir_line[0], this);
-
-	int mbs = atoi(this->_dir_line[1].c_str());
-
-	if (this->_block_type == HTTP)
-		this->_httpBlock.setKeepaliveTimeout(mbs);
-	else if (this->_block_type == SERVER)
-	{
-		this->_httpBlock.getLastServer().setKeepaliveTimeout(mbs);
-	}
-	if (this->_block_type == LOCATION)
-	{
-		this->_httpBlock.getLastServer().getLastLocation().setKeepaliveTimeout(mbs);
-	}
-
-	std::cout << "SET keepalive FUNCTION" << std::endl;
-	return 0;
-}
 int ConfParser::setMaxBdySize(void)
 {
 	this->checkNbrOfArgs(2, &same_as<size_t>);
@@ -238,41 +275,35 @@ int ConfParser::setMaxBdySize(void)
 	{
 		this->_httpBlock.getLastServer().getLastLocation().setMaxBdySize(mbs);
 	}
-	std::cout << "SET MAXBDYSIZE FUNCTION" << std::endl;
+	// std::cout << "SET MAXBDYSIZE FUNCTION" << std::endl;
 	return 0;
 }
-int ConfParser::setCgiParam(void)
-{
-	std::cout << "SET CGIPARAM FUNCTION" << std::endl;
-	return 0;
-}
-int ConfParser::setCgiPass(void)
-{
-	std::cout << "SET CGIPASS FUNCTION" << std::endl;
-	return 0;
-}
-int ConfParser::setAllowedMethods(void)
-{
-	std::cout << "SET ALLMETH FUNCTION" << std::endl;
-	return 0;
-}
-int ConfParser::setIndex(void)
-{
-	this->checkNbrOfArgs(1, &is_higher<size_t>);
 
-	std::vector<std::string>::iterator first = this->_dir_line.begin();
+int ConfParser::setKeepAlive(void)
+{
+	this->checkNbrOfArgs(2, &same_as<size_t>);
+
+	if (this->_dir_line[1].find_first_not_of("0123456789") != std::string::npos)
+		throw InvalidValue(this->_dir_line[0], this);
+
+	int mbs = atoi(this->_dir_line[1].c_str());
+
 	if (this->_block_type == HTTP)
-		this->_httpBlock.setIndex(++first, this->_dir_line.end());
+		this->_httpBlock.setKeepaliveTimeout(mbs);
 	else if (this->_block_type == SERVER)
-		this->_httpBlock.getLastServer().setIndex(++first, this->_dir_line.end());
+	{
+		this->_httpBlock.getLastServer().setKeepaliveTimeout(mbs);
+	}
 	if (this->_block_type == LOCATION)
-		this->_httpBlock.getLastServer().getLastLocation().setIndex(++first, this->_dir_line.end());
+	{
+		this->_httpBlock.getLastServer().getLastLocation().setKeepaliveTimeout(mbs);
+	}
 
-	std::cout << "SET INDX FUNCTION" << std::endl;
+	// std::cout << "SET keepalive FUNCTION" << std::endl;
 	return 0;
 }
 
-int ConfParser::setAutoIndex(void)
+int ConfParser::setChunkEnc(void)
 {
 	this->checkNbrOfArgs(2, &same_as<size_t>);
 
@@ -282,20 +313,84 @@ int ConfParser::setAutoIndex(void)
 		throw InvalidValue(this->_dir_line[0], this);
 
 	if (this->_block_type == HTTP)
-		this->_httpBlock.setAutoIndex(this->_dir_line[1]);
+		this->_httpBlock.setChunkedEncoding(this->_dir_line[1]);
 	else if (this->_block_type == SERVER)
-		this->_httpBlock.getLastServer().setAutoIndex(this->_dir_line[1]);
+		this->_httpBlock.getLastServer().setChunkedEncoding(this->_dir_line[1]);
 	if (this->_block_type == LOCATION)
-		this->_httpBlock.getLastServer().getLastLocation().setAutoIndex(this->_dir_line[1]);
-	std::cout << "SET AUTOIDX FUNCTION" << std::endl;
+		this->_httpBlock.getLastServer().getLastLocation().setChunkedEncoding(this->_dir_line[1]);
+
+	// std::cout << "SET CHUNKED ENC" << std::endl;
 	return 0;
 }
 
-void ConfParser::setLocation()
+int ConfParser::setAuthBasic(void)
+{
+	this->checkNbrOfArgs(1, &is_higher<size_t>);
+	
+	std::string area_name;
+	
+	if (this->_dir_line.size() == 2)
+		area_name = changeCaseString(this->_dir_line[1], ::tolower);
+	else
+	{
+		std::vector<std::string>::iterator first = this->_dir_line.begin();
+		while (++first != this->_dir_line.end())
+		{
+			area_name += *first += ' ';
+		}
+		size_t pos = area_name.find_last_of(" ");
+		if (pos != std::string::npos)
+			area_name.erase(pos, 1);
+		// pos = area_name.find_first_of("\"");
+		// if (pos != std::string::npos)
+		// 	area_name.erase(pos, 1);
+		// pos = area_name.find_last_of("\"");
+		// if (pos != std::string::npos)
+		// 	area_name.erase(pos, 1);
+	}
+	
+	if (this->_block_type == HTTP)
+		this->_httpBlock.setAuthBasic(area_name);
+	else if (this->_block_type == SERVER)
+		this->_httpBlock.getLastServer().setAuthBasic(area_name);
+	if (this->_block_type == LOCATION)
+		this->_httpBlock.getLastServer().getLastLocation().setAuthBasic(area_name);
+
+	// std::cout << "SET AUTH_BASIC" << std::endl;
+	return 0;
+}
+
+int ConfParser::setAuthBasicFile(void)
+{
+	this->checkNbrOfArgs(2, &same_as<size_t>);
+
+	if (this->_block_type == HTTP)
+		this->_httpBlock.setAuthBasicFile(this->_dir_line[1]);
+	else if (this->_block_type == SERVER)
+		this->_httpBlock.getLastServer().setAuthBasicFile(this->_dir_line[1]);
+	if (this->_block_type == LOCATION)
+		this->_httpBlock.getLastServer().getLastLocation().setAuthBasicFile(this->_dir_line[1]);
+
+	// std::cout << "SET AUTH_BASIC_FILE" << std::endl;
+	return 0;
+}
+
+int ConfParser::setCgiParam(void)
+{
+	// std::cout << "SET CGIPARAM FUNCTION" << std::endl;
+	return 0;
+}
+int ConfParser::setCgiPass(void)
+{
+	// std::cout << "SET CGIPASS FUNCTION" << std::endl;
+	return 0;
+}
+
+void ConfParser::setLocationPath()
 {
 	this->checkNbrOfArgs(3, &same_as<size_t>);
 	this->_httpBlock.getLastServer().getLastLocation().setPath(this->_dir_line[1]);
-	std::cout << "SET LOCATION FUNCTION" << std::endl;
+	// std::cout << "SET LOCATION FUNCTION" << std::endl;
 }
 
 template <class Compare>
@@ -323,8 +418,7 @@ void ConfParser::readConfFile()
 	}
 	if (this->_in_block.any())
 		throw UnexpectedEOF("end of file", this);
-	else
-		std::cout << GREEN << "FIIIIIIIIIINNNNNNNN" << NOCOLOR << std::endl;
+
 	return ;
 }
 
@@ -408,7 +502,7 @@ void ConfParser::handleBlockIn(const std::string& directive)
 		}
 		else
 			throw NoOpeningBracket("location", this);
-		this->setLocation();
+		this->setLocationPath();
 	}
 }
 
@@ -451,7 +545,7 @@ void ConfParser::parseDirective()
 			this->_dir_line.pop_back();
 	}
 	
-	displayVec(this->_dir_line);
+	// displayVec(this->_dir_line);
 
 	if (directive == "http" || directive == "server" || directive == "location")
 	{

@@ -45,9 +45,32 @@ bool same_as (const T& value1, const T& value2)
 }
 
 template <class UnaryOperator>
-void changeCaseString(std::string& str, UnaryOperator op)
+std::string& changeCaseString(std::string& str, UnaryOperator op)
 {
 	std::transform(str.begin(), str.end(),str.begin(), op);
+	return str;
+}
+
+// Put vector values to ostream
+template<typename InputIterator>
+void putVecToOstream(std::ostream& o, InputIterator first, InputIterator last)
+{
+	while(first != last) {
+	    o << *first << ' ';
+	    ++first;
+	}
+	o << std::endl;	
+}
+
+// Put map values to ostream
+template<typename InputIterator>
+void putMapToOstream(std::ostream& o, InputIterator first, InputIterator last)
+{
+	while(first != last) {
+	    o << first->first << "->" << first->second << ' ';
+	    ++first;
+	}
+	o << std::endl;	
 }
 
 

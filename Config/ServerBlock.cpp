@@ -6,23 +6,26 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/14 17:51:01 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/15 17:15:50 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerBlock.hpp"
 
-ServerBlock::ServerBlock(void)
-{
-	this->_listenIP = DEFAULT_LISTEN_IP;
-	this->_listenPort = DEFAULT_LISTEN_PORT;
-	this->_autoindex = DEFAULT_AUTOINDEX;
-	this->_root = DEFAULT_ROOT;
-	this->_client_max_body_size = DEFAULT_MAX_BDY_SIZE;
-	this->_keepalive_timeout = DEFAULT_KEEPALIVE_T;
+ServerBlock::ServerBlock(void) : 
+_listenIP(DEFAULT_LISTEN_IP),
+_listenPort(DEFAULT_LISTEN_PORT),
+_root(DEFAULT_ROOT),
+_autoindex(DEFAULT_AUTOINDEX),
+_client_max_body_size(DEFAULT_MAX_BDY_SIZE),
+_keepalive_timeout(DEFAULT_KEEPALIVE_T),
+_chunked_transfer_encoding(DEFAULT_CHUNKED_ENC),
+_auth_basic(DEFAULT_AUTH_BASIC) {
+
 	this->_indexes.push_back(DEFAULT_INDEX);
-	this->_chunked_transfer_encoding = DEFAULT_CHUNKED_ENC;
-	this->_auth_basic.push_back(DEFAULT_AUTH_BASIC);
+
+	// std::cout << GREEN << "SERVER CONSTRUCTOR" << NOCOLOR <<std::endl;
+
 	return ;
 }
 
@@ -31,16 +34,19 @@ ServerBlock::ServerBlock(ServerBlock const & copy)
 	this->_listenIP = copy._listenIP;
 	this->_listenPort = copy._listenPort;
 	this->_server_names = copy._server_names;
-	this->_autoindex = copy._autoindex;
 	this->_root = copy._root;
-	this->_locations = copy._locations;
+	this->_autoindex = copy._autoindex;
+	this->_indexes = copy._indexes;
+	this->_limit_except = copy._limit_except;
 	this->_error_pages = copy._error_pages;
 	this->_client_max_body_size = copy._client_max_body_size;
 	this->_keepalive_timeout = copy._keepalive_timeout;
-	this->_indexes = copy._indexes;
 	this->_chunked_transfer_encoding = copy._chunked_transfer_encoding;
-	this->_limit_except = copy._limit_except;
+	this->_auth_basic = copy._auth_basic;
+	this->_auth_basic_user_file = copy._auth_basic_user_file;
+	this->_locations = copy._locations;
 
+	// std::cout << YELLOW << "SERVER CPY CONSTRUCTOR" << NOCOLOR <<std::endl;
 	return ;
 }
 
@@ -54,16 +60,19 @@ ServerBlock& ServerBlock::operator=(ServerBlock const & rhs)
 	this->_listenIP = rhs._listenIP;
 	this->_listenPort = rhs._listenPort;
 	this->_server_names = rhs._server_names;
-	this->_autoindex = rhs._autoindex;
 	this->_root = rhs._root;
-	this->_locations = rhs._locations;
+	this->_autoindex = rhs._autoindex;
+	this->_indexes = rhs._indexes;
+	this->_limit_except = rhs._limit_except;
 	this->_error_pages = rhs._error_pages;
 	this->_client_max_body_size = rhs._client_max_body_size;
 	this->_keepalive_timeout = rhs._keepalive_timeout;
-	this->_indexes = rhs._indexes;
 	this->_chunked_transfer_encoding = rhs._chunked_transfer_encoding;
-	this->_limit_except = rhs._limit_except;
+	this->_auth_basic = rhs._auth_basic;
+	this->_auth_basic_user_file = rhs._auth_basic_user_file;
+	this->_locations = rhs._locations;
 
+	// std::cout << RED << "SERVER ASSIGNATION" << NOCOLOR <<std::endl;
 	return *this;
 }
 
@@ -97,7 +106,7 @@ void	ServerBlock::setServerNames(strVecIterator first, strVecIterator last)
 	this->_server_names.assign(first, last);
 }
 
-void	ServerBlock::setAutoIndex(std::string state)
+void	ServerBlock::setAutoIndex(std::string& state)
 {
 	if (state == "on")
 		this->_autoindex = true;
@@ -105,7 +114,7 @@ void	ServerBlock::setAutoIndex(std::string state)
 		this->_autoindex = false;
 }
 
-void	ServerBlock::setIndex(strVecIterator first, strVecIterator last)
+void	ServerBlock::setIndexes(strVecIterator first, strVecIterator last)
 {
 	this->_indexes.assign(first, last);
 }
@@ -115,9 +124,9 @@ void	ServerBlock::setRoot(std::string path)
 	this->_root = path;
 }
 
-void	ServerBlock::setLimitExcept(std::string method)
+void	ServerBlock::setLimitExcept(strVecIterator first, strVecIterator last)
 {
-	this->_limit_except.push_back(method);
+	this->_limit_except.assign(first, last);
 }
 
 void	ServerBlock::setErrorPages(strVecIterator first, strVecIterator last, std::string& val)
@@ -139,17 +148,22 @@ void	ServerBlock::setKeepaliveTimeout(size_type timeout)
 	this->_keepalive_timeout = timeout;
 }
 
-void	ServerBlock::setChunkedEncoding(char state)
+void	ServerBlock::setChunkedEncoding(std::string& state)
 {
-	if (state == '1')
+	if (state == "on")
 		this->_chunked_transfer_encoding = true;
-	if (state == '0')
+	if (state == "off")
 		this->_chunked_transfer_encoding = false;
 }
 
 void	ServerBlock::setAuthBasic(std::string value)
 {
-	this->_auth_basic.push_back(value);
+	this->_auth_basic = value;
+}
+
+void	ServerBlock::setAuthBasicFile(std::string path)
+{
+	this->_auth_basic_user_file = path;
 }
 
 
@@ -185,24 +199,19 @@ const stringVec&	ServerBlock::getIndexes(void) const
 	return this->_indexes;
 }
 
-const size_type&		ServerBlock::getMaxBdySize(void) const
+const stringVec&	ServerBlock::getLimitExcept(void) const
 {
-	return this->_client_max_body_size;
-}
-
-const std::vector<LocationBlock>&	ServerBlock::getLocations(void) const
-{
-	return this->_locations;
-}
-
-LocationBlock&	ServerBlock::getLastLocation(void)
-{
-	return this->_locations.back();
+	return this->_limit_except;
 }
 
 const errorMap&		ServerBlock::getErrorPages(void) const
 {
 	return this->_error_pages;
+}
+
+const size_type&		ServerBlock::getMaxBdySize(void) const
+{
+	return this->_client_max_body_size;
 }
 
 const size_type&	ServerBlock::getKeepaliveTime(void) const
@@ -215,57 +224,64 @@ const bool&			ServerBlock::getChunkedEncoding(void) const
 	return this->_chunked_transfer_encoding;
 }
 
-const stringVec&	ServerBlock::getAuthBasic(void) const
+const std::string&	ServerBlock::getAuthBasic(void) const
 {
 	return this->_auth_basic;
 }
 
-
-template<typename InputIterator>
-void putVecToOstream(std::ostream& o, InputIterator first, InputIterator last)
+const std::string&	ServerBlock::getAuthBasicFile(void) const
 {
-	while(first != last) {
-	    o << *first << ' ';
-	    ++first;
-	}
-	o << std::endl;	
+	return this->_auth_basic_user_file;
 }
 
-template<typename InputIterator>
-void putMapToOstream(std::ostream& o, InputIterator first, InputIterator last)
+const std::vector<LocationBlock>&	ServerBlock::getLocations(void) const
 {
-	while(first != last) {
-	    o << first->first << "->" << first->second << ' ';
-	    ++first;
-	}
-	o << std::endl;	
+	return this->_locations;
+}
+
+LocationBlock&	ServerBlock::getLastLocation(void)
+{
+	return this->_locations.back();
 }
 
 std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs)
 {
-	o << "LISTEN IP: " << rhs.getListenIP() << std::endl;
-	o << "LISTEN PORT: " << rhs.getListenPort() << std::endl;
+	static int i = 0;
+	std::string pad("  ") ;
+
+	o << std::endl << "=> SERVER N°" << ++i << std::endl;
+	o << pad << "------------" << std::endl;
+
+	o << pad << "LISTEN IP: " << rhs.getListenIP() << std::endl;
+	o << pad << "LISTEN PORT: " << rhs.getListenPort() << std::endl;
 	
-	o << "SERVER NAMES: ";
+	o << pad << "SERVER NAMES: ";
 	putVecToOstream(o, rhs.getServerNames().begin(), rhs.getServerNames().end());
 
-	o << "AUTOINDEX: " << std::boolalpha << rhs.getAutoindex() << std::endl;
-	o << "ROOT: " << rhs.getRoot() << std::endl;
-	// o << "LOCATIONS: " << rhs.getLocations() << std::endl;
-	
-	o << "ERROR PAGES: ";
-	putMapToOstream(o, rhs.getErrorPages().begin(), rhs.getErrorPages().end());
-	
-	o << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
-	o << "KEEP. TIMEOUT: " << rhs.getKeepaliveTime() << std::endl;
-	
-	o << "INDEXES: ";
+	o << pad << "ROOT: " << rhs.getRoot() << std::endl;
+
+	o << pad << "INDEXES: ";
 	putVecToOstream(o, rhs.getIndexes().begin(), rhs.getIndexes().end());
 
-	o << "CHUNKED ENC.: " << std::boolalpha << rhs.getChunkedEncoding() << std::endl;
+	o << pad << "AUTOINDEX: " << std::boolalpha << rhs.getAutoindex() << std::endl;
+	// o << pad << "LOCATIONS: " << rhs.getLocations() << std::endl;
 	
-	o << "AUTH BASIC: ";
-	putVecToOstream(o, rhs.getAuthBasic().begin(), rhs.getAuthBasic().end());
+	o << pad << "LIMIT_EXCEPT: ";
+	putVecToOstream(o, rhs.getLimitExcept().begin(), rhs.getLimitExcept().end());
+
+	o << pad << "ERROR PAGES: ";
+	putMapToOstream(o, rhs.getErrorPages().begin(), rhs.getErrorPages().end());
+	
+	o << pad << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
+	o << pad << "KEEP. TIMEOUT: " << rhs.getKeepaliveTime() << std::endl;
+	
+	o << pad << "CHUNKED ENC.: " << std::boolalpha << rhs.getChunkedEncoding() << std::endl;
+	
+	o << pad << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
+	o << pad << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;
+
+	// Locations
+	putVecToOstream(o, rhs.getLocations().begin(), rhs.getLocations().end());
 
 	return o;
 }
