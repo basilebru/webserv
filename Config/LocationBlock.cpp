@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/15 17:16:10 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/16 16:57:58 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,11 +224,7 @@ const std::string&	LocationBlock::getAuthBasicFile(void) const
 
 std::ostream & operator<<(std::ostream & o, LocationBlock const & rhs)
 {
-	static int i = 0;
-	char pad('\t') ;
-
-	o << std::endl << "  --> LOCATION N°" << ++i << std::endl;
-	o << pad << "------------" << std::endl;
+	static std::string pad("    ");
 
 	o << pad << "PATH: " << rhs.getPath() << std::endl;
 	o << pad << "ROOT: " << rhs.getRoot() << std::endl;

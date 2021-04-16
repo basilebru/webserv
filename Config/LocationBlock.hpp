@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:59:09 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/15 16:48:19 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/16 16:56:50 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class LocationBlock {
 	typedef std::map<std::string, std::string>		mapCgiParams;
 
 private:
-	std::string						_path;
+	std::string						_path; //Optional since locations are stored in map
 	std::string						_root;
 	bool							_autoindex; // on | off
 	std::vector<std::string>		_indexes;

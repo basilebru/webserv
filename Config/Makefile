@@ -6,7 +6,7 @@
 #    By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/16 17:10:11 by julnolle          #+#    #+#              #
-#    Updated: 2021/04/15 16:00:40 by julnolle         ###   ########.fr        #
+#    Updated: 2021/04/16 11:33:31 by julnolle         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,11 +49,11 @@ SRCS += ConfParser.cpp
 SRCS += HttpBlock.cpp
 SRCS += ServerBlock.cpp
 SRCS += LocationBlock.cpp
-# SRCS += utils.cpp
+SRCS += ip_manipulation.cpp
 SRCS += main.cpp
 
 vpath %.cpp ./
-# vpath %.cpp ../Utils/
+vpath %.cpp ../Utils/
 
 # ---------------- OBJ --------------- #
 

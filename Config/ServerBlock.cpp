@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/15 17:15:50 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/16 16:57:55 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@ int	ServerBlock::setListenIp(std::string ip)
 		ip = "127.0.0.1";
 	if (ip.find_first_not_of("0123456789.") == std::string::npos && !ip.empty())
 	{
-		this->_listenIP = ip;
+		this->_listenIP = stringToIp(ip);
 		return SUCCESS;
 	}
 	return FAILURE;
@@ -169,7 +169,7 @@ void	ServerBlock::setAuthBasicFile(std::string path)
 
 // Getters
 
-const std::string&		ServerBlock::getListenIP(void) const
+const unsigned int&		ServerBlock::getListenIP(void) const
 {
 	return this->_listenIP;
 }
@@ -234,25 +234,31 @@ const std::string&	ServerBlock::getAuthBasicFile(void) const
 	return this->_auth_basic_user_file;
 }
 
-const std::vector<LocationBlock>&	ServerBlock::getLocations(void) const
+const LocMap&	ServerBlock::getLocations(void) const
 {
 	return this->_locations;
 }
 
-LocationBlock&	ServerBlock::getLastLocation(void)
+// LocationBlock&	ServerBlock::getLastLocation(void)
+// {
+// 	return this->locIterator->second;
+// }
+
+std::pair<LocMap::iterator,bool>	 ServerBlock::addLocation(std::string path)
 {
-	return this->_locations.back();
+	LocationBlock loc;
+	return this->_locations.insert(std::make_pair(path, loc));
 }
 
 std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs)
 {
 	static int i = 0;
-	std::string pad("  ") ;
+	static std::string pad("  ");
 
 	o << std::endl << "=> SERVER N°" << ++i << std::endl;
 	o << pad << "------------" << std::endl;
 
-	o << pad << "LISTEN IP: " << rhs.getListenIP() << std::endl;
+	o << pad << "LISTEN IP: " << ipToString(rhs.getListenIP()) << std::endl;
 	o << pad << "LISTEN PORT: " << rhs.getListenPort() << std::endl;
 	
 	o << pad << "SERVER NAMES: ";
@@ -281,13 +287,7 @@ std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs)
 	o << pad << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;
 
 	// Locations
-	putVecToOstream(o, rhs.getLocations().begin(), rhs.getLocations().end());
+	putLocToOstream(o, rhs.getLocations().begin(), rhs.getLocations().end());
 
 	return o;
-}
-
-void ServerBlock::addLocation(void)
-{
-	LocationBlock loc;
-	this->_locations.push_back(loc);
 }

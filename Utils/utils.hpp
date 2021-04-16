@@ -4,14 +4,21 @@
 # include <string>
 # include <vector>
 # include <iostream>
+# include <sstream>
+# include <cstdlib>
+# include <algorithm>
 
-
+// utils.cpp
 bool is_whitespace(char c);
 void trim_whitespace(std::string &s);
 int	ft_isdigit(int c);
 int	ft_isdigit_str(const char *str);
 int	ft_isxdigit(int c);
 int	ft_isxdigit_str(const char *str);
+
+// ip_manipulation.cpp
+unsigned int	stringToIp(std::string ip);
+std::string		ipToString(unsigned int ip);
 
 
 template<typename T>
@@ -68,6 +75,19 @@ void putMapToOstream(std::ostream& o, InputIterator first, InputIterator last)
 {
 	while(first != last) {
 	    o << first->first << "->" << first->second << ' ';
+	    ++first;
+	}
+	o << std::endl;	
+}
+
+// Put map values to ostream
+template<typename InputIterator>
+void putLocToOstream(std::ostream& o, InputIterator first, InputIterator last)
+{
+	while(first != last) {
+		o << std::endl << "  --> LOCATION " << first->first << std::endl;
+		o << "    " << "------------" << std::endl;
+		o << first->second;
 	    ++first;
 	}
 	o << std::endl;	

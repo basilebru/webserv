@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:23:44 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/15 15:47:54 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/16 16:34:33 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,13 @@
 typedef size_t									size_type;
 typedef std::vector<std::string>				stringVec;
 typedef std::map<int, std::string>				errorMap;
+typedef std::map<std::string, LocationBlock>	LocMap;
 typedef std::vector<std::string>::iterator		strVecIterator;
 
 class ServerBlock {
 
 private:
-	std::string						_listenIP;
+	unsigned int					_listenIP; // s_addr is unsigned int
 	size_type						_listenPort;
 	stringVec						_server_names;
 	std::string						_root;
@@ -43,7 +44,7 @@ private:
 	bool							_chunked_transfer_encoding; // on | off
 	std::string						_auth_basic; // string | off
 	std::string						_auth_basic_user_file; //httpasswd paths
-	std::vector<LocationBlock>		_locations; /*Plusieurs LocationBlocks possibles dans un ServerBlock */
+	LocMap							_locations; /*Plusieurs LocationBlocks possibles dans un ServerBlock */
 
 public:
 	ServerBlock(void);
@@ -67,25 +68,26 @@ public:
 	void	setAuthBasic(std::string value);
 	void	setAuthBasicFile(std::string path);
 
-	void	addLocation(void);
+	std::pair<LocMap::iterator,bool>	addLocation(std::string path);
 
 	// Getters
-	const std::string&					getListenIP(void) const;
-	const size_type&					getListenPort(void) const;
-	const stringVec&					getServerNames(void) const;
-	const std::string&					getRoot(void) const;
-	const bool&							getAutoindex(void) const;
-	const stringVec&					getIndexes(void) const;
-	const stringVec&					getLimitExcept(void) const;
-	const errorMap&						getErrorPages(void) const;
-	const size_type&					getMaxBdySize(void) const;
-	const size_type&					getKeepaliveTime(void) const;
-	const bool&							getChunkedEncoding(void) const;
-	const std::string&					getAuthBasic(void) const;
-	const std::string&					getAuthBasicFile(void) const;
+	const unsigned int&			getListenIP(void) const;
+	const size_type&			getListenPort(void) const;
+	const stringVec&			getServerNames(void) const;
+	const std::string&			getRoot(void) const;
+	const bool&					getAutoindex(void) const;
+	const stringVec&			getIndexes(void) const;
+	const stringVec&			getLimitExcept(void) const;
+	const errorMap&				getErrorPages(void) const;
+	const size_type&			getMaxBdySize(void) const;
+	const size_type&			getKeepaliveTime(void) const;
+	const bool&					getChunkedEncoding(void) const;
+	const std::string&			getAuthBasic(void) const;
+	const std::string&			getAuthBasicFile(void) const;
 	
-	const std::vector<LocationBlock>&	getLocations(void) const;
-	LocationBlock&						getLastLocation(void);
+	const LocMap&				getLocations(void) const;
+	// LocationBlock&				getLastLocation(void);
+
 };
 
 std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs);

@@ -29,7 +29,7 @@
 # define DEFAULT_AUTOINDEX		false
 # define DEFAULT_MAX_BDY_SIZE	1000000			// 1MB
 # define DEFAULT_KEEPALIVE_T	75				// seconds
-# define DEFAULT_LISTEN_IP		"0.0.0.0"
+# define DEFAULT_LISTEN_IP		0				//"0.0.0.0"
 # define DEFAULT_LISTEN_PORT	80
 # define DEFAULT_SRV_NAME		""
 # define DEFAULT_ROOT			"html"

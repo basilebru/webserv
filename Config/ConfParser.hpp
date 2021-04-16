@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/15 15:43:37 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/16 16:53:23 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,12 +38,11 @@ private:
 	HttpBlock					_httpBlock; // will certainely be removed, ConfParser will be called from HttpBlock
 	int							_block_type;
 	size_t						_line_nb;
-	size_t						_nbr_of_srv;
-	size_t						_nbr_of_loc;
+	size_t						_nbr_of_srv; // For debug
+	size_t						_nbr_of_loc; // For debug
 	std::bitset<3>				_in_block;
-	bool						_semi_col_not_found;
-	std::string					_curr_dir;
 	std::vector<std::string>	_dir_line;
+	LocationBlock				*_curr_location;
 
 	void	parseDirective(void);
 	void	handleBlockIn(const std::string&);
@@ -65,8 +64,8 @@ private:
 	int		setCgiParam();
 	int		setCgiPass();
 
-	// Store the location URI	
-	void	setLocationPath();
+	// // Store the location URI	
+	// void	setLocationPath();
 
 	template <class Compare>
 	void checkNbrOfArgs(size_t expected_nbr, Compare comp);
@@ -198,6 +197,16 @@ public:
 	public:
 		InvalidPort(const std::string token, ConfParser *);
 		virtual ~InvalidPort() throw() {};
+		virtual const char* what() const throw();
+	};
+
+	class DuplicateLocation : public std::exception {
+
+	private:
+		std::string _msg;
+	public:
+		DuplicateLocation(const std::string token, ConfParser *);
+		virtual ~DuplicateLocation() throw() {};
 		virtual const char* what() const throw();
 	};
 

@@ -183,7 +183,7 @@ void Server::setup(int port)
 	
 	// Listen to port 9999 on any address
 	sockaddr.sin_family = AF_INET;
-	sockaddr.sin_addr.s_addr = INADDR_ANY;
+	sockaddr.sin_addr.s_addr = INADDR_ANY; // Adresse dans l'ordre d'octets réseau
 	sockaddr.sin_port = htons(port); // htons is necessary to convert a number to
 																	 // network byte order
 	if (bind(this->server_socket, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0) {

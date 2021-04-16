@@ -31,48 +31,48 @@ AUTH BASIC FILE:
   AUTH BASIC: off
   AUTH BASIC FILE: 
 
-  --> LOCATION N°1
-	------------
-	PATH: /
-	ROOT: /root/of/location/one
-	AUTOINDEX: false
-	INDEXES: readme.html truc.machin 
-	LIMIT_EXCEPT: 
-	ERROR PAGES: 
-	MAX BDY SIZE: 1000000
-	KEEP. TIMEOUT: 75
-	CHUNKED ENC.: true
-	AUTH BASIC: off
-	AUTH BASIC FILE: 
- 
-  --> LOCATION N°2
-	------------
-	PATH: /bla/
-	ROOT: /root/of/location/two
-	AUTOINDEX: false
-	INDEXES: index.html 
-	LIMIT_EXCEPT: 
-	ERROR PAGES: 
-	MAX BDY SIZE: 1000000
-	KEEP. TIMEOUT: 75
-	CHUNKED ENC.: true
-	AUTH BASIC: off
-	AUTH BASIC FILE: 
- 
-  --> LOCATION N°3
-	------------
-	PATH: /blo/
-	ROOT: /root/of/location/three
-	AUTOINDEX: false
-	INDEXES: index.html 
-	LIMIT_EXCEPT: 
-	ERROR PAGES: 
-	MAX BDY SIZE: 1000000
-	KEEP. TIMEOUT: 75
-	CHUNKED ENC.: true
-	AUTH BASIC: off
-	AUTH BASIC FILE: 
- 
+  --> LOCATION /
+    ------------
+    PATH: /
+    ROOT: /root/of/location/one
+    AUTOINDEX: false
+    INDEXES: readme.html truc.machin 
+    LIMIT_EXCEPT: 
+    ERROR PAGES: 
+    MAX BDY SIZE: 1000000
+    KEEP. TIMEOUT: 75
+    CHUNKED ENC.: true
+    AUTH BASIC: off
+    AUTH BASIC FILE: 
+
+  --> LOCATION /bla/
+    ------------
+    PATH: /bla/
+    ROOT: /root/of/location/two
+    AUTOINDEX: false
+    INDEXES: index.html 
+    LIMIT_EXCEPT: 
+    ERROR PAGES: 
+    MAX BDY SIZE: 1000000
+    KEEP. TIMEOUT: 75
+    CHUNKED ENC.: true
+    AUTH BASIC: off
+    AUTH BASIC FILE: 
+
+  --> LOCATION /blo/
+    ------------
+    PATH: /blo/
+    ROOT: /root/of/location/three
+    AUTOINDEX: false
+    INDEXES: index.html 
+    LIMIT_EXCEPT: 
+    ERROR PAGES: 
+    MAX BDY SIZE: 1000000
+    KEEP. TIMEOUT: 75
+    CHUNKED ENC.: true
+    AUTH BASIC: off
+    AUTH BASIC FILE: 
+
  
 => SERVER N°2
   ------------
@@ -87,23 +87,23 @@ AUTH BASIC FILE:
   MAX BDY SIZE: 1000000
   KEEP. TIMEOUT: 75
   CHUNKED ENC.: true
-  AUTH BASIC: "Webserv Resctricted Area: needs authentication"
+  AUTH BASIC: "Webserv Resctricted Area: authentication"
   AUTH BASIC FILE: /etc/nginx/auth/.htpasswd
 
-  --> LOCATION N°4
-	------------
-	PATH: /
-	ROOT: html
-	AUTOINDEX: false
-	INDEXES: index.html 
-	LIMIT_EXCEPT: 
-	ERROR PAGES: 
-	MAX BDY SIZE: 1000000
-	KEEP. TIMEOUT: 75
-	CHUNKED ENC.: true
-	AUTH BASIC: off
-	AUTH BASIC FILE: 
- 
+  --> LOCATION /
+    ------------
+    PATH: /
+    ROOT: html
+    AUTOINDEX: false
+    INDEXES: index.html 
+    LIMIT_EXCEPT: 
+    ERROR PAGES: 
+    MAX BDY SIZE: 1000000
+    KEEP. TIMEOUT: 75
+    CHUNKED ENC.: true
+    AUTH BASIC: off
+    AUTH BASIC FILE: 
+
  
 
 DESTRUCTOR CALLED
