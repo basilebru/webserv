@@ -23,10 +23,13 @@
 # define FALSE		0
 # define SUCCESS	0
 # define FAILURE	-1
+# define ON			1
+# define OFF		0
+# define NOT_SET	-1
 
 // Default server config values
 # define DEFAULT_INDEX			"index.html"
-# define DEFAULT_AUTOINDEX		false
+# define DEFAULT_AUTOINDEX		'0'
 # define DEFAULT_MAX_BDY_SIZE	1000000			// 1MB
 # define DEFAULT_KEEPALIVE_T	75				// seconds
 # define DEFAULT_LISTEN_IP		0				//"0.0.0.0"
@@ -34,7 +37,8 @@
 # define DEFAULT_SRV_NAME		""
 # define DEFAULT_ROOT			"html"
 # define DEFAULT_AUTH_BASIC		"off"
-# define DEFAULT_CHUNKED_ENC	true
+# define DEFAULT_CHUNKED_ENC	1
+# define DEFAULT_CGI_PORT		9000
 
 
 // Colors

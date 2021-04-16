@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/16 16:57:55 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/16 20:16:22 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,14 @@
 ServerBlock::ServerBlock(void) : 
 _listenIP(DEFAULT_LISTEN_IP),
 _listenPort(DEFAULT_LISTEN_PORT),
-_root(DEFAULT_ROOT),
-_autoindex(DEFAULT_AUTOINDEX),
-_client_max_body_size(DEFAULT_MAX_BDY_SIZE),
-_keepalive_timeout(DEFAULT_KEEPALIVE_T),
-_chunked_transfer_encoding(DEFAULT_CHUNKED_ENC),
+_autoindex(NOT_SET),
+_client_max_body_size(NOT_SET),
+_keepalive_timeout(NOT_SET),
+_chunked_transfer_encoding(NOT_SET),
 _auth_basic(DEFAULT_AUTH_BASIC) {
 
-	this->_indexes.push_back(DEFAULT_INDEX);
+	// this->_indexes.push_back(DEFAULT_INDEX);
+	this->_server_names.push_back(DEFAULT_SRV_NAME);
 
 	// std::cout << GREEN << "SERVER CONSTRUCTOR" << NOCOLOR <<std::endl;
 
@@ -109,9 +109,9 @@ void	ServerBlock::setServerNames(strVecIterator first, strVecIterator last)
 void	ServerBlock::setAutoIndex(std::string& state)
 {
 	if (state == "on")
-		this->_autoindex = true;
+		this->_autoindex = ON;
 	else if (state == "off")
-		this->_autoindex = false;
+		this->_autoindex = OFF;
 }
 
 void	ServerBlock::setIndexes(strVecIterator first, strVecIterator last)
@@ -151,9 +151,9 @@ void	ServerBlock::setKeepaliveTimeout(size_type timeout)
 void	ServerBlock::setChunkedEncoding(std::string& state)
 {
 	if (state == "on")
-		this->_chunked_transfer_encoding = true;
+		this->_chunked_transfer_encoding = ON;
 	if (state == "off")
-		this->_chunked_transfer_encoding = false;
+		this->_chunked_transfer_encoding = OFF;
 }
 
 void	ServerBlock::setAuthBasic(std::string value)
@@ -189,7 +189,7 @@ const std::string&		ServerBlock::getRoot(void) const
 	return this->_root;
 }
 
-const bool&		ServerBlock::getAutoindex(void) const
+const int&		ServerBlock::getAutoindex(void) const
 {
 	return this->_autoindex;
 }
@@ -209,17 +209,17 @@ const errorMap&		ServerBlock::getErrorPages(void) const
 	return this->_error_pages;
 }
 
-const size_type&		ServerBlock::getMaxBdySize(void) const
+const long int&		ServerBlock::getMaxBdySize(void) const
 {
 	return this->_client_max_body_size;
 }
 
-const size_type&	ServerBlock::getKeepaliveTime(void) const
+const long int&	ServerBlock::getKeepaliveTime(void) const
 {
 	return this->_keepalive_timeout;
 }
 
-const bool&			ServerBlock::getChunkedEncoding(void) const
+const int&			ServerBlock::getChunkedEncoding(void) const
 {
 	return this->_chunked_transfer_encoding;
 }
@@ -269,8 +269,7 @@ std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs)
 	o << pad << "INDEXES: ";
 	putVecToOstream(o, rhs.getIndexes().begin(), rhs.getIndexes().end());
 
-	o << pad << "AUTOINDEX: " << std::boolalpha << rhs.getAutoindex() << std::endl;
-	// o << pad << "LOCATIONS: " << rhs.getLocations() << std::endl;
+	o << pad << "AUTOINDEX: "; putState(o, rhs.getAutoindex());
 	
 	o << pad << "LIMIT_EXCEPT: ";
 	putVecToOstream(o, rhs.getLimitExcept().begin(), rhs.getLimitExcept().end());
@@ -281,7 +280,7 @@ std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs)
 	o << pad << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
 	o << pad << "KEEP. TIMEOUT: " << rhs.getKeepaliveTime() << std::endl;
 	
-	o << pad << "CHUNKED ENC.: " << std::boolalpha << rhs.getChunkedEncoding() << std::endl;
+	o << pad << "CHUNKED ENC.: "; putState(o, rhs.getChunkedEncoding());
 	
 	o << pad << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
 	o << pad << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;

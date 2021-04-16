@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/15 16:47:32 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/16 19:52:44 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,13 +28,13 @@ class HttpBlock {
 
 private:
 	std::string						_root;
-	bool							_autoindex; // on | off
+	int								_autoindex; // on | off | not set
 	std::vector<std::string>		_indexes;
 	std::vector<std::string>		_limit_except; //ou allow_methods ?
 	std::map<int, std::string>		_error_pages; /* num error, error file path */
 	size_type						_client_max_body_size;
 	size_type						_keepalive_timeout;
-	bool							_chunked_transfer_encoding; // on | off
+	int								_chunked_transfer_encoding; // on | off | not set
 	std::string						_auth_basic; // string | off
 	std::string						_auth_basic_user_file; //httpasswd paths
 	std::vector<ServerBlock>		_servers;  /*Plusieurs ServerBlocks possibles dans l'HttpBlock */
@@ -60,13 +60,13 @@ public:
 
 	// Getters
 	const std::string&		getRoot(void) const;
-	const bool&				getAutoindex(void) const;
+	const int&				getAutoindex(void) const;
 	const stringVec&		getIndexes(void) const;
 	const stringVec&		getLimitExcept(void) const;
 	const errorMap&			getErrorPages(void) const;
 	const size_type&		getMaxBdySize(void) const;
 	const size_type&		getKeepaliveTime(void) const;
-	const bool&				getChunkedEncoding(void) const;
+	const int&				getChunkedEncoding(void) const;
 	const std::string&		getAuthBasic(void) const;
 	const std::string&		getAuthBasicFile(void) const;
 

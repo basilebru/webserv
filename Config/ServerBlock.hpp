@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:23:44 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/16 16:34:33 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/16 19:52:52 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,13 +35,13 @@ private:
 	size_type						_listenPort;
 	stringVec						_server_names;
 	std::string						_root;
-	bool							_autoindex;
+	int								_autoindex;
 	stringVec						_indexes;
 	stringVec						_limit_except; // GET POST ...
 	std::map<int, std::string>		_error_pages; /* num error, error file path */
-	size_type						_client_max_body_size;
-	size_type						_keepalive_timeout;
-	bool							_chunked_transfer_encoding; // on | off
+	long int						_client_max_body_size;
+	long int						_keepalive_timeout;
+	int								_chunked_transfer_encoding; // on | off
 	std::string						_auth_basic; // string | off
 	std::string						_auth_basic_user_file; //httpasswd paths
 	LocMap							_locations; /*Plusieurs LocationBlocks possibles dans un ServerBlock */
@@ -75,13 +75,13 @@ public:
 	const size_type&			getListenPort(void) const;
 	const stringVec&			getServerNames(void) const;
 	const std::string&			getRoot(void) const;
-	const bool&					getAutoindex(void) const;
+	const int	&				getAutoindex(void) const;
 	const stringVec&			getIndexes(void) const;
 	const stringVec&			getLimitExcept(void) const;
 	const errorMap&				getErrorPages(void) const;
-	const size_type&			getMaxBdySize(void) const;
-	const size_type&			getKeepaliveTime(void) const;
-	const bool&					getChunkedEncoding(void) const;
+	const long int&				getMaxBdySize(void) const;
+	const long int&				getKeepaliveTime(void) const;
+	const int	&				getChunkedEncoding(void) const;
 	const std::string&			getAuthBasic(void) const;
 	const std::string&			getAuthBasicFile(void) const;
 	

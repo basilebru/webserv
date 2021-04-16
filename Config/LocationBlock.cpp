@@ -6,26 +6,19 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/16 16:57:58 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/16 19:52:02 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "LocationBlock.hpp"
 
-LocationBlock::LocationBlock(void)
-{
-	this->_path = "";
-	this->_root = DEFAULT_ROOT;
-	this->_autoindex = DEFAULT_AUTOINDEX;
-	this->_chunked_transfer_encoding = DEFAULT_CHUNKED_ENC;
-	this->_client_max_body_size = DEFAULT_MAX_BDY_SIZE;
-	this->_keepalive_timeout = DEFAULT_KEEPALIVE_T;
-	this->_cgi_pass = "";
-	this->_cgi_port = 9000;
-	this->_cgi_index = "";
-	this->_chunked_transfer_encoding = DEFAULT_CHUNKED_ENC;
-	this->_auth_basic = DEFAULT_AUTH_BASIC;
-	this->_indexes.push_back(DEFAULT_INDEX);
+LocationBlock::LocationBlock(void) :
+_autoindex(NOT_SET),
+_client_max_body_size(DEFAULT_MAX_BDY_SIZE),
+_keepalive_timeout(DEFAULT_KEEPALIVE_T),
+_chunked_transfer_encoding(NOT_SET),
+_auth_basic(DEFAULT_AUTH_BASIC),
+_cgi_port(DEFAULT_CGI_PORT) {
 
 	return;
 }
@@ -92,9 +85,9 @@ void	LocationBlock::setRoot(std::string path)
 void	LocationBlock::setAutoIndex(std::string& state)
 {
 	if (state == "on")
-		this->_autoindex = true;
+		this->_autoindex = ON;
 	else if (state == "off")
-		this->_autoindex = false;
+		this->_autoindex = OFF;
 }
 
 void	LocationBlock::setIndexes(strVecIterator first, strVecIterator last)
@@ -130,9 +123,9 @@ void LocationBlock::setKeepaliveTimeout(size_type timeout)
 void	LocationBlock::setChunkedEncoding(std::string& state)
 {
 	if (state == "on")
-		this->_chunked_transfer_encoding = true;
+		this->_chunked_transfer_encoding = ON;
 	if (state == "off")
-		this->_chunked_transfer_encoding = false;
+		this->_chunked_transfer_encoding = OFF;
 }
 
 void	LocationBlock::setAuthBasic(std::string value)
@@ -177,7 +170,7 @@ const std::string&		LocationBlock::getRoot(void) const
 	return this->_root;
 }
 
-const bool&		LocationBlock::getAutoindex(void) const
+const int&		LocationBlock::getAutoindex(void) const
 {
 	return this->_autoindex;
 }
@@ -207,7 +200,7 @@ const size_type&	LocationBlock::getKeepaliveTime(void) const
 	return this->_keepalive_timeout;
 }
 
-const bool&			LocationBlock::getChunkedEncoding(void) const
+const int&			LocationBlock::getChunkedEncoding(void) const
 {
 	return this->_chunked_transfer_encoding;
 }
@@ -228,7 +221,7 @@ std::ostream & operator<<(std::ostream & o, LocationBlock const & rhs)
 
 	o << pad << "PATH: " << rhs.getPath() << std::endl;
 	o << pad << "ROOT: " << rhs.getRoot() << std::endl;
-	o << pad << "AUTOINDEX: " << std::boolalpha << rhs.getAutoindex() << std::endl;
+	o << pad << "AUTOINDEX: "; putState(o, rhs.getAutoindex());
 
 	o << pad << "INDEXES: ";
 	putVecToOstream(o, rhs.getIndexes().begin(), rhs.getIndexes().end());
@@ -242,7 +235,7 @@ std::ostream & operator<<(std::ostream & o, LocationBlock const & rhs)
 	o << pad << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
 	o << pad << "KEEP. TIMEOUT: " << rhs.getKeepaliveTime() << std::endl;
 
-	o << pad << "CHUNKED ENC.: " << std::boolalpha << rhs.getChunkedEncoding() << std::endl;
+	o << pad << "CHUNKED ENC.: "; putState(o, rhs.getChunkedEncoding());
 	
 	o << pad << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
 	o << pad << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;

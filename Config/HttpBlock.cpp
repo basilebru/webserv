@@ -6,14 +6,14 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/15 16:42:43 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/16 19:53:07 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpBlock.hpp"
 
 HttpBlock::HttpBlock(void) :
- _root(DEFAULT_ROOT),
+_root(DEFAULT_ROOT),
 _autoindex(DEFAULT_AUTOINDEX),
 _client_max_body_size(DEFAULT_MAX_BDY_SIZE),
 _keepalive_timeout(DEFAULT_KEEPALIVE_T),
@@ -70,9 +70,9 @@ void	HttpBlock::setRoot(std::string path)
 void	HttpBlock::setAutoIndex(std::string& state)
 {
 	if (state == "on")
-		this->_autoindex = true;
+		this->_autoindex = ON;
 	else if (state == "off")
-		this->_autoindex = false;
+		this->_autoindex = OFF;
 }
 
 void	HttpBlock::setIndexes(strVecIterator first, strVecIterator last)
@@ -106,9 +106,9 @@ void HttpBlock::setKeepaliveTimeout(size_type timeout)
 void	HttpBlock::setChunkedEncoding(std::string& state)
 {
 	if (state == "on")
-		this->_chunked_transfer_encoding = true;
+		this->_chunked_transfer_encoding = ON;
 	if (state == "off")
-		this->_chunked_transfer_encoding = false;
+		this->_chunked_transfer_encoding = OFF;
 }
 
 void	HttpBlock::setAuthBasic(std::string value)
@@ -128,7 +128,7 @@ const std::string&	HttpBlock::getRoot(void) const
 	return this->_root;
 }
 
-const bool&			HttpBlock::getAutoindex(void) const
+const int&			HttpBlock::getAutoindex(void) const
 {
 	return this->_autoindex;
 }
@@ -158,7 +158,7 @@ const size_type&	HttpBlock::getKeepaliveTime(void) const
 	return this->_keepalive_timeout;
 }
 
-const bool&			HttpBlock::getChunkedEncoding(void) const
+const int&			HttpBlock::getChunkedEncoding(void) const
 {
 	return this->_chunked_transfer_encoding;
 }
@@ -197,7 +197,7 @@ std::ostream & operator<<(std::ostream & o, HttpBlock const & rhs)
 	o << "------------" << std::endl;
 
 	o << "ROOT: " << rhs.getRoot() << std::endl;
-	o << "AUTOINDEX: " << std::boolalpha << rhs.getAutoindex() << std::endl;
+	o << "AUTOINDEX: "; putState(o, rhs.getAutoindex());
 
 	o << "INDEXES: ";
 	putVecToOstream(o, rhs.getIndexes().begin(), rhs.getIndexes().end());
@@ -211,7 +211,7 @@ std::ostream & operator<<(std::ostream & o, HttpBlock const & rhs)
 	o << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
 	o << "KEEP. TIMEOUT: " << rhs.getKeepaliveTime() << std::endl;
 
-	o << "CHUNKED ENC.: " << std::boolalpha << rhs.getChunkedEncoding() << std::endl;
+	o << "CHUNKED ENC.: "; putState(o, rhs.getChunkedEncoding());
 	
 	o << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
 	o << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;

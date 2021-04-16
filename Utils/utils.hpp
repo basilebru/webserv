@@ -63,8 +63,8 @@ template<typename InputIterator>
 void putVecToOstream(std::ostream& o, InputIterator first, InputIterator last)
 {
 	while(first != last) {
-	    o << *first << ' ';
-	    ++first;
+		o << *first << ' ';
+		++first;
 	}
 	o << std::endl;	
 }
@@ -74,8 +74,8 @@ template<typename InputIterator>
 void putMapToOstream(std::ostream& o, InputIterator first, InputIterator last)
 {
 	while(first != last) {
-	    o << first->first << "->" << first->second << ' ';
-	    ++first;
+		o << first->first << "->" << first->second << ' ';
+		++first;
 	}
 	o << std::endl;	
 }
@@ -88,9 +88,25 @@ void putLocToOstream(std::ostream& o, InputIterator first, InputIterator last)
 		o << std::endl << "  --> LOCATION " << first->first << std::endl;
 		o << "    " << "------------" << std::endl;
 		o << first->second;
-	    ++first;
+		++first;
 	}
 	o << std::endl;	
+}
+
+// Print thes "state" of a value accordind to int value
+template<typename Val>
+void putState(std::ostream& o, Val state)
+{
+	if (state == 0)
+		o << "off";	
+	else if (state == 1)
+		o << "on";	
+	else if (state == -1)
+		o << "NOT_SET";
+	else
+		o << "ERROR";
+
+	o << std::endl;
 }
 
 
