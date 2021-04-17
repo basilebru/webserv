@@ -29,7 +29,7 @@
 
 // Default server config values
 # define DEFAULT_INDEX			"index.html"
-# define DEFAULT_AUTOINDEX		'0'
+# define DEFAULT_AUTOINDEX		0				// OFF
 # define DEFAULT_MAX_BDY_SIZE	1000000			// 1MB
 # define DEFAULT_KEEPALIVE_T	75				// seconds
 # define DEFAULT_LISTEN_IP		0				//"0.0.0.0"
@@ -37,7 +37,7 @@
 # define DEFAULT_SRV_NAME		""
 # define DEFAULT_ROOT			"html"
 # define DEFAULT_AUTH_BASIC		"off"
-# define DEFAULT_CHUNKED_ENC	1
+# define DEFAULT_CHUNKED_ENC	1				// ON
 # define DEFAULT_CGI_PORT		9000
 
 

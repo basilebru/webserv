@@ -1,6 +1,6 @@
 #include "utils.cpp"
 
-unsigned int stringToIp(std::string ip)
+unsigned int stringToIp(std::string ip) //return in Little-Endian
 {
 	unsigned char	v[4];
 	size_t			pos(0);

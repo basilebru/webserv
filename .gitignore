@@ -1,5 +1,6 @@
 a.out*
 parser
+parsing
 objs/
 settings.json
 webserv
