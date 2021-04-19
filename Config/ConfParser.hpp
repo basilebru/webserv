@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/19 14:38:56 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/19 17:08:18 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,8 @@ private:
 	void	parseDirective(void);
 	void	handleBlockIn(const std::string&);
 	void	handleBlockOut(void);
+	void	parseLine(std::string& line);
+	void	erase_comments(std::string& line);
 
 	// Directive handling functions	
 	int		setListen();
@@ -65,17 +67,11 @@ private:
 	int		setCgiPass();
 	int		parseInclude();
 
-	// // Store the location URI	
-	// void	setLocationPath();
-
 	template <class Compare>
 	void checkNbrOfArgs(size_t expected_nbr, Compare comp);
 
-	
-	// static	std::string	http_dir[NB_HTTP_DIR];
-	// static	std::string	srv_dir[NB_SRV_DIR];
-	// static	std::string	loc_dir[NB_LOC_DIR];
 
+	// Static attributs to store allowed directives by config block
 	static	dirMap	setHttpMap();
 	static	dirMap	setSrvMap();
 	static	dirMap	setLocMap();
@@ -92,7 +88,6 @@ public:
 	ConfParser& operator=(ConfParser const & rhs);
 
 	void readConfFile(const std::string& confFile);
-	void parseLine(std::string& line);
 
 	// Getters
 	HttpBlock&		getHttpBlock(void);

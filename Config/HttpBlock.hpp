@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/16 19:52:44 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/19 17:54:54 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ public:
 	void	setAutoIndex(std::string& state);
 	void	setIndexes(strVecIterator first, strVecIterator last);
 	void	setLimitExcept(strVecIterator first, strVecIterator last);
-	void	setErrorPages(strVecIterator first, strVecIterator last, std::string& val);
+	int		setErrorPages(strVecIterator first, strVecIterator last, std::string& val);
 	void	setMaxBdySize(size_type size);
 	void	setKeepaliveTimeout(size_type timeout);
 	void	setChunkedEncoding(std::string& state);

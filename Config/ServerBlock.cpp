@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/16 20:16:22 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/19 18:32:11 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,12 +91,13 @@ int	ServerBlock::setListenIp(std::string ip)
 	return FAILURE;
 }
 
-int	ServerBlock::setListenPort(size_type port)
+int	ServerBlock::setListenPort(std::string port)
 {
-	if (port)
+	if (ft_isdigit_string(port))
 	{
-		this->_listenPort = port;
-		return SUCCESS;
+		this->_listenPort = atoi(port.c_str());
+		if (this->_listenPort != 0 && this->_listenPort <= MAX_TCP_PORT)
+			return (SUCCESS);
 	}
 	return FAILURE;
 }

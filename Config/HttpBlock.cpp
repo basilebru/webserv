@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/16 19:53:07 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/19 17:56:22 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ HttpBlock::~HttpBlock(void)
 	return ;
 }
 
-/*HttpBlock& operator=(HttpBlock const & rhs)
+HttpBlock& HttpBlock::operator=(HttpBlock const & rhs)
 {
 	this->_root = rhs._root;
 	this->_autoindex = rhs._autoindex;
@@ -59,7 +59,7 @@ HttpBlock::~HttpBlock(void)
 	this->_servers = rhs._servers;
 
 	return *this;
-}*/
+}
 
 
 void	HttpBlock::setRoot(std::string path)
@@ -85,13 +85,19 @@ void	HttpBlock::setLimitExcept(strVecIterator first, strVecIterator last)
 	this->_limit_except.assign(first, last);
 }
 
-void	HttpBlock::setErrorPages(strVecIterator first, strVecIterator last, std::string& val)
+int		HttpBlock::setErrorPages(strVecIterator first, strVecIterator last, std::string& val)
 {
+	int key(0);
+
 	while (first != last)
 	{
-		this->_error_pages.insert(std::make_pair(atoi(first->c_str()), val));
+		key = atoi(first->c_str());
+		if (key < 300 || key > 599)
+			return (FAILURE);
+		this->_error_pages.insert(std::make_pair(key, val));
 		++first;
 	}
+	return (SUCCESS);
 }
 
 void HttpBlock::setMaxBdySize(size_type size)

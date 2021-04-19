@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:26 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/19 15:30:37 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/19 19:28:43 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@ int main()
 	ConfParser parser;
 
 	try {
-		parser.readConfFile("webserv.conf"); // Default config file containing http directive
-		parser.readConfFile("server2.conf"); // Config file containing server blocks
+		parser.readConfFile(DEFAULT_CONF_FILE); // Default config file containing http directive
+		parser.readConfFile("../conf.d/server2.conf"); // Config file containing server blocks
 
 
 		HttpBlock config = parser.getHttpBlock();

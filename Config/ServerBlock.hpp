@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:23:44 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/16 19:52:52 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/19 17:37:07 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ public:
 	
 	// Setters
 	int		setListenIp(std::string ip);
-	int		setListenPort(size_type port);
+	int		setListenPort(std::string port);
 	void	setServerNames(strVecIterator first, strVecIterator last);
 	void	setRoot(std::string path);
 	void	setAutoIndex(std::string& state);
