@@ -6,14 +6,14 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/16 16:55:40 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/19 15:47:58 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfParser.hpp"
 
 ConfParser::ConfParser(void)
-: _configFile("nginx.conf"), _httpBlock(),
+: _configFile("webserv.conf"), _httpBlock(),
 _block_type(HTTP), _line_nb(1), _nbr_of_srv(0),
 _nbr_of_loc(0), _in_block(FALSE)
 {
@@ -65,6 +65,7 @@ dirMap	ConfParser::setHttpMap()
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_param"] = &ConfParser::setCgiParam;
 	map["cgi_pass"] = &ConfParser::setCgiPass;
+	map["include"] = &ConfParser::parseInclude;
 
 	return map;
 }
@@ -383,12 +384,16 @@ int ConfParser::setCgiPass(void)
 	return 0;
 }
 
-/*void ConfParser::setLocationPath()
+int ConfParser::parseInclude()
 {
-	this->checkNbrOfArgs(3, &same_as<size_t>);
-	this->_curr_location->setPath(this->_dir_line[1]);
-	// std::cout << "SET LOCATION FUNCTION" << std::endl;
-}*/
+
+	displayVec(this->_dir_line);
+	this->checkNbrOfArgs(2, &same_as<size_t>);
+	
+	this->readConfFile(this->_dir_line[1]);
+	// std::cout << "PARSE INCLUDE FUNCTION" << std::endl;
+	return 0;
+}
 
 template <class Compare>
 void ConfParser::checkNbrOfArgs(size_t expected_nbr, Compare comp)
@@ -397,15 +402,19 @@ void ConfParser::checkNbrOfArgs(size_t expected_nbr, Compare comp)
 		throw InvalidNbrOfArgs(this->_dir_line[0], this);
 }
 
-void ConfParser::readConfFile()
+void ConfParser::readConfFile(const std::string& confFile)
 {
 	std::ifstream	file;
 	std::string		line;
+	size_t			line_nb_save = this->_line_nb;
 
-	file.open(this->_configFile.c_str());
+	file.open(confFile.c_str());
 	if (file.fail())
-		throw CannotOpenFile(this);
+		throw FileOperationFail("open", this);
 
+	this->_configFile = confFile;	
+	this->_dir_line.clear();
+	this->_line_nb = 1;
 	while (getline(file, line))
 	{
 		this->parseLine(line);
@@ -413,9 +422,20 @@ void ConfParser::readConfFile()
 		file.clear();
 		this->_line_nb++;
 	}
-	if (this->_in_block.any())
+	file.clear();
+
+	file.close();
+	if (file.fail())
+		throw FileOperationFail("close", this);
+	
+	if (this->_in_block.test(SERVER)
+		|| this->_in_block.test(LOCATION)
+		|| (this->_in_block.test(HTTP) && confFile == "webserv.conf")
+	)
 		throw UnexpectedEOF("end of file", this);
 
+	this->_line_nb = line_nb_save;
+	this->_configFile = "webserv.conf";
 	return ;
 }
 
@@ -433,11 +453,6 @@ void erase_comments(std::string& line)
 
 void ConfParser::parseLine(std::string& line)
 {
-
-/*	typedef	int		(ConfParser::*t_parse)();
-	static t_parse	func[NB_BLOCKS] = {&ConfParser::parseHttp, &ConfParser::parseServer, &ConfParser::parseLocation};
-	ret = (this->*func[this->_block_type])();
-*/
 	// std::cout << "NATIVE LINE  : " << line << std::endl;
 	erase_comments(line);
 	// std::cout << "LINE w/o com.: " << line << std::endl << std::endl;
@@ -521,16 +536,19 @@ void ConfParser::handleBlockOut()
 	{
 		this->_in_block[HTTP] = FALSE;
 		// this->_block_type = SERVER;
+		// std::cout << "close http block" << std::endl;
 	}
 	else if (this->_block_type == SERVER)
 	{
 		this->_in_block[SERVER] = FALSE;
 		this->_block_type = HTTP;
+		// std::cout << "close server block" << std::endl;
 	}
 	else if (this->_block_type == LOCATION)
 	{
 		this->_in_block[LOCATION] = FALSE;
 		this->_block_type = SERVER;
+		// std::cout << "close location block" << std::endl;
 	}
 }
 
@@ -539,13 +557,13 @@ void ConfParser::parseDirective()
 	dirMap::iterator it;
 	std::string directive = this->_dir_line.at(0);
 	
-	// if (this->_block_type == HTTP)
-	// 	std::cout << "==> HTTP BLOCK" << std::endl << std::endl;
-	// else if (this->_block_type == SERVER)
-	// 	std::cout << "==> SERVER BLOCK" << std::endl << std::endl;
-	// if (this->_block_type == LOCATION)
-	// 	std::cout << "==> LOCATION BLOCK" << std::endl << std::endl;
-
+/*	if (this->_block_type == HTTP)
+		std::cout << "==> HTTP BLOCK" << std::endl << std::endl;
+	else if (this->_block_type == SERVER)
+		std::cout << "==> SERVER BLOCK" << std::endl << std::endl;
+	if (this->_block_type == LOCATION)
+		std::cout << "==> LOCATION BLOCK" << std::endl << std::endl;
+*/
 	size_t pos = this->_dir_line.back().find_last_of(";");
 	if (pos != std::string::npos)
 	{
@@ -712,13 +730,13 @@ const char* ConfParser::InvalidValue::what() const throw()
 	return (this->_msg.c_str());
 }
 
-ConfParser::CannotOpenFile::CannotOpenFile(ConfParser *p)
-: _msg("webserv: cannot open file \"" + p->_configFile + "\"")
+ConfParser::FileOperationFail::FileOperationFail(const std::string op, ConfParser *p)
+: _msg("webserv: cannot " + op + " file \"" + p->_configFile + "\"")
 {
 	return;
 }
 
-const char* ConfParser::CannotOpenFile::what() const throw()
+const char* ConfParser::FileOperationFail::what() const throw()
 {
 	return (this->_msg.c_str());
 }

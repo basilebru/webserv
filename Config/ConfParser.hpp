@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/16 16:53:23 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/19 14:38:56 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ public:
 typedef std::map<std::string, int (ConfParser::*)(void)>	dirMap;
 
 private:
-	const std::string			_configFile;
+	std::string			_configFile;
 	HttpBlock					_httpBlock; // will certainely be removed, ConfParser will be called from HttpBlock
 	int							_block_type;
 	size_t						_line_nb;
@@ -63,6 +63,7 @@ private:
 	int		setAuthBasicFile();
 	int		setCgiParam();
 	int		setCgiPass();
+	int		parseInclude();
 
 	// // Store the location URI	
 	// void	setLocationPath();
@@ -90,7 +91,7 @@ public:
 	~ConfParser(void);
 	ConfParser& operator=(ConfParser const & rhs);
 
-	void readConfFile(void);
+	void readConfFile(const std::string& confFile);
 	void parseLine(std::string& line);
 
 	// Getters
@@ -170,13 +171,13 @@ public:
 		virtual const char* what() const throw();
 	};
 
-	class CannotOpenFile : public std::exception {
+	class FileOperationFail : public std::exception {
 
 	private:
 		std::string _msg;
 	public:
-		CannotOpenFile(ConfParser *);
-		virtual ~CannotOpenFile() throw() {};
+		FileOperationFail(const std::string, ConfParser *);
+		virtual ~FileOperationFail() throw() {};
 		virtual const char* what() const throw();
 	};
 
