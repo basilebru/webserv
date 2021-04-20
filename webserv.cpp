@@ -1,4 +1,6 @@
 #include "Server.hpp"
+#include "ConfParser.hpp"
+#include "HttpBlock.hpp"
 #include <csignal> // To handle CTRL-C (and others signals ?)
 
 void signal_handler(int signum)
@@ -10,13 +12,35 @@ void signal_handler(int signum)
 	}
 }
 
-int main(void)
+int main(int ac, char **av)
 {
-	Server *server =  new Server();
-
 	if (signal(SIGINT, signal_handler) == SIG_ERR)
 		return (1);
 
+	if (ac == 2)
+	{
+		ConfParser parser;
+
+		try {
+			parser.readConfFile(DEFAULT_CONF_FILE); // Default config file containing http directive
+			parser.readConfFile(av[1]); // Config file containing server blocks
+
+			HttpBlock baseConfig = parser.getHttpBlock();
+			std::vector<ServerBlock> servers = parser.getServers();
+
+			
+			std::cout << std::endl << "WEBSERV CONFIGURATION: " << std::endl;
+			std::cout << "Nbr of servers: " << servers.size() << std::endl << std::endl;
+			
+			std::cout << baseConfig;
+			displayVec(servers, '\n');
+		}
+		catch(const std::exception& e) {
+			std::cerr << e.what() << '\n';
+		}
+	}
+
+	Server *server =  new Server();
 	server->launch();
 	delete server;
 

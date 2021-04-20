@@ -13,8 +13,6 @@
 #include <cstdlib> // strtol
 
 #define BUF_SIZE 1024
-#define SUCCESS 1
-
 
 struct request_line
 {

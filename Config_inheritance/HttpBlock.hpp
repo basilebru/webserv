@@ -6,27 +6,25 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/20 17:41:47 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/20 17:38:30 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTP_BLOCK_HPP
 # define HTTP_BLOCK_HPP
 
-# include <string>
-# include <iostream>
-# include <map>
-# include <vector>
-# include "ServerBlock.hpp"
 # include "webserv.hpp"
 # include "utils.hpp"
 
+	typedef size_t						size_type;
+	typedef std::vector<std::string>	stringVec;
+	typedef stringVec::iterator			strVecIterator;
+	typedef std::map<int, std::string>	errorMap;
+
 class HttpBlock {
 
-	typedef size_t								size_type;
-	typedef std::vector<std::string>::iterator	strVecIterator;
+protected:
 
-private:
 	std::string						_root;
 	int								_autoindex; // on | off | not set
 	std::vector<std::string>		_indexes;
@@ -34,10 +32,9 @@ private:
 	std::map<int, std::string>		_error_pages; /* num error, error file path */
 	long int						_client_max_body_size;
 	long int						_keepalive_timeout;
-	int								_chunked_transfer_encoding; // on | off | not set
+	int								_chunked_transfer_encoding; // on | off
 	std::string						_auth_basic; // string | off
 	std::string						_auth_basic_user_file; //httpasswd paths
-	std::vector<ServerBlock>		_servers;  /*Plusieurs ServerBlocks possibles dans l'HttpBlock */
 
 public:
 	HttpBlock(void);
@@ -69,16 +66,6 @@ public:
 	const int&				getChunkedEncoding(void) const;
 	const std::string&		getAuthBasic(void) const;
 	const std::string&		getAuthBasicFile(void) const;
-
-	const std::vector<ServerBlock>& getServers() const;
-	ServerBlock&	getLastServer(void);
-
-	
-	void	addServer();
-	
-
-	ServerBlock& selectServer(std::string ip, int port, std::string host);
-
 
 };
 

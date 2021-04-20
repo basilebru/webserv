@@ -1,4 +1,4 @@
-
+	
 NAME = webserv
 
 # ---------------- CC ---------------- #
@@ -27,9 +27,14 @@ endif
 INCLUDES 		=	./includes/
 SERVER_DIR 		=	./Server/
 REQUEST_DIR 	=	./Request/
+CONF_DIR 		=	./Config_inheritance/
 UTILS_DIR 		=	./Utils/
 
-ALL_INC			= 	-I$(SERVER_DIR) -I$(REQUEST_DIR) -I$(UTILS_DIR) -I$(INCLUDES)
+ALL_INC			+= 	-I$(INCLUDES)
+ALL_INC			+= 	-I$(SERVER_DIR)
+ALL_INC			+= 	-I$(REQUEST_DIR)
+ALL_INC			+= 	-I$(CONF_DIR)
+ALL_INC			+= 	-I$(UTILS_DIR)
 
 
 # ---------------- SRC --------------- #
@@ -44,9 +49,16 @@ SRCS += request_class.cpp
 SRCS += request_class_store.cpp
 SRCS += request_class_utils.cpp
 
+# Config Parser sources
+SRCS += ConfParser.cpp
+SRCS += HttpBlock.cpp
+SRCS += ServerBlock.cpp
+SRCS += LocationBlock.cpp
+
 # Utils sources
 SRCS += get_next_line.cpp
 SRCS += get_next_line_utils.cpp
+SRCS += ip_manipulation.cpp
 SRCS += utils.cpp
 
 
@@ -54,6 +66,7 @@ SRCS += utils.cpp
 vpath %.cpp $(SERVER_DIR)
 vpath %.cpp $(REQUEST_DIR)
 vpath %.cpp $(UTILS_DIR)
+vpath %.cpp $(CONF_DIR)
 
 
 # ---------------- OBJ --------------- #

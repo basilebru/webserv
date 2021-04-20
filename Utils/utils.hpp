@@ -23,7 +23,7 @@ std::string		ipToString(unsigned int ip);
 
 
 template<typename T>
-void displayVec(std::vector<T> v, char separator = ' ')
+void displayVec(std::vector<T> &v, char separator = ' ')
 {
 	typename std::vector<T>::iterator it = v.begin();
 	while (it != v.end())
@@ -91,7 +91,6 @@ void putLocToOstream(std::ostream& o, InputIterator first, InputIterator last)
 		o << first->second;
 		++first;
 	}
-	o << std::endl;	
 }
 
 // Print thes "state" of a value accordind to int value

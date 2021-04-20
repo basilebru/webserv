@@ -6,11 +6,13 @@
 # include <iostream>
 
 # include <sys/socket.h> // For socket functions
+# include <sys/select.h>
 # include <netinet/in.h> // For sockaddr_in
 # include <cstdlib> // For exit() and EXIT_FAILURE an atoi(char*)
 # include <fstream> // ifstream
 # include <fcntl.h> // For fcntl --> non_blocking fd
 # include <map>
+# include <vector>
 
 # include <sstream>
 # include <bitset>
@@ -40,7 +42,7 @@
 # define DEFAULT_CHUNKED_ENC	1				// ON
 # define DEFAULT_CGI_PORT		9000
 # define MAX_TCP_PORT			65535
-# define DEFAULT_CONF_FILE		"../conf.d/webserv.conf"
+# define DEFAULT_CONF_FILE		"./conf.d/webserv.conf"
 
 
 // Colors
