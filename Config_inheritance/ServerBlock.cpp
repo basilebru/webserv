@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/20 19:58:18 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/21 11:34:27 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ ServerBlock& ServerBlock::operator=(ServerBlock const & rhs)
 
 // Setters
 
-int	ServerBlock::setListenIp(std::string ip)
+int		ServerBlock::setListenIp(std::string ip)
 {
 	if (ip == "localhost")
 		ip = "127.0.0.1";
@@ -95,7 +95,7 @@ int	ServerBlock::setListenIp(std::string ip)
 	return FAILURE;
 }
 
-int	ServerBlock::setListenPort(std::string port)
+int		ServerBlock::setListenPort(std::string port)
 {
 	if (ft_isdigit_string(port))
 	{
@@ -111,36 +111,38 @@ void	ServerBlock::setServerNames(strVecIterator first, strVecIterator last)
 	this->_server_names.assign(first, last);
 }
 
-
-// Getters
-
-const unsigned int&		ServerBlock::getListenIP(void) const
-{
-	return this->_listenIP;
-}
-
-const size_type&		ServerBlock::getListenPort(void) const
-{
-	return this->_listenPort;
-}
-
-const stringVec&		ServerBlock::getServerNames(void) const
-{
-	return this->_server_names;
-}
-
-const LocMap&	ServerBlock::getLocations(void) const
-{
-	return this->_locations;
-}
-
 std::pair<LocMap::iterator,bool>	 ServerBlock::addLocation(std::string path)
 {
 	LocationBlock loc;
 	return this->_locations.insert(std::make_pair(path, loc));
 }
 
-std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs)
+
+// Getters
+
+const unsigned int&	ServerBlock::getListenIP(void) const
+{
+	return this->_listenIP;
+}
+
+const size_type&	ServerBlock::getListenPort(void) const
+{
+	return this->_listenPort;
+}
+
+const stringVec&	ServerBlock::getServerNames(void) const
+{
+	return this->_server_names;
+}
+
+const LocMap&		ServerBlock::getLocations(void) const
+{
+	return this->_locations;
+}
+
+// Display
+
+std::ostream & 	operator<<(std::ostream & o, ServerBlock const & rhs)
 {
 	static int i = 0;
 	static std::string pad("  ");

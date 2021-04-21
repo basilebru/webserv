@@ -77,6 +77,9 @@ OBJS		= $(patsubst %.cpp, $(DIR_OBJS)%.o, $(SRCS))
 
 all: $(NAME)
 
+fast:
+	$(MAKE) re -j8
+
 $(NAME):	$(OBJS)
 			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(SANITIZE) $(OBJS) $(ALL_INC) -o $@
 # 			echo "$(_BOLD)$(_YELLOW)==> $@ linked$(_END)"

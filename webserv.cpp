@@ -40,9 +40,9 @@ int main(int ac, char **av)
 		}
 	}
 
-	Server *server =  new Server();
-	server->launch();
-	delete server;
+	// Server *server =  new Server();
+	// server->launch();
+	// delete server;
 
 	return (0);
 }
