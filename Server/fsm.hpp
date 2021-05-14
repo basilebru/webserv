@@ -10,7 +10,7 @@
 #define NB_STATE 6
 #define FAILURE -1
 #define DONE 1
-
+#define NOT_SET -1
 
 struct conf
 {
@@ -18,8 +18,11 @@ struct conf
         std::vector<std::string> allow_methods;
         std::string root;
         std::vector<std::string> index;
-        bool autoindex;
+        int autoindex;
         std::map<int, std::string> error_pages;
+
+        conf(void): max_body_size(NOT_SET), autoindex(NOT_SET)
+        {};
         // authentification attribute
         // cgi attributes
 };
