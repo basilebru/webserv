@@ -6,36 +6,31 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/21 11:34:27 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/19 18:32:11 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerBlock.hpp"
 
-ServerBlock::ServerBlock(void) :
+ServerBlock::ServerBlock(void) : 
 _listenIP(DEFAULT_LISTEN_IP),
 _listenPort(DEFAULT_LISTEN_PORT),
-_server_names(1, DEFAULT_SRV_NAME)
-{
-	// std::cout << GREEN << "SERVER CONSTRUCTOR" << NOCOLOR <<std::endl;
-	// this->_listenIP = DEFAULT_LISTEN_IP;
-	// this->_listenPort = DEFAULT_LISTEN_PORT;
-	// this->_root.clear();
-	// this->_autoindex = NOT_SET;
-	// this->_indexes.clear();
-	// this->_client_max_body_size = NOT_SET;
-	// this->_keepalive_timeout = NOT_SET;
-	// this->_chunked_transfer_encoding = NOT_SET;
-	// this->_auth_basic = DEFAULT_AUTH_BASIC;
-	// this->_server_names.push_back(DEFAULT_SRV_NAME);
+_autoindex(NOT_SET),
+_client_max_body_size(NOT_SET),
+_keepalive_timeout(NOT_SET),
+_chunked_transfer_encoding(NOT_SET),
+_auth_basic(DEFAULT_AUTH_BASIC) {
 
+	// this->_indexes.push_back(DEFAULT_INDEX);
+	this->_server_names.push_back(DEFAULT_SRV_NAME);
+
+	// std::cout << GREEN << "SERVER CONSTRUCTOR" << NOCOLOR <<std::endl;
 
 	return ;
 }
 
 ServerBlock::ServerBlock(ServerBlock const & copy)
 {
-	// std::cout << YELLOW << "SERVER CPY CONSTRUCTOR" << NOCOLOR <<std::endl;
 	this->_listenIP = copy._listenIP;
 	this->_listenPort = copy._listenPort;
 	this->_server_names = copy._server_names;
@@ -51,6 +46,7 @@ ServerBlock::ServerBlock(ServerBlock const & copy)
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_locations = copy._locations;
 
+	// std::cout << YELLOW << "SERVER CPY CONSTRUCTOR" << NOCOLOR <<std::endl;
 	return ;
 }
 
@@ -83,7 +79,7 @@ ServerBlock& ServerBlock::operator=(ServerBlock const & rhs)
 
 // Setters
 
-int		ServerBlock::setListenIp(std::string ip)
+int	ServerBlock::setListenIp(std::string ip)
 {
 	if (ip == "localhost")
 		ip = "127.0.0.1";
@@ -95,7 +91,7 @@ int		ServerBlock::setListenIp(std::string ip)
 	return FAILURE;
 }
 
-int		ServerBlock::setListenPort(std::string port)
+int	ServerBlock::setListenPort(std::string port)
 {
 	if (ft_isdigit_string(port))
 	{
@@ -111,38 +107,151 @@ void	ServerBlock::setServerNames(strVecIterator first, strVecIterator last)
 	this->_server_names.assign(first, last);
 }
 
+void	ServerBlock::setAutoIndex(std::string& state)
+{
+	if (state == "on")
+		this->_autoindex = ON;
+	else if (state == "off")
+		this->_autoindex = OFF;
+}
+
+void	ServerBlock::setIndexes(strVecIterator first, strVecIterator last)
+{
+	this->_indexes.assign(first, last);
+}
+
+void	ServerBlock::setRoot(std::string path)
+{
+	this->_root = path;
+}
+
+void	ServerBlock::setLimitExcept(strVecIterator first, strVecIterator last)
+{
+	this->_limit_except.assign(first, last);
+}
+
+void	ServerBlock::setErrorPages(strVecIterator first, strVecIterator last, std::string& val)
+{
+	while (first != last)
+	{
+		this->_error_pages.insert(std::make_pair(atoi(first->c_str()), val));
+		++first;
+	}
+}
+
+void	ServerBlock::setMaxBdySize(size_type size)
+{
+	this->_client_max_body_size = size;
+}
+
+void	ServerBlock::setKeepaliveTimeout(size_type timeout)
+{
+	this->_keepalive_timeout = timeout;
+}
+
+void	ServerBlock::setChunkedEncoding(std::string& state)
+{
+	if (state == "on")
+		this->_chunked_transfer_encoding = ON;
+	if (state == "off")
+		this->_chunked_transfer_encoding = OFF;
+}
+
+void	ServerBlock::setAuthBasic(std::string value)
+{
+	this->_auth_basic = value;
+}
+
+void	ServerBlock::setAuthBasicFile(std::string path)
+{
+	this->_auth_basic_user_file = path;
+}
+
+
+// Getters
+
+const unsigned int&		ServerBlock::getListenIP(void) const
+{
+	return this->_listenIP;
+}
+
+const size_type&		ServerBlock::getListenPort(void) const
+{
+	return this->_listenPort;
+}
+
+const stringVec&		ServerBlock::getServerNames(void) const
+{
+	return this->_server_names;
+}
+
+const std::string&		ServerBlock::getRoot(void) const
+{
+	return this->_root;
+}
+
+const int&		ServerBlock::getAutoindex(void) const
+{
+	return this->_autoindex;
+}
+
+const stringVec&	ServerBlock::getIndexes(void) const
+{
+	return this->_indexes;
+}
+
+const stringVec&	ServerBlock::getLimitExcept(void) const
+{
+	return this->_limit_except;
+}
+
+const errorMap&		ServerBlock::getErrorPages(void) const
+{
+	return this->_error_pages;
+}
+
+const long int&		ServerBlock::getMaxBdySize(void) const
+{
+	return this->_client_max_body_size;
+}
+
+const long int&	ServerBlock::getKeepaliveTime(void) const
+{
+	return this->_keepalive_timeout;
+}
+
+const int&			ServerBlock::getChunkedEncoding(void) const
+{
+	return this->_chunked_transfer_encoding;
+}
+
+const std::string&	ServerBlock::getAuthBasic(void) const
+{
+	return this->_auth_basic;
+}
+
+const std::string&	ServerBlock::getAuthBasicFile(void) const
+{
+	return this->_auth_basic_user_file;
+}
+
+const LocMap&	ServerBlock::getLocations(void) const
+{
+	return this->_locations;
+}
+
+// LocationBlock&	ServerBlock::getLastLocation(void)
+// {
+// 	return this->locIterator->second;
+// }
+
 std::pair<LocMap::iterator,bool>	 ServerBlock::addLocation(std::string path)
 {
 	LocationBlock loc;
 	return this->_locations.insert(std::make_pair(path, loc));
 }
 
-
-// Getters
-
-const unsigned int&	ServerBlock::getListenIP(void) const
-{
-	return this->_listenIP;
-}
-
-const size_type&	ServerBlock::getListenPort(void) const
-{
-	return this->_listenPort;
-}
-
-const stringVec&	ServerBlock::getServerNames(void) const
-{
-	return this->_server_names;
-}
-
-const LocMap&		ServerBlock::getLocations(void) const
-{
-	return this->_locations;
-}
-
-// Display
-
-std::ostream & 	operator<<(std::ostream & o, ServerBlock const & rhs)
+std::ostream & operator<<(std::ostream & o, ServerBlock const & rhs)
 {
 	static int i = 0;
 	static std::string pad("  ");

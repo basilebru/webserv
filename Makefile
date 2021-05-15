@@ -27,7 +27,7 @@ endif
 INCLUDES 		=	./includes/
 SERVER_DIR 		=	./Server/
 REQUEST_DIR 	=	./Request/
-CONF_DIR 		=	./Config_inheritance/
+CONF_DIR 		=	./Config/
 UTILS_DIR 		=	./Utils/
 
 ALL_INC			+= 	-I$(INCLUDES)

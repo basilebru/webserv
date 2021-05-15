@@ -3,27 +3,34 @@
 
 # include "webserv.hpp"
 # include "request_class.hpp"
+# include "HttpBlock.hpp"
+# include "ServerBlock.hpp"
+# include "utils.hpp"
 
 class Server {
 
-	typedef	Request* Req;
+	typedef	Request*					Req;
+	typedef	std::vector<ServerBlock>	servVec;
 
 private:
-	int					server_socket;
-	int					max_socket;
-	fd_set				ready_sockets;
-	std::map<int, Req>	requests;
-
-	void	setup(int port);
-	int		accept_new_connection();
+	fd_set						ready_sockets;
+	std::map<int, Req>			requests;
+	HttpBlock const&			baseConfig;
+	servVec const&				servers;
+	std::vector<int>			server_sockets;
+	std::vector<sockaddr_in>	addresses;
+	
+	void	setup(void);
+	int		accept_new_connection(int socket);
 	void	close_socket(std::map<int, Request*>::iterator it);
+	Server(void);
 
 public:
 	static int			server_is_alive;
-	Server(void);
+	Server(HttpBlock const& config, servVec const& srvs);
 	// Server(Server const & copy);
 	~Server(void);
-	Server& operator=(Server const & rhs);
+	Server& operator=(Server const& rhs);
 
 	int launch(void);
 };

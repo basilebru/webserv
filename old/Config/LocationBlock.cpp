@@ -6,31 +6,25 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/20 19:59:04 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/20 17:45:17 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "LocationBlock.hpp"
 
 LocationBlock::LocationBlock(void) :
-_cgi_port(DEFAULT_CGI_PORT)
-{
-	// std::cout << GREEN << "DEF LOC CTOR" << NOCOLOR <<std::endl;
-	// this->_root.clear();
-	// this->_autoindex = NOT_SET;
-	// this->_indexes.clear(),
-	// this->_client_max_body_size = NOT_SET;
-	// this->_keepalive_timeout = NOT_SET;
-	// this->_chunked_transfer_encoding = NOT_SET;
-	// this->_auth_basic = DEFAULT_AUTH_BASIC;
-	// this->_cgi_port = DEFAULT_CGI_PORT;
+_autoindex(NOT_SET),
+_client_max_body_size(NOT_SET),
+_keepalive_timeout(NOT_SET),
+_chunked_transfer_encoding(NOT_SET),
+_auth_basic(DEFAULT_AUTH_BASIC),
+_cgi_port(DEFAULT_CGI_PORT) {
 
 	return;
 }
 
 LocationBlock::LocationBlock(LocationBlock const & copy)
 {
-	// std::cout << YELLOW << "CPY LOC CTOR" << NOCOLOR <<std::endl;
 	this->_path = copy._path;
 	this->_root = copy._root;
 	this->_autoindex = copy._autoindex;
@@ -83,6 +77,66 @@ void	LocationBlock::setPath(std::string path)
 	this->_path = path;
 }
 
+void	LocationBlock::setRoot(std::string path)
+{
+	this->_root = path;
+}
+
+void	LocationBlock::setAutoIndex(std::string& state)
+{
+	if (state == "on")
+		this->_autoindex = ON;
+	else if (state == "off")
+		this->_autoindex = OFF;
+}
+
+void	LocationBlock::setIndexes(strVecIterator first, strVecIterator last)
+{
+	this->_indexes.assign(first, last);
+}
+
+void	LocationBlock::setLimitExcept(strVecIterator first, strVecIterator last)
+{
+	this->_limit_except.assign(first, last);
+}
+
+void	LocationBlock::setErrorPages(strVecIterator first, strVecIterator last, std::string& val)
+{
+	while (first != last)
+	{
+		this->_error_pages.insert(std::make_pair(atoi(first->c_str()), val));
+		++first;
+	}
+}
+
+void LocationBlock::setMaxBdySize(size_type size)
+{
+	this->_client_max_body_size = size;
+}
+
+void LocationBlock::setKeepaliveTimeout(size_type timeout)
+{
+	this->_keepalive_timeout = timeout;
+
+}
+
+void	LocationBlock::setChunkedEncoding(std::string& state)
+{
+	if (state == "on")
+		this->_chunked_transfer_encoding = ON;
+	if (state == "off")
+		this->_chunked_transfer_encoding = OFF;
+}
+
+void	LocationBlock::setAuthBasic(std::string value)
+{
+	this->_auth_basic = value;
+}
+
+void	LocationBlock::setAuthBasicFile(std::string path)
+{
+	this->_auth_basic_user_file = path;
+}
 
 void	LocationBlock::setCgiPass(std::string value)
 {
@@ -111,6 +165,55 @@ const std::string&		LocationBlock::getPath(void) const
 	return this->_path;
 }
 
+const std::string&		LocationBlock::getRoot(void) const
+{
+	return this->_root;
+}
+
+const int&		LocationBlock::getAutoindex(void) const
+{
+	return this->_autoindex;
+}
+
+const stringVec&	LocationBlock::getIndexes(void) const
+{
+	return this->_indexes;
+}
+
+const stringVec&	LocationBlock::getLimitExcept(void) const
+{
+	return this->_limit_except;
+}
+
+const errorMap&		LocationBlock::getErrorPages(void) const
+{
+	return this->_error_pages;
+}
+
+const long int&		LocationBlock::getMaxBdySize(void) const
+{
+	return this->_client_max_body_size;
+}
+
+const long int&		LocationBlock::getKeepaliveTime(void) const
+{
+	return this->_keepalive_timeout;
+}
+
+const int&			LocationBlock::getChunkedEncoding(void) const
+{
+	return this->_chunked_transfer_encoding;
+}
+
+const std::string&	LocationBlock::getAuthBasic(void) const
+{
+	return this->_auth_basic;
+}
+
+const std::string&	LocationBlock::getAuthBasicFile(void) const
+{
+	return this->_auth_basic_user_file;
+}
 
 std::ostream & operator<<(std::ostream & o, LocationBlock const & rhs)
 {

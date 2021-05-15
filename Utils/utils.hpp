@@ -8,7 +8,7 @@
 # include <cstdlib>
 # include <algorithm>
 
-// utils.cpp
+/*utils.cpp*/
 bool	is_whitespace(char c);
 void	trim_whitespace(std::string &s);
 int		ft_isdigit(int c);
@@ -17,15 +17,28 @@ int		ft_isxdigit(int c);
 int		ft_isxdigit_str(const char *str);
 bool	ft_isdigit_string(const std::string& str);
 
-// ip_manipulation.cpp
+/*ip_manipulation.cpp*/
 unsigned int	stringToIp(std::string ip);
 std::string		ipToString(unsigned int ip);
 
 
 template<typename T>
-void displayVec(std::vector<T> &v, char separator = ' ')
+void displayVec(std::vector<T> const& v, char const separator = ' ')
 {
-	typename std::vector<T>::iterator it = v.begin();
+	typename std::vector<T>::const_iterator it = v.begin();
+	while (it != v.end())
+	{
+		std::cout << *it << separator;
+		++it;
+	}
+	std::cout << std::endl;
+}
+
+/*Displays every container which iterator can be dereferenced*/
+template<typename Container>
+void displayContainer(Container const& v, char const separator = ' ')
+{
+	typename Container::const_iterator it = v.begin();
 	while (it != v.end())
 	{
 		std::cout << *it << separator;

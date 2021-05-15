@@ -6,26 +6,25 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/20 17:42:07 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/20 19:48:19 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpBlock.hpp"
 
 HttpBlock::HttpBlock(void) :
-_root(DEFAULT_ROOT),
-_autoindex(DEFAULT_AUTOINDEX),
-_client_max_body_size(DEFAULT_MAX_BDY_SIZE),
-_keepalive_timeout(DEFAULT_KEEPALIVE_T),
-_chunked_transfer_encoding(DEFAULT_CHUNKED_ENC),
+_autoindex(NOT_SET),
+_client_max_body_size(NOT_SET),
+_keepalive_timeout(NOT_SET),
+_chunked_transfer_encoding(NOT_SET),
 _auth_basic(DEFAULT_AUTH_BASIC) {
-
-	this->_indexes.push_back(DEFAULT_INDEX);
+	// std::cout << GREEN << "HTTP CTOR" << NOCOLOR << std::endl;
 	return ;
 }
 
 HttpBlock::HttpBlock(HttpBlock const & copy)
 {
+	// std::cout << YELLOW << "HTTP CPY CTOR" << NOCOLOR << std::endl;
 	this->_root = copy._root;
 	this->_autoindex = copy._autoindex;
 	this->_indexes = copy._indexes;
@@ -35,7 +34,6 @@ HttpBlock::HttpBlock(HttpBlock const & copy)
 	this->_chunked_transfer_encoding = copy._chunked_transfer_encoding;
 	this->_auth_basic = copy._auth_basic;
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
-	this->_servers = copy._servers;
 
 	return ;
 }
@@ -56,7 +54,6 @@ HttpBlock& HttpBlock::operator=(HttpBlock const & rhs)
 	this->_chunked_transfer_encoding = rhs._chunked_transfer_encoding;
 	this->_auth_basic = rhs._auth_basic;
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
-	this->_servers = rhs._servers;
 
 	return *this;
 }
@@ -179,23 +176,6 @@ const std::string&	HttpBlock::getAuthBasicFile(void) const
 	return this->_auth_basic_user_file;
 }
 
-
-const std::vector<ServerBlock>&	HttpBlock::getServers() const
-{
-	return this->_servers;
-}
-
-ServerBlock&	HttpBlock::getLastServer()
-{
-	return this->_servers.back();
-}
-
-void HttpBlock::addServer()
-{
-	ServerBlock srv;
-	this->_servers.push_back(srv);
-}
-
 std::ostream & operator<<(std::ostream & o, HttpBlock const & rhs)
 {
 
@@ -221,9 +201,6 @@ std::ostream & operator<<(std::ostream & o, HttpBlock const & rhs)
 	
 	o << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
 	o << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;
-
-	// Servers
-	putVecToOstream(o, rhs.getServers().begin(), rhs.getServers().end());
 
 	return o;
 }

@@ -6,22 +6,24 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/21 20:16:12 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/19 19:27:18 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfParser.hpp"
 
-ConfParser::ConfParser(void) :
-_configFile(DEFAULT_CONF_FILE),
-_block_type(NOBLOCK), _line_nb(1)
+ConfParser::ConfParser(void)
+: _configFile(DEFAULT_CONF_FILE), _httpBlock(),
+_block_type(HTTP), _line_nb(1), _nbr_of_srv(0),
+_nbr_of_loc(0), _in_block(FALSE)
 {
 	return;
 }
 
-ConfParser::ConfParser(const std::string filename) :
-_configFile(filename),
-_block_type(NOBLOCK), _line_nb(1)
+ConfParser::ConfParser(const std::string filename)
+: _configFile(filename), _httpBlock(),
+_block_type(HTTP), _line_nb(1), _nbr_of_srv(0),
+_nbr_of_loc(0), _in_block(FALSE)
 {
 	return; 
 }
@@ -41,9 +43,9 @@ ConfParser::~ConfParser(void)
 
 typedef std::map<std::string, int (ConfParser::*)(void)>	dirMap; //move this typedef in higher level ?
 
-dirMap	ConfParser::http_map	= setHttpMap();
-dirMap	ConfParser::srv_map		= setSrvMap();
-dirMap	ConfParser::loc_map		= setLocMap();
+dirMap	ConfParser::http_map = setHttpMap();
+dirMap	ConfParser::srv_map = setSrvMap();
+dirMap	ConfParser::loc_map = setLocMap();
 
 dirMap	ConfParser::setHttpMap()
 {
@@ -56,7 +58,7 @@ dirMap	ConfParser::setHttpMap()
 	map["error_page"] = &ConfParser::setErrorPage;
 	map["client_max_body_size"] = &ConfParser::setMaxBdySize;
 	map["keepalive_timeout"] = &ConfParser::setKeepAlive;
-	map["chunked_transfer_encoding"] = &ConfParser::setChunkEnc;
+	map["chunked_enc"] = &ConfParser::setChunkEnc;
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_param"] = &ConfParser::setCgiParam;
@@ -79,7 +81,7 @@ dirMap	ConfParser::setSrvMap()
 	map["error_page"] = &ConfParser::setErrorPage;
 	map["client_max_body_size"] = &ConfParser::setMaxBdySize;
 	map["keepalive_timeout"] = &ConfParser::setKeepAlive;
-	map["chunked_transfer_encoding"] = &ConfParser::setChunkEnc;
+	map["chunked_enc"] = &ConfParser::setChunkEnc;
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_param"] = &ConfParser::setCgiParam;
@@ -99,7 +101,7 @@ dirMap	ConfParser::setLocMap()
 	map["error_page"] = &ConfParser::setErrorPage;
 	map["client_max_body_size"] = &ConfParser::setMaxBdySize;
 	map["keepalive_timeout"] = &ConfParser::setKeepAlive;
-	map["chunked_transfer_encoding"] = &ConfParser::setChunkEnc;
+	map["chunked_enc"] = &ConfParser::setChunkEnc;
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_param"] = &ConfParser::setCgiParam;
@@ -107,13 +109,6 @@ dirMap	ConfParser::setLocMap()
 
 	return map;
 }
-
-/**
- * Directive handling functions
- *
- * Store directives values according to the block
- * where there are found in config file
- */
 
 int ConfParser::setListen(void)
 {
@@ -123,19 +118,19 @@ int ConfParser::setListen(void)
 
 	if (pos != std::string::npos)
 	{
-		if (this->_servers.back().setListenIp(this->_dir_line[1].substr(0, pos)) == FAILURE)
+		if (this->_httpBlock.getLastServer().setListenIp(this->_dir_line[1].substr(0, pos)) == FAILURE)
 			throw UnknownHost(this->_dir_line[1], this);
-		if (this->_servers.back().setListenPort(this->_dir_line[1].substr(pos + 1).c_str()) == FAILURE)
+		if (this->_httpBlock.getLastServer().setListenPort(this->_dir_line[1].substr(pos + 1).c_str()) == FAILURE)
 			throw InvalidPort(this->_dir_line[1], this);
 	}
 	else if  (pos == std::string::npos && ft_isdigit_string(this->_dir_line[1])) 
 	{
-		if (this->_servers.back().setListenPort(this->_dir_line[1].c_str()) == FAILURE)
+		if (this->_httpBlock.getLastServer().setListenPort(this->_dir_line[1].c_str()) == FAILURE)
 			throw InvalidPort(this->_dir_line[1], this);
 	}
 	else if (pos == std::string::npos)
 	{
-		if (this->_servers.back().setListenIp(this->_dir_line[1]) == FAILURE)
+		if (this->_httpBlock.getLastServer().setListenIp(this->_dir_line[1]) == FAILURE)
 			throw UnknownHost(this->_dir_line[1], this);
 	}
 	else
@@ -150,7 +145,7 @@ int ConfParser::setServerName(void)
 
 	std::vector<std::string>::iterator first = this->_dir_line.begin();
 
-	this->_servers.back().setServerNames(++first, this->_dir_line.end());
+	this->_httpBlock.getLastServer().setServerNames(++first, this->_dir_line.end());
 
 	// std::cout << "SET SRVNAME FUNCTION" << std::endl;
 	return 0;
@@ -166,7 +161,7 @@ int ConfParser::setRoot(void)
 	}
 	else if (this->_block_type == SERVER)
 	{
-		this->_servers.back().setRoot(this->_dir_line[1]);
+		this->_httpBlock.getLastServer().setRoot(this->_dir_line[1]);
 	}
 	if (this->_block_type == LOCATION)
 	{
@@ -189,7 +184,7 @@ int ConfParser::setAutoIndex(void)
 	if (this->_block_type == HTTP)
 		this->_httpBlock.setAutoIndex(this->_dir_line[1]);
 	else if (this->_block_type == SERVER)
-		this->_servers.back().setAutoIndex(this->_dir_line[1]);
+		this->_httpBlock.getLastServer().setAutoIndex(this->_dir_line[1]);
 	if (this->_block_type == LOCATION)
 		this->_curr_location->setAutoIndex(this->_dir_line[1]);
 	// std::cout << "SET AUTOIDX FUNCTION" << std::endl;
@@ -204,7 +199,7 @@ int ConfParser::setIndex(void)
 	if (this->_block_type == HTTP)
 		this->_httpBlock.setIndexes(++first, this->_dir_line.end());
 	else if (this->_block_type == SERVER)
-		this->_servers.back().setIndexes(++first, this->_dir_line.end());
+		this->_httpBlock.getLastServer().setIndexes(++first, this->_dir_line.end());
 	if (this->_block_type == LOCATION)
 		this->_curr_location->setIndexes(++first, this->_dir_line.end());
 
@@ -220,7 +215,7 @@ int ConfParser::setAllowedMethods(void)
 	if (this->_block_type == HTTP)
 		this->_httpBlock.setLimitExcept(++first, this->_dir_line.end());
 	else if (this->_block_type == SERVER)
-		this->_servers.back().setLimitExcept(++first, this->_dir_line.end());
+		this->_httpBlock.getLastServer().setLimitExcept(++first, this->_dir_line.end());
 	if (this->_block_type == LOCATION)
 		this->_curr_location->setLimitExcept(++first, this->_dir_line.end());
 	// std::cout << "SET ALLMETH FUNCTION" << std::endl;
@@ -245,7 +240,7 @@ int ConfParser::setErrorPage(void)
 		ret  = this->_httpBlock.setErrorPages(++first, --end, this->_dir_line.back());
 	else if (this->_block_type == SERVER)
 	{
-		this->_servers.back().setErrorPages(++first, --end, this->_dir_line.back());
+		this->_httpBlock.getLastServer().setErrorPages(++first, --end, this->_dir_line.back());
 	}
 	if (this->_block_type == LOCATION)
 	{
@@ -270,11 +265,11 @@ int ConfParser::setMaxBdySize(void)
 	if (this->_block_type == HTTP)
 	{
 		this->_httpBlock.setMaxBdySize(mbs);
-		// this->_servers.back().setMaxBdySize(mbs);
+		// this->_httpBlock.getLastServer().setMaxBdySize(mbs);
 	}
 	else if (this->_block_type == SERVER)
 	{
-		this->_servers.back().setMaxBdySize(mbs);
+		this->_httpBlock.getLastServer().setMaxBdySize(mbs);
 	}
 	if (this->_block_type == LOCATION)
 	{
@@ -297,7 +292,7 @@ int ConfParser::setKeepAlive(void)
 		this->_httpBlock.setKeepaliveTimeout(mbs);
 	else if (this->_block_type == SERVER)
 	{
-		this->_servers.back().setKeepaliveTimeout(mbs);
+		this->_httpBlock.getLastServer().setKeepaliveTimeout(mbs);
 	}
 	if (this->_block_type == LOCATION)
 	{
@@ -320,7 +315,7 @@ int ConfParser::setChunkEnc(void)
 	if (this->_block_type == HTTP)
 		this->_httpBlock.setChunkedEncoding(this->_dir_line[1]);
 	else if (this->_block_type == SERVER)
-		this->_servers.back().setChunkedEncoding(this->_dir_line[1]);
+		this->_httpBlock.getLastServer().setChunkedEncoding(this->_dir_line[1]);
 	if (this->_block_type == LOCATION)
 		this->_curr_location->setChunkedEncoding(this->_dir_line[1]);
 
@@ -356,7 +351,7 @@ int ConfParser::setAuthBasic(void)
 	if (this->_block_type == HTTP)
 		this->_httpBlock.setAuthBasic(area_name);
 	else if (this->_block_type == SERVER)
-		this->_servers.back().setAuthBasic(area_name);
+		this->_httpBlock.getLastServer().setAuthBasic(area_name);
 	if (this->_block_type == LOCATION)
 		this->_curr_location->setAuthBasic(area_name);
 
@@ -371,7 +366,7 @@ int ConfParser::setAuthBasicFile(void)
 	if (this->_block_type == HTTP)
 		this->_httpBlock.setAuthBasicFile(this->_dir_line[1]);
 	else if (this->_block_type == SERVER)
-		this->_servers.back().setAuthBasicFile(this->_dir_line[1]);
+		this->_httpBlock.getLastServer().setAuthBasicFile(this->_dir_line[1]);
 	if (this->_block_type == LOCATION)
 		this->_curr_location->setAuthBasicFile(this->_dir_line[1]);
 
@@ -392,6 +387,8 @@ int ConfParser::setCgiPass(void)
 
 int ConfParser::parseInclude()
 {
+
+	displayVec(this->_dir_line);
 	this->checkNbrOfArgs(2, &same_as<size_t>);
 	
 	this->readConfFile(this->_dir_line[1]);
@@ -399,67 +396,12 @@ int ConfParser::parseInclude()
 	return 0;
 }
 
-/**
- * Utility function	
- *
- * Checks the number of args found the current parsed directive.
- * The comparison is made by Compare function.
- * Throws exception if comparison fails
- */
-
 template <class Compare>
 void ConfParser::checkNbrOfArgs(size_t expected_nbr, Compare comp)
 {
 	if (!comp(expected_nbr, this->_dir_line.size()))
 		throw InvalidNbrOfArgs(this->_dir_line[0], this);
 }
-
-/**
- * Utility function	
- *
- * Erases comments in config file
- * If the '#' is the first char in string, erase all the string,
- * Else, erase characters from '#' to its end of string
- */
-
-void ConfParser::eraseComments(std::string& line)
-{
-	size_t pos;
-	size_t len = 0;
-
-	pos = line.find_first_of("#");
-	len = line.size() - pos;
-
-	if (pos != std::string::npos)
-		line.erase(pos, len);
-}
-
-/**
- * Utility function	
- *
- * Erases the last ';' in _dir_line (vector) if exists.
- * If the vector at the old ';' position becomes empty, delete it
- */
-
-void ConfParser::eraseSemiColon()
-{
-	size_t pos = this->_dir_line.back().find_last_of(";");
-
-	if (pos != std::string::npos)
-	{
-		this->_dir_line.back().erase(pos, 1);
-		if (this->_dir_line.back().empty())
-			this->_dir_line.pop_back();
-	}
-}
-
-/**
- * Main Parser	
- *
- * Reads confFile line by line and extract tokens in vector.
- * Sets block flag in witch directive belongs to.
- * Calls proper handling directive function.
- */
 
 void ConfParser::readConfFile(const std::string& confFile)
 {
@@ -487,9 +429,9 @@ void ConfParser::readConfFile(const std::string& confFile)
 	if (file.fail())
 		throw FileOperationFail("close", this);
 	
-	if (this->_block_type == SERVER
-		|| this->_block_type == LOCATION
-		|| (this->_block_type == HTTP && confFile == DEFAULT_CONF_FILE)
+	if (this->_in_block.test(SERVER)
+		|| this->_in_block.test(LOCATION)
+		|| (this->_in_block.test(HTTP) && confFile == DEFAULT_CONF_FILE)
 	)
 		throw UnexpectedEOF("end of file", this);
 
@@ -498,11 +440,22 @@ void ConfParser::readConfFile(const std::string& confFile)
 	return ;
 }
 
+void ConfParser::erase_comments(std::string& line)
+{
+	size_t pos;
+	size_t len = 0;
+
+	pos = line.find_first_of("#");
+	len = line.size() - pos;
+
+	if (pos != std::string::npos)
+		line.erase(pos, len);
+}
 
 void ConfParser::parseLine(std::string& line)
 {
-	// delete all text after '#' in a line
-	eraseComments(line);
+	// delete all text after # in a line
+	erase_comments(line);
 
 	std::istringstream iss(line); 
 	for(std::string token; iss >> token;)
@@ -514,28 +467,35 @@ void ConfParser::parseLine(std::string& line)
 			this->_dir_line.clear();
 		}
 	}
+	// if (line != "")
+	// 	std::cout << "===================" << std::endl;
 }
 
 void ConfParser::handleBlockIn(const std::string& directive)
 {
 	if (directive == "http")
 	{
-		if (this->_block_type == HTTP)
+		if (this->_in_block[HTTP] == TRUE)
 			throw UnexpectedTocken("http", this);
 		if (this->_dir_line.at(1) == "{")
-			this->_block_type = HTTP;
+			this->_in_block[HTTP] = TRUE;
 		else
 			throw NoOpeningBracket("http", this);
 		return ;
 	}
 	if (directive == "server")
 	{
-		if (this->_block_type == SERVER)
+		if (this->_in_block[SERVER] == TRUE)
 			throw UnexpectedTocken("server", this);
+		this->_block_type = SERVER;
 		if (this->_dir_line.at(1) == "{")
 		{
-			this->_block_type = SERVER;
-			this->_servers.push_back(ServerBlock());
+			if (this->_in_block[SERVER] == FALSE)
+				this->_in_block[SERVER] = TRUE;
+			else
+				throw NoClosingBracket("server", this);
+
+			this->_httpBlock.addServer();
 		}
 		else
 			throw NoOpeningBracket("server", this);
@@ -543,15 +503,17 @@ void ConfParser::handleBlockIn(const std::string& directive)
 	}
 	if (directive == "location")
 	{
-		if (this->_block_type == LOCATION)
-			throw UnexpectedTocken("location", this);
 		this->checkNbrOfArgs(3, &same_as<size_t>);
+		this->_block_type = LOCATION;
 		if (this->_dir_line.at(2) == "{")
 		{
-			this->_block_type = LOCATION;
+			if (this->_in_block[LOCATION] == FALSE)
+				this->_in_block[LOCATION] = TRUE;
+			else
+				throw NoClosingBracket("location", this);
 
 			std::pair<std::map<std::string, LocationBlock>::iterator, bool> newLoc;
-			newLoc = this->_servers.back().addLocation(this->_dir_line[1]);
+			newLoc = this->_httpBlock.getLastServer().addLocation(this->_dir_line[1]);
 			if (newLoc.second)
 			{
 				this->_curr_location = &newLoc.first->second;
@@ -569,40 +531,63 @@ void ConfParser::handleBlockIn(const std::string& directive)
 void ConfParser::handleBlockOut()
 {
 	if (this->_block_type == HTTP)
-		this->_block_type = NOBLOCK;
+	{
+		this->_in_block[HTTP] = FALSE;
+		// std::cout << "close http block" << std::endl;
+	}
 	else if (this->_block_type == SERVER)
+	{
+		this->_in_block[SERVER] = FALSE;
 		this->_block_type = HTTP;
+		// std::cout << "close server block" << std::endl;
+	}
 	else if (this->_block_type == LOCATION)
+	{
+		this->_in_block[LOCATION] = FALSE;
 		this->_block_type = SERVER;
+		// std::cout << "close location block" << std::endl;
+	}
 }
 
 void ConfParser::parseDirective()
 {
-	std::string directive(this->_dir_line.at(0));
+	dirMap::iterator it;
+	std::string directive = this->_dir_line.at(0);
 	
-	if (this->_block_type == NOBLOCK && this->_line_nb != 1)
+/*	if (this->_block_type == HTTP)
+		std::cout << "==> HTTP BLOCK" << std::endl << std::endl;
+	else if (this->_block_type == SERVER)
+		std::cout << "==> SERVER BLOCK" << std::endl << std::endl;
+	if (this->_block_type == LOCATION)
+		std::cout << "==> LOCATION BLOCK" << std::endl << std::endl;
+*/
+	size_t pos = this->_dir_line.back().find_last_of(";");
+	if (pos != std::string::npos)
 	{
-		--this->_line_nb;
-		throw UnexpectedTocken("}", this);
-	}
-
-	if (directive == "{")
-		throw UnexpectedTocken("{", this);
-
-	if (directive == "}")
-	{
-		this->handleBlockOut();
-		return ;
+		this->_dir_line.back().erase(pos, 1);
+		if (this->_dir_line.back().empty())
+			this->_dir_line.pop_back();
 	}
 	
+	// displayVec(this->_dir_line);
+
 	if (directive == "http" || directive == "server" || directive == "location")
 	{
 		this->handleBlockIn(directive);
 		return ;
 	}
 
+	if (this->_dir_line.at(0) == "{")
+		throw UnexpectedTocken("{", this);
+
+	if (this->_dir_line.at(0) == "}")
+	{
+		this->handleBlockOut();
+		return ;
+	}
+
+
 	
-	this->eraseSemiColon();
 	if (this->_block_type == HTTP)
 	{
 		if (ConfParser::http_map.find(directive) != http_map.end())
@@ -624,10 +609,6 @@ void ConfParser::parseDirective()
 		else
 			throw UnknownDirective(directive, this);
 	}
-	else if (this->_block_type == NOBLOCK)
-	{
-		throw UnexpectedTocken(directive, this);
-	}
 }
 
 /*Getters*/
@@ -635,11 +616,6 @@ void ConfParser::parseDirective()
 HttpBlock&		ConfParser::getHttpBlock(void)
 {
 	return this->_httpBlock;
-}
-
-const std::vector<ServerBlock>&	ConfParser::getServers() const
-{
-	return this->_servers;
 }
 
 
@@ -660,6 +636,7 @@ const char* ConfParser::UnexpectedTocken::what() const throw()
 	return (this->_msg.c_str());
 }
 
+
 ConfParser::NoOpeningBracket::NoOpeningBracket(const std::string token, ConfParser *p)
 : _msg("webserv: directive \"" + token + "\" has no opening \"{\" in " + p->_configFile + ":")
 {
@@ -671,6 +648,21 @@ ConfParser::NoOpeningBracket::NoOpeningBracket(const std::string token, ConfPars
 }
 
 const char* ConfParser::NoOpeningBracket::what() const throw()
+{
+	return (this->_msg.c_str());
+}
+
+ConfParser::NoClosingBracket::NoClosingBracket(const std::string token, ConfParser *p)
+: _msg("webserv: directive \"" + token + "\" has no closing \"}\" in " + p->_configFile + ":")
+{
+	std::ostringstream tmp;
+	tmp << p->_line_nb;
+	this->_msg += tmp.str();
+
+	return;
+}
+
+const char* ConfParser::NoClosingBracket::what() const throw()
 {
 	return (this->_msg.c_str());
 }
@@ -787,21 +779,6 @@ ConfParser::DuplicateLocation::DuplicateLocation(const std::string token, ConfPa
 }
 
 const char* ConfParser::DuplicateLocation::what() const throw()
-{
-	return (this->_msg.c_str());
-}
-
-ConfParser::DuplicateDirective::DuplicateDirective(const std::string token, ConfParser *p)
-: _msg("webserv: \"" + token + "\" directive is duplicate in " + p->_configFile + ":")
-{
-	std::ostringstream tmp;
-	tmp << p->_line_nb;
-	this->_msg += tmp.str();
-
-	return;
-}
-
-const char* ConfParser::DuplicateDirective::what() const throw()
 {
 	return (this->_msg.c_str());
 }

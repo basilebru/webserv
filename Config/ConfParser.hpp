@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/19 17:08:18 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/04/21 19:40:12 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,41 +14,33 @@
 # define CONF_PARSER_HPP
 
 # include "webserv.hpp"
-# include "HttpBlock.hpp"
 # include "utils.hpp"
-
-# define NB_BLOCKS		3
-# define NB_HTTP_DIR	4
-# define NB_SRV_DIR		8
-# define NB_LOC_DIR		3
+# include "HttpBlock.hpp"
+# include "ServerBlock.hpp"
 
 /*Blocks*/
-# define HTTP		0
-# define SERVER		1
-# define LOCATION	2
+# define HTTP			'h'
+# define SERVER			's'
+# define LOCATION		'l'
+# define NOBLOCK		'n'
 
 class ConfParser {
 
-public:
-// typedef	int	(ConfParser::*t_parse)(std::string&);
 typedef std::map<std::string, int (ConfParser::*)(void)>	dirMap;
 
 private:
-	std::string			_configFile;
+	std::string					_configFile;
 	HttpBlock					_httpBlock; // will certainely be removed, ConfParser will be called from HttpBlock
-	int							_block_type;
+	char						_block_type;
 	size_t						_line_nb;
-	size_t						_nbr_of_srv; // For debug
-	size_t						_nbr_of_loc; // For debug
-	std::bitset<3>				_in_block;
 	std::vector<std::string>	_dir_line;
 	LocationBlock				*_curr_location;
+	std::vector<ServerBlock>	_servers;  /*Plusieurs ServerBlocks possibles dans l'HttpBlock */
 
 	void	parseDirective(void);
 	void	handleBlockIn(const std::string&);
 	void	handleBlockOut(void);
 	void	parseLine(std::string& line);
-	void	erase_comments(std::string& line);
 
 	// Directive handling functions	
 	int		setListen();
@@ -67,8 +59,11 @@ private:
 	int		setCgiPass();
 	int		parseInclude();
 
+	// Utility functions
 	template <class Compare>
-	void checkNbrOfArgs(size_t expected_nbr, Compare comp);
+	void	checkNbrOfArgs(size_t expected_nbr, Compare comp);
+	void	eraseComments(std::string& line);
+	void	eraseSemiColon(void);
 
 
 	// Static attributs to store allowed directives by config block
@@ -90,7 +85,8 @@ public:
 	void readConfFile(const std::string& confFile);
 
 	// Getters
-	HttpBlock&		getHttpBlock(void);
+	HttpBlock&						getHttpBlock(void);
+	const std::vector<ServerBlock>&	getServers(void) const;
 
 
 	
@@ -113,16 +109,6 @@ public:
 	public:
 		NoOpeningBracket(const std::string token, ConfParser *);
 		virtual ~NoOpeningBracket() throw() {};
-		virtual const char* what() const throw();
-	};
-
-	class NoClosingBracket : public std::exception {
-
-	private:
-		std::string _msg;
-	public:
-		NoClosingBracket(const std::string token, ConfParser *);
-		virtual ~NoClosingBracket() throw() {};
 		virtual const char* what() const throw();
 	};
 
@@ -203,6 +189,16 @@ public:
 	public:
 		DuplicateLocation(const std::string token, ConfParser *);
 		virtual ~DuplicateLocation() throw() {};
+		virtual const char* what() const throw();
+	};
+
+	class DuplicateDirective : public std::exception {
+
+	private:
+		std::string _msg;
+	public:
+		DuplicateDirective(const std::string token, ConfParser *);
+		virtual ~DuplicateDirective() throw() {};
 		virtual const char* what() const throw();
 	};
 

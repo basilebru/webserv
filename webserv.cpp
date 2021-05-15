@@ -29,20 +29,22 @@ int main(int ac, char **av)
 			std::vector<ServerBlock> servers = parser.getServers();
 
 			
-			std::cout << std::endl << "WEBSERV CONFIGURATION: " << std::endl;
+/*			std::cout << std::endl << "WEBSERV CONFIGURATION: " << std::endl;
 			std::cout << "Nbr of servers: " << servers.size() << std::endl << std::endl;
 			
 			std::cout << baseConfig;
 			displayVec(servers, '\n');
+*/		
+			/*Create and aunch server*/
+			Server *server =  new Server(baseConfig, servers);
+			server->launch();
+			delete server;
 		}
 		catch(const std::exception& e) {
 			std::cerr << e.what() << '\n';
 		}
 	}
 
-	// Server *server =  new Server();
-	// server->launch();
-	// delete server;
 
 	return (0);
 }
