@@ -1,4 +1,5 @@
 #include "Request/request_class.hpp"
+#include "Config/ConfParser.hpp"
 #include <map>
 
 #include <sys/types.h> // fstat
@@ -9,6 +10,7 @@
 
 #define NB_STATE 6
 #define FAILURE -1
+#define SUCCESS 0
 #define DONE 1
 #define NOT_SET -1
 
@@ -19,7 +21,7 @@ struct conf
         std::string root;
         std::vector<std::string> index;
         int autoindex;
-        std::map<int, std::string> error_pages;
+        errorMap error_pages;
 
         conf(void): max_body_size(NOT_SET), autoindex(NOT_SET)
         {};

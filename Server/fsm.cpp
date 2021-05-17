@@ -20,7 +20,6 @@ int			lexer(Request &req)
 }
 
 
-#include "Config/ConfParser.hpp"
 
 LocationBlock match_loc(std::string target_uri, LocMap locations)
 {
@@ -28,11 +27,11 @@ LocationBlock match_loc(std::string target_uri, LocMap locations)
     int len(target_uri.length());
 	int ret;
 
-	// ex: target_uri = /path ; loc1 = /patrick ; loc2 = /lol
+	// EX1: target_uri = /path ; loc1 = /patrick ; loc2 = /lol
 	// first iteration in while: [/path] vs [/patr] and vs [/lol]
 	// 2nd iteration in while: [/pat] vs [/pat] and vs [/lo] --> STOP: loc1 selected
 
-	// ex: target_uri = /path ; loc1 = /path ; loc2 = /pathfull
+	// EX2: target_uri = /path ; loc1 = /path ; loc2 = /pathfull
 	// first iteration: [/path] vs [path/] and vs [/path] --> STOP: compare vs loc1 and loc2 return 0. Yet loc1 is compared first, as it comes first in map order --> loc1 selected 
 
     while (1)
@@ -86,7 +85,7 @@ int fsm_config(t_fsm& machine, Request& req, conf& conf, std::string &response_b
     if (conf.index.empty())
         conf.index = server_config.getIndexes();
     if (conf.index.empty())
-        conf.index = base_config.getErrorPages();
+        conf.index = base_config.getIndexes();
     
     conf.max_body_size = location_config.getMaxBdySize();
     if (conf.max_body_size == NOT_SET)
@@ -100,39 +99,12 @@ int fsm_config(t_fsm& machine, Request& req, conf& conf, std::string &response_b
     if (conf.root.empty())
         conf.root = base_config.getRoot();
 
-    // get conf from Request
-    conf.max_body_size = 0;
-    conf.allow_methods.push_back("GET");
-    conf.index.push_back("index");
-    conf.index.push_back("index.html");
-    conf.root = "html";
-    conf.autoindex = false;
-
     // set req.target_uri
     // (faire en sorte qu'il n'y ait pas de '/' a la fin de conf.root)
     req.target_uri = conf.root + req.req_line.target;
 
     machine.state = AUTH;
 }
-
-// int fsm_config(t_fsm& machine, Request& req, conf& conf, std::string &response_buf)
-// {
-//     // get conf from Request
-//     (void)req;
-//     (void)response_buf;
-//     conf.max_body_size = 0;
-//     conf.allow_methods.push_back("GET");
-//     conf.index.push_back("index");
-//     conf.index.push_back("index.html");
-//     conf.root = "html";
-//     conf.autoindex = false;
-
-//     // set req.target_uri
-//     // (faire en sorte qu'il n'y ait pas de '/' a la fin de conf.root)
-//     req.target_uri = conf.root + req.req_line.target;
-
-//     machine.state = AUTH;
-// }
 
 int fsm_auth(t_fsm& machine, Request& req, conf& conf, std::string &response_buf)
 {

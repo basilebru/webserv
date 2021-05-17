@@ -133,7 +133,7 @@ int Server::launch(void)
 			else
 			{
 				std::map<int, Request*>::iterator end = this->requests.end();
-				for (std::map<int, Request*>::iterator it = this->requests.begin(); it != end && rdy_fd > 0; it++)
+				for (std::map<int, Request*>::iterator it = this->requests.begin(); it != end && rdy_fd > 0;)
 				{
 					if (FD_ISSET(it->first, &this->ready_sockets)) // read from existing connection
 					{
@@ -154,8 +154,7 @@ int Server::launch(void)
 							FD_CLR(it->first, &current_sockets);
 							if (it->first == max_socket)
 								max_socket--;
-							
-							this->close_socket(it);
+							this->close_socket(it++); // == copy it, increment it, then send the copy (non incremented) to close_socket
 							continue;
 						}
 						if (it->second->request_is_ready())
@@ -168,6 +167,7 @@ int Server::launch(void)
 							it->second->reset();
 						}
 					}
+					it++;
 				}
 			}
 		}
