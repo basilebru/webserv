@@ -40,3 +40,18 @@ std::string ipToString(unsigned int ip)
 
 	return (os.str());
 }
+
+static unsigned short	ft_bswap_16(unsigned short port)
+{
+	port = (port >> 8) | (port << 8);
+	return (port);
+}
+
+unsigned short	ft_htons(unsigned short port)
+{
+	if (BYTE_ORDER == BIG_ENDIAN)
+		return (port);
+	else if (BYTE_ORDER == LITTLE_ENDIAN)
+		return (ft_bswap_16(port));
+	return (0);
+}

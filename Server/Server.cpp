@@ -189,9 +189,9 @@ void Server::setup(void)
 		memset((char *)&sockaddr, 0, sizeof(sockaddr)); 
 		sockaddr.sin_family = AF_INET;
 		sockaddr.sin_addr.s_addr = it->getListenIP(); // Adresse dans l'ordre d'octets réseau
-		sockaddr.sin_port = htons(it->getListenPort()); // htons is necessary to convert a number to
+		sockaddr.sin_port = ft_htons(it->getListenPort()); // htons is necessary to convert a number to
 		std::cerr << "IP: " << ipToString(sockaddr.sin_addr.s_addr) << std::endl;
-		std::cerr << "PORT: " << sockaddr.sin_port << std::endl;
+		std::cerr << "PORT: " << it->getListenPort() << std::endl;
 
 
 		// Create a socket (IPv4, TCP)
@@ -231,7 +231,7 @@ void Server::setup(void)
 		
 		this->server_sockets.push_back(newSocket);
 
-		usleep(1000000);
+		usleep(500000);
 
 		++it;
 	}

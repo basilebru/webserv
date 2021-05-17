@@ -8,7 +8,7 @@
 # include <cstdlib>
 # include <algorithm>
 
-/*utils.cpp*/
+/* utils.cpp */
 bool	is_whitespace(char c);
 void	trim_whitespace(std::string &s);
 int		ft_isdigit(int c);
@@ -17,9 +17,10 @@ int		ft_isxdigit(int c);
 int		ft_isxdigit_str(const char *str);
 bool	ft_isdigit_string(const std::string& str);
 
-/*ip_manipulation.cpp*/
+/* ip_manipulation.cpp */
 unsigned int	stringToIp(std::string ip);
 std::string		ipToString(unsigned int ip);
+unsigned short	ft_htons(unsigned short port);
 
 
 template<typename T>
@@ -34,7 +35,7 @@ void displayVec(std::vector<T> const& v, char const separator = ' ')
 	std::cout << std::endl;
 }
 
-/*Displays every container which iterator can be dereferenced*/
+/* Displays every container which iterator can be dereferenced */
 template<typename Container>
 void displayContainer(Container const& v, char const separator = ' ')
 {
@@ -121,6 +122,5 @@ void putState(std::ostream& o, Val state)
 
 	o << std::endl;
 }
-
 
 #endif
