@@ -9,16 +9,14 @@
 
 class Server {
 
-	typedef	Request*					Req;
 	typedef	std::vector<ServerBlock>	servVec;
 
 private:
 	fd_set						ready_sockets;
-	std::map<int, Req>			requests;
+	std::map<int, Request*>		requests;
 	HttpBlock const&			baseConfig;
 	servVec const&				servers;
-	std::vector<int>			server_sockets;
-	std::vector<sockaddr_in>	addresses;
+	std::map<int, sockaddr_in>	server_sockets;
 	
 	void	setup(void);
 	int		accept_new_connection(int socket);
@@ -26,6 +24,8 @@ private:
 	Server(void);
 
 public:
+	typedef	std::map<int, sockaddr_in>	sockMap;
+	
 	static int			server_is_alive;
 	Server(HttpBlock const& config, servVec const& srvs);
 	// Server(Server const & copy);

@@ -9,6 +9,16 @@ Request::Request(int fd): fd(fd), error_code(0), end_of_connection(false)
     this->reset();
 }
 
+Request::Request(int fd, sockaddr_in addr) :
+fd(fd), error_code(0), end_of_connection(false), address(addr)
+{
+    // error_code and end_of_connection are not set in Request::reset, as they imply the end of the connection
+    this->error_code = 0;
+    this->end_of_connection = false;
+
+    this->reset();
+}
+
 // Request::Request(const Request &copy) 
 // {
 // }

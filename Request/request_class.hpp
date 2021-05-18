@@ -1,18 +1,10 @@
 #ifndef REQUEST_CLASS_H
 # define REQUEST_CLASS_H
 
-#include <iostream>
-#include <string>
-#include <list>
-#include "../Utils/get_next_line.h"
-#include "../Utils/utils.hpp"
-#include <vector>
-#include <algorithm> // find functions
-#include <sys/socket.h> // recv
-#include <cstring> // strcmp
-#include <cstdlib> // strtol
+# include "webserv.hpp"
+# include "utils.hpp"
 
-#define BUF_SIZE 1024
+# define BUF_SIZE 1024
 
 struct request_line
 {
@@ -27,7 +19,7 @@ class Request
         typedef std::pair<std::string, std::string> header;
 
         // ATTRIBUTES
-
+    private:
         // known HTTP methods
         static std::vector<std::string> known_methods;
         static std::vector<std::string> build_known_methods();
@@ -64,6 +56,9 @@ class Request
 
         std::string target_uri; // concatenation of root and request target
         
+        sockaddr_in address; // ip and port of the server connected to client
+                             // who send the request in order to find suitable server_block
+
 
         // METHODS
 
@@ -99,6 +94,7 @@ class Request
         // constructor & destructor
         Request(void); // not defined
         Request(int fd);
+        Request(int fd, sockaddr_in addr);
         Request(const Request &copy); // not defined (needed ?)
         virtual ~Request(void);
         Request&  operator=(const Request &copy); // not defined

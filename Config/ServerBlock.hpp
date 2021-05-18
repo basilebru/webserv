@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:23:44 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/15 10:38:47 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/18 11:15:28 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,8 @@ typedef std::map<std::string, LocationBlock>	LocMap;
 class ServerBlock : public HttpBlock {
 
 private:
-	unsigned int	_listenIP; // s_addr is unsigned int
-	unsigned short	_listenPort; // sin_port is unsigned short
+	unsigned int	_listenIP; // s_addr is unsigned int --> /!\ in net byte order
+	unsigned short	_listenPort; // sin_port is unsigned short --> /!\ in net byte order
 	stringVec		_server_names;
 	LocMap			_locations; /*Several LocationBlocks in a ServerBlock */
 

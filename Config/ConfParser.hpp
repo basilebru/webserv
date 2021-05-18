@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/21 19:40:12 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/18 10:50:48 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ private:
 
 public:
 	ConfParser(void);
-	ConfParser(std::string filename);
+	ConfParser(const std::string filename);
 	ConfParser(ConfParser const & copy);
 	~ConfParser(void);
 	ConfParser& operator=(ConfParser const & rhs);
