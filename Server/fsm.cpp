@@ -23,35 +23,18 @@ int			lexer(Request &req)
 
 LocationBlock match_loc(std::string target_uri, LocMap locations)
 {
-    LocationBlock target_config;
-    int len(target_uri.length());
-	int ret;
-
-	// EX1: target_uri = /path ; loc1 = /patrick ; loc2 = /lol
-	// first iteration in while: [/path] vs [/patr] and vs [/lol]
-	// 2nd iteration in while: [/pat] vs [/pat] and vs [/lo] --> STOP: loc1 selected
-
-	// EX2: target_uri = /path ; loc1 = /path ; loc2 = /pathfull
-	// first iteration: [/path] vs [path/] and vs [/path] --> STOP: compare vs loc1 and loc2 return 0. Yet loc1 is compared first, as it comes first in map order --> loc1 selected 
-
-    while (1)
+    while (target_uri.find('/') != std::string::npos)
     {
-		// std::cout << "---" << std::endl;
-		// std::cout << "len: " << len << std::endl;
-		// std::cout << "sub: " << target_uri.substr(0, len) << std::endl;
-
+        target_uri = target_uri.substr(0, target_uri.find_last_of('/')); // cut target_uri at last '/'
         for (LocMap::const_iterator it = locations.begin(); it != locations.end(); it++)
         {
-			// std::cout << "path: " << it->first;
-            if ((ret = target_uri.compare(0, len, it->first, 0, len)) == 0)
-            {
-                target_config = it->second;
-                return target_config;
-            }
-			// std::cout << " - ret: " << ret << std::endl;
+            if (target_uri.compare(it->first) == 0)
+                return it->second;
         }
-        len--;
     }
+    // if no match, return "empty" location block
+    LocationBlock loc;
+    return loc;
 }
 
 int fsm_config(t_fsm& machine, Request& req, conf& conf, std::string &response_buf, ServerBlock server_config, HttpBlock base_config)
