@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/15 10:38:03 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/18 11:14:06 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ int		ServerBlock::setListenPort(std::string port)
 {
 	if (ft_isdigit_string(port))
 	{
-		this->_listenPort = atoi(port.c_str());
+		this->_listenPort = ft_htons(atoi(port.c_str()));
 		if (this->_listenPort != 0 && this->_listenPort <= MAX_TCP_PORT)
 			return (SUCCESS);
 	}
