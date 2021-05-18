@@ -8,16 +8,20 @@
 # include <sys/socket.h> // For socket functions
 # include <sys/select.h>
 # include <netinet/in.h> // For sockaddr_in
-# include <cstdlib> // For exit() and EXIT_FAILURE an atoi(char*)
 # include <fstream> // ifstream
 # include <fcntl.h> // For fcntl --> non_blocking fd
 # include <map>
 # include <vector>
+# include <list>
 
 # include <sstream>
 # include <bitset>
 
-# include <algorithm>
+# include <cstring> // strcmp
+# include <cstdlib> // exit(), EXIT_FAILURE, atoi(char*), strtol
+# include <unistd.h>
+
+# include <algorithm> //find function and co.
 
 
 // Utils

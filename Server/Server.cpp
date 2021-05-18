@@ -31,15 +31,15 @@ Server::~Server(void)
 			std::cerr << "fd " << it->first << "is still in use." << std::endl;;
 	}
 
-	std::vector<int>::const_iterator end2 = this->server_sockets.end();
-	for (std::vector<int>::const_iterator it = this->server_sockets.begin(); it != end2; ++it)
+	sockMap::const_iterator end2 = this->server_sockets.end();
+	for (sockMap::const_iterator it = this->server_sockets.begin(); it != end2; ++it)
 	{
-		if (close(*it) < 0)
+		if (close(it->first) < 0)
 		{
 			std::cerr << "Failed to close. errno:" << errno << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		std::cerr << WHITE << "server_socket closed (fd " << *it << ")."
+		std::cerr << WHITE << "server_socket closed (fd " << it->first << ")."
 		<< NOCOLOR <<std::endl;
 	}
 
@@ -62,14 +62,14 @@ int Server::launch(void)
 	FD_ZERO(&current_sockets);
 
 	/* Adds all servers socket in socket SET */
-	std::vector<int>::const_iterator end = this->server_sockets.end();
-	for (std::vector<int>::const_iterator it = this->server_sockets.begin(); it != end; ++it)
+	sockMap::const_iterator end = this->server_sockets.end();
+	for (sockMap::const_iterator it = this->server_sockets.begin(); it != end; ++it)
 	{
-		FD_SET(*it, &current_sockets);
+		FD_SET(it->first, &current_sockets);
 	}
 	
 	// For Select (it needs the highest-numbered file descriptor in any of the three sets, plus 1)
-	int max_socket = *max_element(this->server_sockets.begin(), this->server_sockets.end());
+	int max_socket = this->server_sockets.rbegin()->first;
 	std::cerr << "MAX SOCKET: " << max_socket << std::endl;
 
 	//Optional: sets the timeout for select()
@@ -103,12 +103,12 @@ int Server::launch(void)
 		// On parcourt notre fd_set (current socket): pour chaque fd on teste s'il est présent dans this->ready_sockets = disponible en lecture
 		rdy_fd = sret;
 		
-		for (std::vector<int>::const_iterator it = this->server_sockets.begin(); it != end; ++it)
+		for (sockMap::const_iterator it = this->server_sockets.begin(); it != end; ++it)
 		{
-			if (FD_ISSET(*it, &this->ready_sockets)) // accept new connection
+			if (FD_ISSET(it->first, &this->ready_sockets)) // accept new connection
 			{
 				rdy_fd--;
-				client_socket = this->accept_new_connection(*it);
+				client_socket = this->accept_new_connection(it->first);
 				if (client_socket < 0 && errno != EAGAIN) 
 				{
 					std::cout << "Failed to grab connection. errno: " << errno << std::endl;
@@ -116,14 +116,10 @@ int Server::launch(void)
 				}
 				else if (client_socket > 0)
 				{
-	/*				// Set the client_socket NON BLOCKING
-					if (fcntl(client_socket, F_SETFL, O_NONBLOCK) < 0)
-						std::cout << "fcntl error" << std::endl;
-	*/
 					std::cout << YELLOW << "New incoming connection (fd " << client_socket << ")" << NOCOLOR << std::endl;
 					FD_SET(client_socket, &current_sockets); // new connection is added to fd_set (current socket)
 					
-					Request *req = new Request(client_socket);
+					Request *req = new Request(client_socket, it->second);
 					this->requests.insert(std::make_pair(client_socket, req));
 
 					if (client_socket > max_socket)
@@ -229,9 +225,7 @@ void Server::setup(void)
 			exit(EXIT_FAILURE);
 		}
 		
-		this->server_sockets.push_back(newSocket);
-
-		usleep(500000);
+		this->server_sockets.insert(std::pair<int, sockaddr_in>(newSocket, sockaddr));
 
 		++it;
 	}
