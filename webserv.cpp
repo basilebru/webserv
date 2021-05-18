@@ -12,6 +12,8 @@ void signal_handler(int signum)
 	}
 }
 
+
+// here just for testing purpose
 LocationBlock match_loc(std::string target_uri, LocMap locations)
 {
     while (target_uri.find('/') != std::string::npos)
@@ -47,7 +49,7 @@ int main(int ac, char **av)
 			// std::cout << "matched loc: " << match_loc("/lost/machin/chose", servers[0].getLocations()) << std::endl;
 			// std::cout << "matched loc: " << match_loc("/last/prout", servers[0].getLocations()) << std::endl;
 			// std::cout << "matched loc: " << match_loc("/last/prout/", servers[0].getLocations()) << std::endl;
-			std::cout << "matched loc: " << match_loc("/lisst/prout", servers[0].getLocations()) << std::endl;
+			// std::cout << "matched loc: " << match_loc("/lisst/prout", servers[0].getLocations()) << std::endl;
 /*			std::cout << std::endl << "WEBSERV CONFIGURATION: " << std::endl;
 			std::cout << "Nbr of servers: " << servers.size() << std::endl << std::endl;
 			

@@ -19,7 +19,7 @@ class Request
         typedef std::pair<std::string, std::string> header;
 
         // ATTRIBUTES
-    private:
+    public:
         // known HTTP methods
         static std::vector<std::string> known_methods;
         static std::vector<std::string> build_known_methods();

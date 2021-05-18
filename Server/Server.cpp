@@ -48,6 +48,40 @@ Server::~Server(void)
 
 int	Server::server_is_alive = 1;
 
+ServerBlock match_serv(Request &req, std::vector<ServerBlock> servers)
+{
+    std::vector<ServerBlock> eligible_servers;
+    // 1. evaluate IP and port
+    // 1.a try exact match
+    for (std::vector<ServerBlock>::iterator it = servers.begin(); it != servers.end(); it++)
+    {
+        if (it->getListenIP() == req.address.sin_addr.s_addr && it->getListenPort() == req.address.sin_port)
+            eligible_servers.push_back(*it);
+    }
+    // 1.b if no exact match, try 0.0.0.0 match 
+    if (eligible_servers.size() == 0)
+    {
+        for (std::vector<ServerBlock>::iterator it = servers.begin(); it != servers.end(); it++)
+        {
+            if (it->getListenIP() == 0 && it->getListenPort() == req.address.sin_port)
+                eligible_servers.push_back(*it);
+        }
+    }
+    // return chosen server if only one match
+    if (eligible_servers.size() == 1)
+        return eligible_servers[0];
+
+    // 2. if multiple matchs, evaluate server_name
+    // return first server_block that matches
+    for (std::vector<ServerBlock>::iterator it = eligible_servers.begin(); it != eligible_servers.end(); it++)
+    {
+        if (std::find(it->getServerNames().begin(), it->getServerNames().end(), req.host_uri) != it->getServerNames().end())
+            return *it;
+    }
+    // if no match, return first server_block on the list
+    return eligible_servers[0];
+}
+
 int Server::launch(void)
 {
 	fd_set current_sockets;
@@ -159,6 +193,7 @@ int Server::launch(void)
 							// 1. match server_block and location block
 							// 2. "execute" request based on config
 							// 3. send response
+							std::cout << "matched server: " << match_serv(*(it->second), this->servers).getServerNames().front() << std::endl;
 
 							it->second->reset();
 						}
