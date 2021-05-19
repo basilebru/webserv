@@ -55,7 +55,7 @@ ServerBlock match_serv(Request &req, std::vector<ServerBlock> servers)
     // 1.a try exact match
     for (std::vector<ServerBlock>::iterator it = servers.begin(); it != servers.end(); it++)
     {
-        if (it->getListenIP() == req.address.sin_addr.s_addr && it->getListenPort() == req.address.sin_port)
+        if (it->getListenIP() && it->getListenIP() == req.address.sin_addr.s_addr && it->getListenPort() == req.address.sin_port)
             eligible_servers.push_back(*it);
     }
     // 1.b if no exact match, try 0.0.0.0 match 
@@ -206,13 +206,25 @@ int Server::launch(void)
 	return 0;
 }
 
+bool my_comp(ServerBlock serv1, ServerBlock serv2)
+{
+	if (serv1.getListenIP() < serv2.getListenIP())
+		return true;
+	return false;
+}
+
 int Server::setup(void)
 {
-	std::vector<ServerBlock>::const_iterator it = this->servers.begin();
 	// displayVec(this->servers, '\n');
+	std::vector<ServerBlock> sorted_blocks(this->servers);
+	std::sort(sorted_blocks.begin(), sorted_blocks.end(), my_comp);
+	// for (std::vector<ServerBlock>::iterator it = sorted_blocks.begin(); it != sorted_blocks.end(); it++)
+	// {
+	// 	std::cout << "sorted block: " << ipToString(it->getListenIP()) << std::endl;
+	// }
 
-
-	while (it != this->servers.end())
+	std::vector<ServerBlock>::const_iterator it = sorted_blocks.begin();
+	while (it != sorted_blocks.end())
 	{
 		// Listen to any addresses and port found in Config
 		sockaddr_in sockaddr;
