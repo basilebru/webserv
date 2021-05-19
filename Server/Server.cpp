@@ -89,8 +89,8 @@ int Server::launch(void)
 	int client_socket;
 
 	// Create vector of server_sockets, bind and listen
-	this->setup();
-
+	if (this->setup() < 0)
+		return (FAILURE);
 
 	//Initilaize the current socket set
 	FD_ZERO(&current_sockets);
@@ -129,7 +129,7 @@ int Server::launch(void)
 		if (sret < 0 && errno != EINTR)
 		{
 			std::cerr << "Select error. errno: " << errno << std::endl;
-			exit(EXIT_FAILURE);
+			return (FAILURE);
 		}
 		else if (sret == 0)
 			std::cerr << sret << ": Select timeout (5 sec)" << std::endl;
@@ -146,7 +146,7 @@ int Server::launch(void)
 				if (client_socket < 0 && errno != EAGAIN) 
 				{
 					std::cout << "Failed to grab connection. errno: " << errno << std::endl;
-					exit(EXIT_FAILURE);
+					return (FAILURE);
 				}
 				else if (client_socket > 0)
 				{
@@ -193,8 +193,8 @@ int Server::launch(void)
 							// 1. match server_block and location block
 							// 2. "execute" request based on config
 							// 3. send response
-							std::cout << "matched server: " << match_serv(*(it->second), this->servers).getServerNames().front() << std::endl;
 
+							std::cout << "matched server: " << match_serv(*(it->second), this->servers).getServerNames().front() << std::endl;
 							it->second->reset();
 						}
 					}
@@ -206,10 +206,10 @@ int Server::launch(void)
 	return 0;
 }
 
-void Server::setup(void)
+int Server::setup(void)
 {
 	std::vector<ServerBlock>::const_iterator it = this->servers.begin();
-	displayVec(this->servers, '\n');
+	// displayVec(this->servers, '\n');
 
 
 	while (it != this->servers.end())
@@ -224,7 +224,6 @@ void Server::setup(void)
 		std::cerr << "IP: " << ipToString(sockaddr.sin_addr.s_addr) << std::endl;
 		std::cerr << "PORT: " << ntohs(it->getListenPort()) << std::endl;
 
-
 		// Create a socket (IPv4, TCP)
 		// Using the flag SOCK_NONBLOCK saves extra calls to fcntl(2) to achieve the same result.
 		int newSocket;
@@ -233,7 +232,7 @@ void Server::setup(void)
 		if (newSocket == -1)
 		{
 			std::cout << "Failed to create socket. errno: " << errno << std::endl;
-			exit(EXIT_FAILURE);
+			return (FAILURE);
 		}
 
 		// Set the socket as NON BLOCKING (for MAC, no need in Linux ?)
@@ -248,26 +247,28 @@ void Server::setup(void)
 
 		if (bind(newSocket, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0)
 		{
-			std::cout << "Failed to bind to port " << sockaddr.sin_port << ". errno: " << errno << std::endl;
 			close(newSocket);
-			exit(EXIT_FAILURE);
+			if (errno != EADDRINUSE)
+			{
+				std::cout << "Failed to bind to port " << ntohs(sockaddr.sin_port) << ". errno: " << errno << std::endl;
+				return (FAILURE);
+			}
 		}
-		// Start listening. Hold at most 10 connections in the queue
-		if (listen(newSocket, 10) < 0)
+		else
 		{
-			std::cout << "Failed to listen on socket. errno: " << errno << std::endl;
-			close(newSocket);
-			exit(EXIT_FAILURE);
+			// Start listening. Hold at most 10 connections in the queue
+			if (listen(newSocket, 10) < 0)
+			{
+				std::cout << "Failed to listen on socket. errno: " << errno << std::endl;
+				close(newSocket);
+				return (FAILURE);
+			}
+			this->server_sockets.insert(std::pair<int, sockaddr_in>(newSocket, sockaddr));
 		}
-		
-		this->server_sockets.insert(std::pair<int, sockaddr_in>(newSocket, sockaddr));
 
 		++it;
 	}
-
-
-
-	return ;
+	return (SUCCESS);
 }
 
 int Server::accept_new_connection(int server_socket)
@@ -275,7 +276,14 @@ int Server::accept_new_connection(int server_socket)
 	int	client_socket;
 
 	client_socket = accept(server_socket, NULL, NULL);
-	return client_socket;
+	// if (client_socket < 0)
+	// 	std::cout << "Failed to grab connection. errno: " << errno << std::endl;
+	// else
+	// {
+	// 	if (fcntl(client_socket, F_SETFL, O_NONBLOCK) < 0)
+	// 	std::cout << "Fcntl failed. errno: " << errno << std::endl;
+	// }
+	return (client_socket);
 }
 
 void Server::close_socket(std::map<int, Request*>::iterator it)
@@ -292,3 +300,4 @@ void Server::close_socket(std::map<int, Request*>::iterator it)
 	// Erase the map element containing the former request
 	this->requests.erase(it->first);
 }
+

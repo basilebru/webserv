@@ -18,10 +18,10 @@ private:
 	servVec const&				servers;
 	std::map<int, sockaddr_in>	server_sockets;
 	
-	void	setup(void);
+	int		setup(void);
 	int		accept_new_connection(int socket);
 	void	close_socket(std::map<int, Request*>::iterator it);
-	Server(void);
+			Server(void);
 
 public:
 	typedef	std::map<int, sockaddr_in>	sockMap;
