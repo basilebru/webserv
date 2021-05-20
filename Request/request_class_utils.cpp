@@ -17,6 +17,8 @@ std::vector<std::string> Request::build_known_methods()
 
 std::vector<std::string> Request::known_methods = Request::build_known_methods();
 
+
+// reset is called before each request, to "clear" the previous request and init attributes (it is also called for the first request)
 void Request::reset()
 {
     std::cout << "reseting request" << std::endl;
@@ -36,10 +38,14 @@ void Request::reset()
     // this->host_port = 0;
     this->host_uri = "";
     // config
-    this->root = "";
-    this->max_body_size = 0;
-    // this->index.erase(this->index.begin(), this->index.end());
-    this->allow_methods.erase(this->allow_methods.begin(), this->allow_methods.end());
+    this->config.root = "";
+    this->config.max_body_size = NOT_SET;
+    this->config.autoindex = NOT_SET;
+    this->config.index.erase(this->config.index.begin(), this->config.index.end());
+    this->config.allow_methods.erase(this->config.allow_methods.begin(), this->config.allow_methods.end());
+    this->config.error_pages.erase(this->config.error_pages.begin(), this->config.error_pages.end());
+
+    // reset serverblock and location block
 }
 
 int Request::get_error_code() const

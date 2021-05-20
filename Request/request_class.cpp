@@ -1,16 +1,7 @@
 #include "request_class.hpp"
 
-Request::Request(int fd): fd(fd), error_code(0), end_of_connection(false)
-{
-    // error_code and end_of_connection are not set in Request::reset, as they imply the end of the connection
-    this->error_code = 0;
-    this->end_of_connection = false;
-
-    this->reset();
-}
-
-Request::Request(int fd, sockaddr_in addr) :
-fd(fd), error_code(0), end_of_connection(false), address(addr)
+Request::Request(int fd, sockaddr_in addr, const std::vector<ServerBlock> &servers, const HttpBlock &base_config) :
+fd(fd), error_code(0), end_of_connection(false), address(addr), servers(servers), base_config(base_config)
 {
     // error_code and end_of_connection are not set in Request::reset, as they imply the end of the connection
     this->error_code = 0;
@@ -227,6 +218,109 @@ bool Request::read_buf_line(std::string &line)
     return true;
 }
 
+void Request::match_server()
+{
+    std::vector<ServerBlock> eligible_servers;
+    // 1. evaluate IP and port
+    // 1.a try exact match
+    for (std::vector<ServerBlock>::const_iterator it = this->servers.begin(); it != this->servers.end(); it++)
+    {
+        if (it->getListenIP() && it->getListenIP() == this->address.sin_addr.s_addr && it->getListenPort() == this->address.sin_port)
+            eligible_servers.push_back(*it);
+    }
+    // 1.b if no exact match, try 0.0.0.0 match 
+    if (eligible_servers.size() == 0)
+    {
+        for (std::vector<ServerBlock>::const_iterator it = this->servers.begin(); it != this->servers.end(); it++)
+        {
+            if (it->getListenIP() == 0 && it->getListenPort() == this->address.sin_port)
+                eligible_servers.push_back(*it);
+        }
+    }
+    // if only one match, chose this server
+    if (eligible_servers.size() == 1)
+    {
+        this->matched_serv = eligible_servers[0];
+        return ;
+    }
+
+    // 2. if multiple matchs, evaluate server_name
+    // chose first server_block that matches
+    for (std::vector<ServerBlock>::iterator it = eligible_servers.begin(); it != eligible_servers.end(); it++)
+    {
+        if (std::find(it->getServerNames().begin(), it->getServerNames().end(), this->host_uri) != it->getServerNames().end())
+        {
+            this->matched_serv = *it;
+            return ;
+        }
+    }
+    // if no match, chose first server_block on the list
+    this->matched_serv = eligible_servers[0];
+
+}
+
+void Request::match_location()
+{
+    std::string target_uri(this->req_line.target);
+    while (target_uri.find('/') != std::string::npos)
+    {
+        for (LocMap::const_iterator it = this->matched_serv.getLocations().begin(); it != this->matched_serv.getLocations().end(); it++)
+        {
+            if (target_uri.compare(it->first) == 0) // compare target uri and location "path"
+            {
+                this->matched_loc = it->second;
+                return ;
+            }
+        }
+        target_uri = target_uri.substr(0, target_uri.find_last_of('/')); // cut target_uri at last '/'
+    }
+}
+
+void Request::fill_conf()
+{
+    this->match_server(); // this->matched_serv is filled
+    std::cout <<"matched serv: " << this->matched_serv.getServerNames()[0] << std::endl;
+    this->match_location(); // this->matched_loc is filled -- if no match is found, this->matched_loc is left as it is (object default constructor: attributes "unset"
+    std::cout << "matched loc: " << this->matched_loc.getPath() << std::endl;
+    // for each attribute: try fill it with location block. if directive not set in location block, use Server bloc. if directive not set in server block, use http bloc (default value for directive)
+
+    this->config.allow_methods = this->matched_loc.getLimitExcept();
+    if (this->config.allow_methods.empty())
+        this->config.allow_methods = this->matched_serv.getLimitExcept();
+    if (this->config.allow_methods.empty())
+        this->config.allow_methods = this->base_config.getLimitExcept();
+
+    this->config.autoindex = this->matched_loc.getAutoindex();
+    if (this->config.autoindex == NOT_SET)
+        this->config.autoindex = this->matched_serv.getAutoindex();
+    if (this->config.autoindex == NOT_SET)
+        this->config.autoindex = this->base_config.getAutoindex();
+
+    this->config.error_pages = this->matched_loc.getErrorPages();
+    if (this->config.error_pages.empty())
+        this->config.error_pages = this->matched_serv.getErrorPages();
+    if (this->config.error_pages.empty())
+        this->config.error_pages = this->base_config.getErrorPages();
+    
+    this->config.index = this->matched_loc.getIndexes();
+    if (this->config.index.empty())
+        this->config.index = this->matched_serv.getIndexes();
+    if (this->config.index.empty())
+        this->config.index = this->base_config.getIndexes();
+    
+    this->config.max_body_size = this->matched_loc.getMaxBdySize();
+    if (this->config.max_body_size == NOT_SET)
+        this->config.max_body_size = this->matched_serv.getMaxBdySize();
+    if (this->config.max_body_size == NOT_SET)
+        this->config.max_body_size = this->base_config.getMaxBdySize();
+
+    this->config.root = this->matched_loc.getRoot();
+    if (this->config.root.empty())
+        this->config.root = this->matched_serv.getRoot();
+    if (this->config.root.empty())
+        this->config.root = this->base_config.getRoot();
+}
+
 void Request::init_config()
 {
     // get host header (needed to find config)
@@ -235,32 +329,25 @@ void Request::init_config()
         return ;
     
     // retrieve config
-    
-    this->max_body_size = 10;
-    this->root = "html";
-    // this->index.push_back("index.html");
-    this->allow_methods.push_back("GET");
-    this->allow_methods.push_back("POST");
+    this->fill_conf();
+    // std::cout << "maxbody size: " << this->config.max_body_size << std::endl;
 
-    // check that request is ok with config:
-    
-    // "max_body_size": check the "content-length" and "transfer-encoding headers"
+    // "max_body_size": check the "content-length" and "transfer-encoding headers" --> in store_body_headers()
     this->store_body_headers(); 
     if (this->error_code)
         return ;
     
     // "allow methods": check req_line.method
-    if (std::find(allow_methods.begin(), allow_methods.end(), this->req_line.method) == allow_methods.end())
+    if (std::find(this->config.allow_methods.begin(), this->config.allow_methods.end(), this->req_line.method) == this->config.allow_methods.end())
     {
         this->error_message = "method not allowed: " + this->req_line.method;
         this->error_code = 405;
         return ;
     }
 
-    // build target_uri
-    if (this->root[this->root.size() - 1] == '/')
-        this->root.erase(this->root.end() - 1);
-    this->target_uri = this->root + this->req_line.target;
+    // "root": build target_uri
+    if (this->config.root[this->config.root.size() - 1] == '/') // delete '/' at the end of root (if present)
+        this->config.root.erase(this->config.root.end() - 1);
+    this->target_uri = this->config.root + this->req_line.target;
     std::cout << "[target uri:] " << this->target_uri << std::endl;
-
 }
