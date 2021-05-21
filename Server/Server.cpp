@@ -21,11 +21,11 @@ Server::~Server(void)
 	std::map<int, Request*>::iterator end = this->requests.end();
 	
 	// Clean up all of the sockets that are open 
-	for (std::map<int, Request*>::iterator it = this->requests.begin(); it != end; it++)
+	for (std::map<int, Request*>::iterator it = this->requests.begin(); it != end;)
 	{
 		if (FD_ISSET(it->first, &this->ready_sockets))
 		{
-			this->close_socket(it);
+			this->close_socket(it++);
 		}
 		else
 			std::cerr << "fd " << it->first << "is still in use." << std::endl;;
@@ -101,12 +101,13 @@ int Server::launch(void)
 		else if (sret == 0)
 			std::cerr << sret << ": Select timeout (5 sec)" << std::endl;
 
-		// On parcourt notre fd_set (current socket): pour chaque fd on teste s'il est présent dans this->ready_sockets = disponible en lecture
+		// On parcourt nos fd (client sockets et server sockets): pour chaque fd on teste s'il est présent dans this->ready_sockets = disponible en lecture
 		rdy_fd = sret;
-		
+
+		// 1. on parcourt d'abord les server_sockets. S'ils sont disponibles en lecture, c'est qu'une nouvelle connection est etablie -> accept connection et creation d'un client socket
 		for (sockMap::const_iterator it = this->server_sockets.begin(); it != end; ++it)
 		{
-			if (FD_ISSET(it->first, &this->ready_sockets)) // accept new connection
+			if (FD_ISSET(it->first, &this->ready_sockets))
 			{
 				rdy_fd--;
 				client_socket = this->accept_new_connection(it->first);
@@ -127,46 +128,44 @@ int Server::launch(void)
 						max_socket = client_socket;
 				}
 			}
-			else
+		}
+		// 2. on parcourt ensuite les client_sockets. S'ils sont disponibles en lecture, c'est qu'on peut parser une requete (rq: une meme requete peut etre envoyee en plusieurs fois)
+		std::map<int, Request*>::iterator end = this->requests.end();
+		for (std::map<int, Request*>::iterator it = this->requests.begin(); it != end && rdy_fd > 0;)
+		{
+			if (FD_ISSET(it->first, &this->ready_sockets))
 			{
-				std::map<int, Request*>::iterator end = this->requests.end();
-				for (std::map<int, Request*>::iterator it = this->requests.begin(); it != end && rdy_fd > 0;)
+				std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
+				
+				// Parse the request
+				it->second->parse();
+				it->second->print();
+				if (it->second->connection_end() || it->second->get_error_code())
 				{
-					if (FD_ISSET(it->first, &this->ready_sockets)) // read from existing connection
-					{
-						std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
-						
-						// Parse the request
-						it->second->parse();
-						it->second->print();
-						if (it->second->connection_end() || it->second->get_error_code())
-						{
-							// log message
-							if (it->second->connection_end())
-								std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
-							else
-								std::cout << RED << "Request error, closing connection" << NOCOLOR << std::endl;
+					// log message
+					if (it->second->connection_end())
+						std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
+					else
+						std::cout << RED << "Request error, closing connection" << NOCOLOR << std::endl;
 
-							// Remove client_socket from FD SET
-							FD_CLR(it->first, &current_sockets);
-							if (it->first == max_socket)
-								max_socket--;
-							this->close_socket(it++); // == copy it, increment it, then send the copy (non incremented) to close_socket
-							continue;
-						}
-						if (it->second->request_is_ready())
-						{
-							std::cout << "Request is ready" << std::endl;
-							// 1. match server_block and location block
-							// 2. "execute" request based on config
-							// 3. send response
+					// Remove client_socket from FD SET
+					FD_CLR(it->first, &current_sockets);
+					if (it->first == max_socket)
+						max_socket--;
+					this->close_socket(it++); // == copy it, increment it, then send the copy (non incremented) to close_socket
+					continue;
+				}
+				if (it->second->request_is_ready())
+				{
+					std::cout << "Request is ready" << std::endl;
+					// 1. match server_block and location block
+					// 2. "execute" request based on config
+					// 3. send response
 
-							it->second->reset();
-						}
-					}
-					it++;
+					it->second->reset();
 				}
 			}
+			it++;
 		}
 	}
 	return 0;
@@ -206,7 +205,7 @@ int Server::setup(void)
 		// Using the flag SOCK_NONBLOCK saves extra calls to fcntl(2) to achieve the same result.
 		int newSocket;
 		memset((char *)&newSocket, 0, sizeof(newSocket)); 
-		newSocket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+		newSocket = socket(AF_INET, SOCK_STREAM, 0);
 		if (newSocket == -1)
 		{
 			std::cout << "Failed to create socket. errno: " << errno << std::endl;

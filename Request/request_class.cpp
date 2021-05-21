@@ -279,6 +279,7 @@ void Request::match_location()
 void Request::fill_conf()
 {
     this->match_server(); // this->matched_serv is filled
+    std::cout << "----" << std::endl;
     std::cout <<"matched serv: " << this->matched_serv.getServerNames()[0] << std::endl;
     this->match_location(); // this->matched_loc is filled -- if no match is found, this->matched_loc is left as it is (object default constructor: attributes "unset"
     std::cout << "matched loc: " << this->matched_loc.getPath() << std::endl;
@@ -350,4 +351,5 @@ void Request::init_config()
         this->config.root.erase(this->config.root.end() - 1);
     this->target_uri = this->config.root + this->req_line.target;
     std::cout << "[target uri:] " << this->target_uri << std::endl;
+    std::cout << "----" << std::endl;
 }
