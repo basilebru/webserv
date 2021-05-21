@@ -13,15 +13,15 @@ class Server {
 
 private:
 	fd_set						ready_sockets;
-	std::map<int, Request*>		requests;
+	std::map<int, Request*>		requests; // one request object per client socket
 	HttpBlock const&			baseConfig;
 	servVec const&				servers;
 	std::map<int, sockaddr_in>	server_sockets; // stores address (IP + port) of each server socket
-	std::map<int, sockaddr_in>	client_sockets; /// stores address (IP + port) of each client socket
+	std::map<int, sockaddr_in>	client_sockets; // stores address (IP + port) of each client socket
 	
 	int		setup(void);
 	int		accept_new_connection(int socket);
-	void	close_socket(std::map<int, Request*>::iterator it);
+	void	close_socket(int fd);
 			Server(void);
 
 public:
