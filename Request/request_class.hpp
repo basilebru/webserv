@@ -114,7 +114,7 @@ class Request
 
         // main functions
         void parse();
-        void reset();
+        // void reset();
         // utils
         void print() const;
         // getters & setters

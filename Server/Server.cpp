@@ -24,9 +24,7 @@ Server::~Server(void)
 	for (std::map<int, Request*>::iterator it = this->requests.begin(); it != end;)
 	{
 		if (FD_ISSET(it->first, &this->ready_sockets))
-		{
 			this->close_socket(it++);
-		}
 		else
 			std::cerr << "fd " << it->first << "is still in use." << std::endl;;
 	}
@@ -157,12 +155,14 @@ int Server::launch(void)
 				}
 				if (it->second->request_is_ready())
 				{
-					std::cout << "Request is ready" << std::endl;
+					std::cout << "Request ready to be treated" << std::endl;
+					std::cout << ".............." << std::endl;
 					// 1. match server_block and location block
 					// 2. "execute" request based on config
 					// 3. send response
-
-					it->second->reset();
+					std::cout << "Request deleted" << std::endl;
+					delete it->second;
+					it->second = new Request(client_socket, this->client_sockets[client_socket], this->servers, this->baseConfig);
 				}
 			}
 			it++;
@@ -242,7 +242,6 @@ int Server::setup(void)
 			}
 			this->server_sockets.insert(std::pair<int, sockaddr_in>(newSocket, sockaddr));
 		}
-
 		++it;
 	}
 	return (SUCCESS);
@@ -253,6 +252,7 @@ int Server::accept_new_connection(int server_socket)
 	int	client_socket;
 
 	client_socket = accept(server_socket, NULL, NULL);
+	this->client_sockets.insert(std::make_pair(client_socket, this->server_sockets[server_socket]));
 	// if (client_socket < 0)
 	// 	std::cout << "Failed to grab connection. errno: " << errno << std::endl;
 	// else

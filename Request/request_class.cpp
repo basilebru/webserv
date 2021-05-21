@@ -1,13 +1,16 @@
 #include "request_class.hpp"
 
 Request::Request(int fd, sockaddr_in addr, const std::vector<ServerBlock> &servers, const HttpBlock &base_config) :
-fd(fd), error_code(0), end_of_connection(false), address(addr), servers(servers), base_config(base_config)
+fd(fd), error_code(0), address(addr), servers(servers), base_config(base_config)
 {
-    // error_code and end_of_connection are not set in Request::reset, as they imply the end of the connection
-    this->error_code = 0;
     this->end_of_connection = false;
-
-    this->reset();
+    this->chunked_encoding = false;
+    this->req_line_read = false;
+    this->request_ready = false;
+    this->chunked_size_read = false;
+    this->error_code = 0;
+    this->body_size = 0;
+    this->chunk_size = 0;
 }
 
 // Request::Request(const Request &copy) 

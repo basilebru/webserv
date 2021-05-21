@@ -16,7 +16,8 @@ private:
 	std::map<int, Request*>		requests;
 	HttpBlock const&			baseConfig;
 	servVec const&				servers;
-	std::map<int, sockaddr_in>	server_sockets;
+	std::map<int, sockaddr_in>	server_sockets; // stores address (IP + port) of each server socket
+	std::map<int, sockaddr_in>	client_sockets; /// stores address (IP + port) of each client socket
 	
 	int		setup(void);
 	int		accept_new_connection(int socket);
