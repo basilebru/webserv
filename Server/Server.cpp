@@ -184,7 +184,7 @@ int Server::setup(void)
 		// 1. Create a socket (IPv4, TCP)
 		int newSocket;
 		memset((char *)&newSocket, 0, sizeof(newSocket)); 
-		newSocket = socket(AF_INET, SOCK_STREAM, 0); // Using the flag SOCK_NONBLOCK saves extra calls to fcntl(2) to achieve the same result.
+		newSocket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); // Using the flag SOCK_NONBLOCK saves extra calls to fcntl(2) to achieve the same result.
 		if (newSocket == -1)
 		{
 			std::cout << "Failed to create socket. errno: " << errno << std::endl;
