@@ -16,11 +16,10 @@ private:
 	fd_set 						current_sockets; // all client and server sockets
 	int 						rdy_fd;
 	int							max_socket;
-	std::map<int, Request*>		requests; // one request object per client socket
 	HttpBlock const&			baseConfig;
 	servVec const&				servers;
 	std::map<int, sockaddr_in>	server_sockets; // stores address (IP + port) of each server socket
-	std::map<int, sockaddr_in>	client_sockets; // stores address (IP + port) of each client socket
+	std::map<int, Request*>		client_sockets;
 	
 	int		setup_sockets(void);
 	int		accept_new_connection(int socket);

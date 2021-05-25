@@ -120,6 +120,7 @@ class Request
         // getters & setters
         int get_error_code() const;
         int get_fd() const;
+        sockaddr_in get_addr() const;
         bool request_is_ready() const;
         bool connection_end() const;
         // void set_error_code(int code);

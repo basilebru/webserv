@@ -19,7 +19,7 @@ Server::Server(HttpBlock const& config, std::vector<ServerBlock> const& srvs)
 Server::~Server(void)
 {
 	// Clean up all of the sockets that are open 
-	for (sockMap::const_iterator it = this->client_sockets.begin(); it != this->client_sockets.end();)
+	for (std::map<int, Request*>::const_iterator it = this->client_sockets.begin(); it != this->client_sockets.end();)
 	{
 		if (FD_ISSET(it->first, &this->ready_sockets))
 			this->close_socket(it++->first);
@@ -94,7 +94,7 @@ int	Server::select()
 
 int		Server::loop_server_socket()
 {
-	// 1. on parcourt d'abord les server_sockets. S'ils sont disponibles en lecture, c'est qu'il y a une nouvelle demande de connection -> accept connection et creation d'un client socket
+	// On parcourt les server_sockets. S'ils sont disponibles en lecture, c'est qu'il y a une nouvelle demande de connection -> accept connection et creation d'un client socket
 	int client_socket;
 	for (sockMap::const_iterator it = this->server_sockets.begin(); it != this->server_sockets.end(); ++it)
 	{
@@ -111,9 +111,8 @@ int		Server::loop_server_socket()
 			{
 				std::cout << YELLOW << "New incoming connection (fd " << client_socket << ")" << NOCOLOR << std::endl;
 				FD_SET(client_socket, &this->current_sockets); // new connection is added to fd_set (current socket)
-				this->client_sockets.insert(std::make_pair(client_socket, it->second));
 				Request *req = new Request(client_socket, it->second, this->servers, this->baseConfig);
-				this->requests.insert(std::make_pair(client_socket, req));
+				this->client_sockets.insert(std::make_pair(client_socket, req));
 
 				if (client_socket > this->max_socket)
 					this->max_socket = client_socket;
@@ -125,39 +124,42 @@ int		Server::loop_server_socket()
 
 int		Server::loop_client_socket()
 {
-	// 2. on parcourt ensuite les client_sockets. S'ils sont disponibles en lecture, c'est qu'on peut parser une requete (rq: une meme requete peut etre envoyee en plusieurs fois)
-	for (sockMap::const_iterator it = this->client_sockets.begin(); it != this->client_sockets.end() && this->rdy_fd > 0;)
+	// On parcourt les client_sockets. S'ils sont disponibles en lecture, c'est qu'on peut parser une requete (rq: une meme requete peut etre envoyee en plusieurs fois)
+	for (std::map<int, Request*>::iterator it = this->client_sockets.begin(); it != this->client_sockets.end() && this->rdy_fd > 0;)
 	{
 		if (FD_ISSET(it->first, &this->ready_sockets))
 		{
 			std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
 			
 			// Parse the request
-			this->requests[it->first]->parse();
-			this->requests[it->first]->print();
-			if (this->requests[it->first]->connection_end() || this->requests[it->first]->get_error_code())
+			it->second->parse();
+			it->second->print();
+			if (it->second->connection_end() || it->second->get_error_code())
 			{
 				// log message
-				if (this->requests[it->first]->connection_end())
+				if (it->second->connection_end())
 					std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
 				else
 					std::cout << RED << "Request error, closing connection" << NOCOLOR << std::endl;
 
-				// Remove client_socket from FD SET, from this->server_socket and from this->requests
+				// Remove client_socket from FD SET and from this->server_socket
 				FD_CLR(it->first, &this->current_sockets);
 				if (it->first == this->max_socket)
 					this->max_socket--;
 				this->close_socket(it++->first); // use post incrementation in order to "copy" next element before deleting current element
 				continue;
 			}
-			if (this->requests[it->first]->request_is_ready())
+			if (it->second->request_is_ready())
 			{
 				std::cout << "Request ready to be treated" << std::endl;
 				std::cout << ".............." << std::endl;
 				std::cout << "Request deleted" << std::endl;
-				int client_socket = this->requests[it->first]->get_fd();
-				delete this->requests[it->first];
-				this->requests[it->first] = new Request(client_socket, this->client_sockets[client_socket], this->servers, this->baseConfig);
+
+				// save fd and addr, delete request and create new request
+				int fd = it->second->get_fd();
+				sockaddr_in addr = it->second->get_addr();
+				delete it->second;
+				it->second = new Request(fd, addr, this->servers, this->baseConfig);
 			}
 		}
 		it++;
@@ -263,9 +265,8 @@ void Server::close_socket(int fd)
 	std::cout << YELLOW << "Client " << fd << " disconnected." << NOCOLOR << std::endl;
 
 	// delete the Request 
-	delete this->requests[fd];
+	delete this->client_sockets[fd];
 	// Erase the map element containing the former request
-	this->requests.erase(fd);
 	this->client_sockets.erase(fd);
 }
 

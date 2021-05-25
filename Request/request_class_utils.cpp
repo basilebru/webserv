@@ -58,6 +58,10 @@ int Request::get_fd() const
     return this->fd;
 }
 
+sockaddr_in Request::get_addr() const
+{
+    return this->address;
+}
 
 bool Request::connection_end() const
 {
