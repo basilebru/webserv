@@ -26,6 +26,9 @@ private:
 	int		accept_new_connection(int socket);
 	void	close_socket(int fd);
 	void	init_select_fd_set();
+	int		select();
+	int		loop_server_socket();
+	int		loop_client_socket();
 			Server(void);
 
 public:

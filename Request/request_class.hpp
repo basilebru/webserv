@@ -119,6 +119,7 @@ class Request
         void print() const;
         // getters & setters
         int get_error_code() const;
+        int get_fd() const;
         bool request_is_ready() const;
         bool connection_end() const;
         // void set_error_code(int code);

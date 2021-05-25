@@ -45,9 +45,6 @@ int	Server::server_is_alive = 1;
 
 int Server::launch(void)
 {
-	int client_socket;
-
-	// Create this->server_sockets; for each server_socket, bind and listen
 	if (this->setup_sockets() < 0)
 		return (FAILURE);
 	this->init_select_fd_set();
@@ -63,92 +60,109 @@ int Server::launch(void)
 		timeout.tv_sec = 5;
 		timeout.tv_usec = 0;
 
-		// select is destructive so we need a socket copy
-		this->ready_sockets = this->current_sockets;
-		int sret = select(this->max_socket + 1, &this->ready_sockets, NULL, NULL, NULL);
-		// suite à l'appel à select, this->ready_sockets ne contient plus que les fd disponibles en lecture
-		// (current_sockets contient toujours tous les sockets existants)
-
-		// En cas de succès, select() renvoie le nombre total de descripteurs de fichiers encore présents dans les ensembles de descripteurs de fichier.
-		// En cas de timeout échu, alors les fd_set devraient tous être vides -> la valeur renvoyée est zéro
-		// En cas d'erreur, renvoie -1	
-		if (sret < 0 && errno != EINTR)
-		{
-			std::cerr << "Select error. errno: " << errno << std::endl;
-			return (FAILURE);
-		}
-		else if (sret == 0)
-			std::cerr << sret << ": Select timeout (5 sec)" << std::endl;
-		this->rdy_fd = sret;
+		if (this->select() == FAILURE)
+			return FAILURE;
 
 		// On parcourt nos fd (client sockets et server sockets): pour chaque fd on teste s'il est présent dans this->ready_sockets = disponible en lecture
+		this->loop_server_socket();
+		this->loop_client_socket();
+	}
+	return SUCCESS;
+}
 
-		// 1. on parcourt d'abord les server_sockets. S'ils sont disponibles en lecture, c'est qu'il y a une nouvelle demande de connection -> accept connection et creation d'un client socket
-		for (sockMap::const_iterator it = this->server_sockets.begin(); it != this->server_sockets.end(); ++it)
+int	Server::select()
+{
+	// select is destructive so we need a socket copy
+	this->ready_sockets = this->current_sockets;
+	int sret = ::select(this->max_socket + 1, &this->ready_sockets, NULL, NULL, NULL);
+	// suite à l'appel à select, this->ready_sockets ne contient plus que les fd disponibles en lecture
+	// (current_sockets contient toujours tous les sockets existants)
+
+	// En cas de succès, select() renvoie le nombre total de descripteurs de fichiers encore présents dans les ensembles de descripteurs de fichier.
+	// En cas de timeout échu, alors les fd_set devraient tous être vides -> la valeur renvoyée est zéro
+	// En cas d'erreur, renvoie -1	
+	if (sret < 0 && errno != EINTR)
+	{
+		std::cerr << "Select error. errno: " << errno << std::endl;
+		return (FAILURE);
+	}
+	else if (sret == 0)
+		std::cerr << sret << ": Select timeout (5 sec)" << std::endl;
+	this->rdy_fd = sret;
+	return (SUCCESS);
+}
+
+int		Server::loop_server_socket()
+{
+	// 1. on parcourt d'abord les server_sockets. S'ils sont disponibles en lecture, c'est qu'il y a une nouvelle demande de connection -> accept connection et creation d'un client socket
+	int client_socket;
+	for (sockMap::const_iterator it = this->server_sockets.begin(); it != this->server_sockets.end(); ++it)
+	{
+		if (FD_ISSET(it->first, &this->ready_sockets))
 		{
-			if (FD_ISSET(it->first, &this->ready_sockets))
+			this->rdy_fd--;
+			client_socket = this->accept_new_connection(it->first);
+			if (client_socket < 0 && errno != EAGAIN) 
 			{
-				this->rdy_fd--;
-				client_socket = this->accept_new_connection(it->first);
-				if (client_socket < 0 && errno != EAGAIN) 
-				{
-					std::cout << "Failed to grab connection. errno: " << errno << std::endl;
-					return (FAILURE);
-				}
-				else if (client_socket > 0)
-				{
-					std::cout << YELLOW << "New incoming connection (fd " << client_socket << ")" << NOCOLOR << std::endl;
-					FD_SET(client_socket, &this->current_sockets); // new connection is added to fd_set (current socket)
-					this->client_sockets.insert(std::make_pair(client_socket, it->second));
-					Request *req = new Request(client_socket, it->second, this->servers, this->baseConfig);
-					this->requests.insert(std::make_pair(client_socket, req));
-
-					if (client_socket > this->max_socket)
-						this->max_socket = client_socket;
-				}
+				std::cout << "Failed to grab connection. errno: " << errno << std::endl;
+				return (FAILURE);
 			}
-		}
-		// 2. on parcourt ensuite les client_sockets. S'ils sont disponibles en lecture, c'est qu'on peut parser une requete (rq: une meme requete peut etre envoyee en plusieurs fois)
-		for (sockMap::const_iterator it = this->client_sockets.begin(); it != this->client_sockets.end() && this->rdy_fd > 0;)
-		{
-			if (FD_ISSET(it->first, &this->ready_sockets))
+			else if (client_socket > 0)
 			{
-				std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
-				
-				// Parse the request
-				this->requests[it->first]->parse();
-				this->requests[it->first]->print();
-				if (this->requests[it->first]->connection_end() || this->requests[it->first]->get_error_code())
-				{
-					// log message
-					if (this->requests[it->first]->connection_end())
-						std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
-					else
-						std::cout << RED << "Request error, closing connection" << NOCOLOR << std::endl;
+				std::cout << YELLOW << "New incoming connection (fd " << client_socket << ")" << NOCOLOR << std::endl;
+				FD_SET(client_socket, &this->current_sockets); // new connection is added to fd_set (current socket)
+				this->client_sockets.insert(std::make_pair(client_socket, it->second));
+				Request *req = new Request(client_socket, it->second, this->servers, this->baseConfig);
+				this->requests.insert(std::make_pair(client_socket, req));
 
-					// Remove client_socket from FD SET, from this->server_socket and from this->requests
-					FD_CLR(it->first, &this->current_sockets);
-					if (it->first == this->max_socket)
-						this->max_socket--;
-					this->close_socket(it++->first); // use post incrementation in order to "copy" next element before deleting current element
-					continue;
-				}
-				if (this->requests[it->first]->request_is_ready())
-				{
-					std::cout << "Request ready to be treated" << std::endl;
-					std::cout << ".............." << std::endl;
-					// 1. match server_block and location block
-					// 2. "execute" request based on config
-					// 3. send response
-					std::cout << "Request deleted" << std::endl;
-					delete this->requests[it->first];
-					this->requests[it->first] = new Request(client_socket, this->client_sockets[client_socket], this->servers, this->baseConfig);
-				}
+				if (client_socket > this->max_socket)
+					this->max_socket = client_socket;
 			}
-			it++;
 		}
 	}
-	return 0;
+	return SUCCESS;
+}
+
+int		Server::loop_client_socket()
+{
+	// 2. on parcourt ensuite les client_sockets. S'ils sont disponibles en lecture, c'est qu'on peut parser une requete (rq: une meme requete peut etre envoyee en plusieurs fois)
+	for (sockMap::const_iterator it = this->client_sockets.begin(); it != this->client_sockets.end() && this->rdy_fd > 0;)
+	{
+		if (FD_ISSET(it->first, &this->ready_sockets))
+		{
+			std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
+			
+			// Parse the request
+			this->requests[it->first]->parse();
+			this->requests[it->first]->print();
+			if (this->requests[it->first]->connection_end() || this->requests[it->first]->get_error_code())
+			{
+				// log message
+				if (this->requests[it->first]->connection_end())
+					std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
+				else
+					std::cout << RED << "Request error, closing connection" << NOCOLOR << std::endl;
+
+				// Remove client_socket from FD SET, from this->server_socket and from this->requests
+				FD_CLR(it->first, &this->current_sockets);
+				if (it->first == this->max_socket)
+					this->max_socket--;
+				this->close_socket(it++->first); // use post incrementation in order to "copy" next element before deleting current element
+				continue;
+			}
+			if (this->requests[it->first]->request_is_ready())
+			{
+				std::cout << "Request ready to be treated" << std::endl;
+				std::cout << ".............." << std::endl;
+				std::cout << "Request deleted" << std::endl;
+				int client_socket = this->requests[it->first]->get_fd();
+				delete this->requests[it->first];
+				this->requests[it->first] = new Request(client_socket, this->client_sockets[client_socket], this->servers, this->baseConfig);
+			}
+		}
+		it++;
+	}
+	return SUCCESS;
 }
 
 bool my_comp(ServerBlock serv1, ServerBlock serv2)
@@ -160,6 +174,8 @@ bool my_comp(ServerBlock serv1, ServerBlock serv2)
 
 int Server::setup_sockets(void)
 {
+	// Create this->server_sockets; for each server_socket, bind and listen
+	
 	// displayVec(this->servers, '\n');
 
 	// sort serverblocks in order to create and bind 0.0.0.0 servers first

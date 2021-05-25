@@ -53,6 +53,12 @@ int Request::get_error_code() const
     return this->error_code;
 }
 
+int Request::get_fd() const
+{
+    return this->fd;
+}
+
+
 bool Request::connection_end() const
 {
     return this->end_of_connection;
