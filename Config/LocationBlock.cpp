@@ -6,14 +6,13 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/20 19:59:04 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/25 17:50:57 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "LocationBlock.hpp"
 
-LocationBlock::LocationBlock(void) :
-_cgi_port(DEFAULT_CGI_PORT)
+LocationBlock::LocationBlock(void)
 {
 	// std::cout << GREEN << "DEF LOC CTOR" << NOCOLOR <<std::endl;
 	// this->_root.clear();
@@ -77,35 +76,12 @@ LocationBlock& LocationBlock::operator=(LocationBlock const & rhs)
 }
 
 // Setters
-
 void	LocationBlock::setPath(std::string path)
 {
 	this->_path = path;
 }
 
-
-void	LocationBlock::setCgiPass(std::string value)
-{
-	this->_cgi_pass = value;
-}
-
-void	LocationBlock::setCgiPort(size_type port)
-{
-	this->_cgi_port = port;
-}
-
-void	LocationBlock::setCgiIndex(std::string index)
-{
-	this->_cgi_index = index;
-}
-
-void	LocationBlock::setCgiParams(mapCgiParams params)
-{
-	(void)params;
-	// this->_;
-}
-
-// Setters
+// Getters
 const std::string&		LocationBlock::getPath(void) const
 {
 	return this->_path;

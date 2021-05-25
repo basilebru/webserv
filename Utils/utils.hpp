@@ -21,6 +21,7 @@ bool	ft_isdigit_string(const std::string& str);
 unsigned int	stringToIp(std::string ip);
 std::string		ipToString(unsigned int ip);
 unsigned short	ft_htons(unsigned short port);
+unsigned short	ft_ntohs(unsigned short port);
 
 
 template<typename T>

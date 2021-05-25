@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/20 19:48:19 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/25 17:51:19 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@ _autoindex(NOT_SET),
 _client_max_body_size(NOT_SET),
 _keepalive_timeout(NOT_SET),
 _chunked_transfer_encoding(NOT_SET),
-_auth_basic(DEFAULT_AUTH_BASIC) {
+_auth_basic(DEFAULT_AUTH_BASIC),
+_cgi_port(DEFAULT_CGI_PORT) {
 	// std::cout << GREEN << "HTTP CTOR" << NOCOLOR << std::endl;
 	return ;
 }
@@ -34,6 +35,10 @@ HttpBlock::HttpBlock(HttpBlock const & copy)
 	this->_chunked_transfer_encoding = copy._chunked_transfer_encoding;
 	this->_auth_basic = copy._auth_basic;
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
+	this->_cgi_pass = copy._cgi_pass;
+	this->_cgi_port = copy._cgi_port;
+	this->_cgi_index = copy._cgi_index;
+	this->_cgi_params = copy._cgi_params;
 
 	return ;
 }
@@ -122,6 +127,27 @@ void	HttpBlock::setAuthBasic(std::string value)
 void	HttpBlock::setAuthBasicFile(std::string path)
 {
 	this->_auth_basic_user_file = path;
+}
+
+void	HttpBlock::setCgiPass(std::string value)
+{
+	this->_cgi_pass = value;
+}
+
+void	HttpBlock::setCgiPort(size_type port)
+{
+	this->_cgi_port = port;
+}
+
+void	HttpBlock::setCgiIndex(std::string index)
+{
+	this->_cgi_index = index;
+}
+
+void	HttpBlock::setCgiParams(mapCgiParams params)
+{
+	(void)params;
+	// this->_;
 }
 
 

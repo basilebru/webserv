@@ -17,7 +17,6 @@ unsigned int stringToIp(std::string ip) //return in Little-Endian
 	}
 	v[3] = atoi(ip.substr(start, pos).c_str());
 	
-	// return *(reinterpret_cast<unsigned int *>(v));
 	return (v[3] << 24 | v[2] << 16 | v[1] << 8 | v[0]);
 }
 
@@ -54,4 +53,9 @@ unsigned short	ft_htons(unsigned short port)
 	else if (BYTE_ORDER == LITTLE_ENDIAN)
 		return (ft_bswap_16(port));
 	return (0);
+}
+
+unsigned short	ft_ntohs(unsigned short port)
+{
+	return ft_htons(port);
 }

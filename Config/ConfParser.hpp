@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/18 10:50:48 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/19 11:49:21 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,8 @@ private:
 	void	handleBlockIn(const std::string&);
 	void	handleBlockOut(void);
 	void	parseLine(std::string& line);
+	void	sanitizeServers(void);
+	void	checkDuplicateServer(std::vector<ServerBlock>::iterator);
 
 	// Directive handling functions	
 	int		setListen();

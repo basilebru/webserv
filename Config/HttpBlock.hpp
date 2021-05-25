@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/20 17:38:30 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/25 17:48:49 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,9 @@
 
 class HttpBlock {
 
+public:
+		typedef std::map<std::string, std::string>		mapCgiParams;
+
 protected:
 
 	std::string						_root;
@@ -35,6 +38,13 @@ protected:
 	int								_chunked_transfer_encoding; // on | off
 	std::string						_auth_basic; // string | off
 	std::string						_auth_basic_user_file; //httpasswd paths
+
+	/*For CGI*/
+	std::string						_cgi_pass;
+	size_type						_cgi_port; //mixer en std::string avec _cgi_pass ?
+	std::string						_cgi_index;
+	mapCgiParams					_cgi_params;
+
 
 public:
 	HttpBlock(void);
@@ -53,7 +63,10 @@ public:
 	void	setChunkedEncoding(std::string& state);
 	void	setAuthBasic(std::string path);
 	void	setAuthBasicFile(std::string path);
-	// void	setServers(std::string index);
+	void	setCgiPass(std::string value);
+	void	setCgiPort(size_type port);
+	void	setCgiIndex(std::string index);
+	void	setCgiParams(mapCgiParams params);
 
 	// Getters
 	const std::string&		getRoot(void) const;

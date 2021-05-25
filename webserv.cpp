@@ -30,6 +30,15 @@ LocationBlock match_loc(std::string target_uri, LocMap locations)
     return loc;
 }
 
+void displayConfig(HttpBlock const& baseConfig, std::vector<ServerBlock> const& servers)
+{
+	std::cout << std::endl << "WEBSERV CONFIGURATION: " << std::endl;
+	std::cout << "Nbr of servers: " << servers.size() << std::endl << std::endl;
+	
+	std::cout << baseConfig;
+	displayVec(servers, '\n');
+}
+
 int main(int ac, char **av)
 {
 	if (signal(SIGINT, signal_handler) == SIG_ERR)
@@ -50,12 +59,8 @@ int main(int ac, char **av)
 			// std::cout << "matched loc: " << match_loc("/last/prout", servers[0].getLocations()) << std::endl;
 			// std::cout << "matched loc: " << match_loc("/last/prout/", servers[0].getLocations()) << std::endl;
 			// std::cout << "matched loc: " << match_loc("/lisst/prout", servers[0].getLocations()) << std::endl;
-/*			std::cout << std::endl << "WEBSERV CONFIGURATION: " << std::endl;
-			std::cout << "Nbr of servers: " << servers.size() << std::endl << std::endl;
-			
-			std::cout << baseConfig;
-			displayVec(servers, '\n');
-*/		
+			// displayConfig(baseConfig, servers);
+		
 			/*Create and aunch server*/
 			Server *server =  new Server(baseConfig, servers);
 			server->launch();

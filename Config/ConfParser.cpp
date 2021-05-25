@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/21 20:16:12 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/21 16:57:17 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -629,6 +629,32 @@ void ConfParser::parseDirective()
 		throw UnexpectedTocken(directive, this);
 	}
 }
+
+/*int		ConfParser::checkDuplicateServer(std::vector<ServerBlock>::iterator pos)
+{
+	std::vector<ServerBlock>::iterator it = this->_servers.begin();
+
+	while (it != pos)
+	{
+		if (it->_listenIP == pos->_listenIP
+			&& it->_listenPort == pos->_listenPort
+			&& it->_server_names == pos->_server_names)
+	}
+	return (SUCCESS);
+}
+
+void	ConfParser::sanitizeServers(void)
+{
+	std::vector<ServerBlock>::iterator it = this->_servers.begin();
+	std::vector<ServerBlock>::iterator end = this->_servers.end();
+
+	while (it != end)
+	{
+		this->checkDuplicateServer(it);
+		++it;
+	}
+}
+*/
 
 /*Getters*/
 
