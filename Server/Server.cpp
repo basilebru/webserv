@@ -45,23 +45,12 @@ int	Server::server_is_alive = 1;
 
 int Server::launch(void)
 {
-	fd_set current_sockets;
-	int rdy_fd = 0;
 	int client_socket;
 
 	// Create this->server_sockets; for each server_socket, bind and listen
-	if (this->setup() < 0)
+	if (this->setup_sockets() < 0)
 		return (FAILURE);
-
-	// Prepare for select()
-	// 1. Initialize the current socket set
-	FD_ZERO(&current_sockets);
-	// 2. Add all servers socket in socket SET
-	for (sockMap::const_iterator it = this->server_sockets.begin(); it != this->server_sockets.end(); ++it)
-		FD_SET(it->first, &current_sockets);
-	// 3. Set max socket (select needs the highest-numbered file descriptor in any of the three sets, plus 1)
-	int max_socket = this->server_sockets.rbegin()->first;
-	std::cerr << "MAX SOCKET: " << max_socket << std::endl;
+	this->init_select_fd_set();
 
 	//Optional: sets the timeout for select()
 	struct timeval timeout;
@@ -75,8 +64,8 @@ int Server::launch(void)
 		timeout.tv_usec = 0;
 
 		// select is destructive so we need a socket copy
-		this->ready_sockets = current_sockets;
-		int sret = select(max_socket + 1, &this->ready_sockets, NULL, NULL, NULL);
+		this->ready_sockets = this->current_sockets;
+		int sret = select(this->max_socket + 1, &this->ready_sockets, NULL, NULL, NULL);
 		// suite à l'appel à select, this->ready_sockets ne contient plus que les fd disponibles en lecture
 		// (current_sockets contient toujours tous les sockets existants)
 
@@ -90,16 +79,16 @@ int Server::launch(void)
 		}
 		else if (sret == 0)
 			std::cerr << sret << ": Select timeout (5 sec)" << std::endl;
+		this->rdy_fd = sret;
 
 		// On parcourt nos fd (client sockets et server sockets): pour chaque fd on teste s'il est présent dans this->ready_sockets = disponible en lecture
-		rdy_fd = sret;
 
 		// 1. on parcourt d'abord les server_sockets. S'ils sont disponibles en lecture, c'est qu'il y a une nouvelle demande de connection -> accept connection et creation d'un client socket
 		for (sockMap::const_iterator it = this->server_sockets.begin(); it != this->server_sockets.end(); ++it)
 		{
 			if (FD_ISSET(it->first, &this->ready_sockets))
 			{
-				rdy_fd--;
+				this->rdy_fd--;
 				client_socket = this->accept_new_connection(it->first);
 				if (client_socket < 0 && errno != EAGAIN) 
 				{
@@ -109,18 +98,18 @@ int Server::launch(void)
 				else if (client_socket > 0)
 				{
 					std::cout << YELLOW << "New incoming connection (fd " << client_socket << ")" << NOCOLOR << std::endl;
-					FD_SET(client_socket, &current_sockets); // new connection is added to fd_set (current socket)
+					FD_SET(client_socket, &this->current_sockets); // new connection is added to fd_set (current socket)
 					this->client_sockets.insert(std::make_pair(client_socket, it->second));
 					Request *req = new Request(client_socket, it->second, this->servers, this->baseConfig);
 					this->requests.insert(std::make_pair(client_socket, req));
 
-					if (client_socket > max_socket)
-						max_socket = client_socket;
+					if (client_socket > this->max_socket)
+						this->max_socket = client_socket;
 				}
 			}
 		}
 		// 2. on parcourt ensuite les client_sockets. S'ils sont disponibles en lecture, c'est qu'on peut parser une requete (rq: une meme requete peut etre envoyee en plusieurs fois)
-		for (sockMap::const_iterator it = this->client_sockets.begin(); it != this->client_sockets.end() && rdy_fd > 0;)
+		for (sockMap::const_iterator it = this->client_sockets.begin(); it != this->client_sockets.end() && this->rdy_fd > 0;)
 		{
 			if (FD_ISSET(it->first, &this->ready_sockets))
 			{
@@ -138,9 +127,9 @@ int Server::launch(void)
 						std::cout << RED << "Request error, closing connection" << NOCOLOR << std::endl;
 
 					// Remove client_socket from FD SET, from this->server_socket and from this->requests
-					FD_CLR(it->first, &current_sockets);
-					if (it->first == max_socket)
-						max_socket--;
+					FD_CLR(it->first, &this->current_sockets);
+					if (it->first == this->max_socket)
+						this->max_socket--;
 					this->close_socket(it++->first); // use post incrementation in order to "copy" next element before deleting current element
 					continue;
 				}
@@ -169,7 +158,7 @@ bool my_comp(ServerBlock serv1, ServerBlock serv2)
 	return false;
 }
 
-int Server::setup(void)
+int Server::setup_sockets(void)
 {
 	// displayVec(this->servers, '\n');
 
@@ -184,7 +173,7 @@ int Server::setup(void)
 		// 1. Create a socket (IPv4, TCP)
 		int newSocket;
 		memset((char *)&newSocket, 0, sizeof(newSocket)); 
-		newSocket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); // Using the flag SOCK_NONBLOCK saves extra calls to fcntl(2) to achieve the same result.
+		newSocket = socket(AF_INET, SOCK_STREAM, 0); // Using the flag SOCK_NONBLOCK saves extra calls to fcntl(2) to achieve the same result.
 		if (newSocket == -1)
 		{
 			std::cout << "Failed to create socket. errno: " << errno << std::endl;
@@ -262,5 +251,18 @@ void Server::close_socket(int fd)
 	// Erase the map element containing the former request
 	this->requests.erase(fd);
 	this->client_sockets.erase(fd);
+}
+
+void	Server::init_select_fd_set()
+{
+	// Prepare for select()
+	// 1. Initialize the current socket set
+	FD_ZERO(&this->current_sockets);
+	// 2. Add all servers socket in socket SET
+	for (sockMap::const_iterator it = this->server_sockets.begin(); it != this->server_sockets.end(); ++it)
+		FD_SET(it->first, &this->current_sockets);
+	// 3. Set max socket (select needs the highest-numbered file descriptor in any of the three sets, plus 1)
+	this->max_socket = this->server_sockets.rbegin()->first;
+	std::cerr << "MAX SOCKET: " << this->max_socket << std::endl;
 }
 
