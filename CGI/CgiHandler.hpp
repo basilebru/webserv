@@ -22,8 +22,8 @@ public:
 	~CgiHandler(void);
 	CgiHandler& operator=(CgiHandler const & rhs);
 
-	void	execScript(std::string const& scriptName);
-	void	fillEnvp(void);
+	std::string	execScript(std::string const& scriptName);
+	void		fillEnvp(void);
 
 };
 

@@ -1,4 +1,6 @@
 #include "CgiHandler.hpp"
+#include <sys/types.h>
+#include <sys/wait.h>
 
 CgiHandler::CgiHandler(void) : _envp(NULL)
 {
@@ -72,20 +74,37 @@ void	CgiHandler::fillEnvp(void)
 	}
 }
 
-void	CgiHandler::execScript(std::string const& scriptName)
+std::string	CgiHandler::execScript(std::string const& scriptName)
 {
+	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
+	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
+	Dans le cas de POST, les données sont lues depuis STDIN (depuis le body de la requete)
+
+	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
+	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
+	
+	utilisation de dup, dup2, waitpid, lseek ?
+	*/
+
 	this->fillEnvp();
 
 	int pid = fork();
 	if (pid == -1)
 	{
 		std::cerr << "fork process failed" << std::endl;
-		return ;
+		return "";
 	}
-	if (pid == 0)
+	else if (pid == 0)
 	{
 		char **argv = NULL;
 		if (execve(scriptName.c_str(), argv, this->_envp) < 0)
 			std::cerr << "execve() failed, errno: " << errno << std::endl;
 	}
+	else
+	{
+		std::cerr << "WAIT" << std::endl;
+		waitpid(pid, NULL, 0);
+	}
+	// return the body read from stdout
+	return "BODY";
 }
