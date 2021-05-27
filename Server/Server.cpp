@@ -143,10 +143,6 @@ int		Server::loop_client_socket()
 			ret = res.process();
 			if (ret == -1) // clear
 			{
-				// Remove client_socket from FD SET and from this->server_socket
-				FD_CLR(it->first, &this->current_sockets);
-				if (it->first == this->max_socket)
-					this->max_socket--;
 				this->close_socket(it++->first); // use post incrementation in order to "copy" next element before deleting current element
 				continue;
 			}
@@ -262,13 +258,15 @@ int Server::accept_new_connection(int server_socket)
 
 void Server::close_socket(int fd)
 {
+	FD_CLR(fd, &this->current_sockets);
+	if (fd == this->max_socket)
+		this->max_socket--;
 	if (close(fd) < 0)
 	{
 		std::cerr << "Failed to close. errno:" << errno << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	std::cout << YELLOW << "Client " << fd << " disconnected." << NOCOLOR << std::endl;
-
 	// delete the Request 
 	delete this->client_sockets[fd];
 	// Erase the map element containing the former request

@@ -8,7 +8,7 @@ int Response::process()
 {
     if (this->req.connection_end() || this->req.get_error_code())
     {
-        // log message
+        // log message (debug)
         if (this->req.connection_end())
             std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
         else
@@ -18,13 +18,35 @@ int Response::process()
     if (this->req.request_is_ready())
     {
         std::cout << "Request ready to be treated" << std::endl;
-        this->buf = "here is my response :)\n";
-        // test big buffer (multiple select calls)
-        // this->buf.assign(9000000, 'a');
-        // this->buf.push_back('\n');
-        std::cout << ".............." << std::endl;
-        std::cout << "Request deleted" << std::endl;
+        this->build_response();
         return 1;
     }
     return 0;
+}
+
+void Response::build_response()
+{
+    if (this->req.req_line.method == "GET")
+    {
+        
+        std::ifstream file;
+        file.open(this->req.target_uri.c_str());
+        std::cout << this->req.target_uri.c_str() << std::endl;
+        if (file.fail())
+        {
+            this->buf = "Can't open file\n";
+            return ;
+        }
+        std::string line;
+        while (getline(file, line))
+        {
+            this->buf += line;
+            this->buf += '\n';
+        }
+    }
+    else
+        this->buf = "still working on it :)\n";
+    // test big buffer (multiple select calls)
+    // this->buf.assign(9000000, 'a');
+    // this->buf.push_back('\n');
 }

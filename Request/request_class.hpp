@@ -29,6 +29,7 @@ struct conf
 
 class Request
 {
+    friend class Response;
     public:
         typedef std::pair<std::string, std::string> header;
 

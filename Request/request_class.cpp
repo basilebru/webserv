@@ -350,7 +350,7 @@ void Request::init_config()
     // "root": build target_uri
     if (this->config.root[this->config.root.size() - 1] == '/') // delete '/' at the end of root (if present)
         this->config.root.erase(this->config.root.end() - 1);
-    this->target_uri = this->config.root + this->req_line.target;
+    this->target_uri = "./" + this->config.root + this->req_line.target;
     std::cout << "[target uri:] " << this->target_uri << std::endl;
     std::cout << "----" << std::endl;
 }

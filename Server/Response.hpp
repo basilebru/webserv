@@ -5,9 +5,10 @@
 
 class Response
 {
-    public:
+    private:
     const Request &req;
     std::string &buf;
+    void build_response();
 
     public:
     Response(const Request &req, std::string &buf);
