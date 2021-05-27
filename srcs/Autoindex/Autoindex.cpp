@@ -41,8 +41,21 @@ void	Autoindex::addFileToBuff(std::string const& path)
 
 void	Autoindex::genAutoindex(std::string const& path)
 {
-	(void)path;
+	DIR				*dir;
+	struct dirent	*dir_content;
+
 	this->addFileToBuff("../../html/header.html");
+
+	dir = opendir(path.c_str());
+	while ((dir_content = readdir(dir)))
+	{
+		this->buf += "<p>";
+		this->buf +=  dir_content->d_name;
+		this->buf += "</p>\n";
+	}
+	closedir(dir);
+	
+
 	this->buf += "</body>\n</html>\n";
 
 	// struct dirent *dir;

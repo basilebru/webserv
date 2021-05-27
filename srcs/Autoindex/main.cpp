@@ -5,6 +5,6 @@ int main()
 {
 	Autoindex bdy;
 
-	bdy.genAutoindex("/home/julien/Cursus42/webserv/cgi-bin/displayEnv");
+	bdy.genAutoindex("../../html/");
 	return 0;
 }
