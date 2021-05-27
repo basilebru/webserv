@@ -4,7 +4,9 @@
 int main()
 {
 	CgiHandler cgi;
+	std::string ret;
 
-	cgi.execScript("../cgi-bin/displayEnv");
+	ret = cgi.execScript("../cgi-bin/displayEnv");
+	std::cout << ret << std::endl;
 	return 0;
 }

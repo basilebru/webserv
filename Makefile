@@ -1,6 +1,13 @@
 	
 NAME = webserv
 
+# -------------- COLORS -------------- #
+
+RED			= \033[1;31m
+GREEN		= \033[1;32m
+YELLOW		= \033[1;33m
+END			= \033[1;0m
+
 # ---------------- CC ---------------- #
 
 CC = clang++
@@ -35,6 +42,7 @@ ALL_INC			+= 	-I$(SERVER_DIR)
 ALL_INC			+= 	-I$(REQUEST_DIR)
 ALL_INC			+= 	-I$(CONF_DIR)
 ALL_INC			+= 	-I$(UTILS_DIR)
+# ALL_INC			+= 	-I$(LIBFT_DIR)includes/
 
 
 # ---------------- SRC --------------- #
@@ -74,6 +82,12 @@ vpath %.cpp $(CONF_DIR)
 DIR_OBJS	= ./objs/
 OBJS		= $(patsubst %.cpp, $(DIR_OBJS)%.o, $(SRCS))
 
+# ---------------- LIB --------------- #
+
+LIBFT_DIR 	= ./libft/
+LIBFT 		= $(LIBFT_DIR)libft.a
+LIB_LINK	= -L$(LIBFT_DIR) -lft
+
 
 all: $(NAME)
 
@@ -82,25 +96,32 @@ fast:
 
 $(NAME):	$(OBJS)
 			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(SANITIZE) $(OBJS) $(ALL_INC) -o $@
-# 			echo "$(_BOLD)$(_YELLOW)==> $@ linked$(_END)"
+			echo "$(GREEN)==> $@ linked$(END)"
 
 $(OBJS): 	$(DIR_OBJS)%.o: %.cpp | $(DIR_OBJS)
 			$(CC) $(CFLAGS) $(EXTRAFLAGS) $(SANITIZE) $(ALL_INC) -c $< -o $@
-# 			echo "$(_BOLD)$(_GREEN)--> $@ made$(_END)"
+			echo "$(YELLOW)--> $@ made$(END)"
 
 $(DIR_OBJS):
 	mkdir -p $@
 
+$(LIBFT):
+	echo "$(YELLOW)--> Creating $@...$(END)"
+	$(MAKE) -C $(LIBFT_DIR)
+	echo "$(GREEN)==> $@ linked$(END)"
+
 clean:
+# 	$(MAKE) clean -C $(LIBFT_DIR)
 	$(RM) -R $(DIR_OBJS)
-# 	echo "$(_BOLD)$(_RED)-> $@ $(NAME) made$(_END)"
+# 	echo "$(RED)-> $@ $(NAME) made$(END)"
 
 fclean: clean
+# 	$(MAKE) fclean -C $(LIBFT_DIR)
 	$(RM) $(NAME)
-# 	echo "$(_BOLD)$(_RED)-> $@ $(NAME) made$(_END)"
+# 	echo "$(RED)-> $@ $(NAME) made$(END)"
 
 re: fclean
 	$(MAKE)
 
 .PHONY:		all fast clean fclean re
-# .SILENT:	$(NAME) $(OBJS) $(DIR_OBJS) clean fclean
+.SILENT:	$(NAME) $(OBJS) $(DIR_OBJS) $(LIBFT) # clean fclean

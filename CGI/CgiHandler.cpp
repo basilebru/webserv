@@ -2,6 +2,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#define BUF_SIZE 32
+
 CgiHandler::CgiHandler(void) : _envp(NULL)
 {
 	std::cout << "CGI CTOR" << std::endl;
@@ -44,7 +46,7 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["REMOTE_ADDR"]		=	"value";	// adress ip du client
 	this->_env_map["REMOTE_IDENT"]		=	"value";	// nom d'utilisateur du client
 	this->_env_map["REMOTE_USER"]		=	"value";	// nom d'utilisateur (distant) du client
-	this->_env_map["REQUEST_METHOD"]	=	"value";	// GET ou POST
+	this->_env_map["REQUEST_METHOD"]	=	"value";	// GET ou POST ou ...
 	this->_env_map["REQUEST_URI"]		=	"value";	// URI
 	this->_env_map["SCRIPT_NAME"]		=	"value";	// full path du fichier de script
 	this->_env_map["SERVER_NAME"]		=	"value";	// DNS ou IP du server (hostname)
@@ -86,7 +88,20 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 	utilisation de dup, dup2, waitpid, lseek ?
 	*/
 
+	std::string body;
+	char buf[BUF_SIZE];
+	int ret = 1;
+
+
 	this->fillEnvp();
+
+	int pipefd[2];
+
+	if (pipe(pipefd) == -1)
+	{
+		std::cerr << "pipe() failed, errno: " << errno << std::endl;
+		return "";
+	}
 
 	int pid = fork();
 	if (pid == -1)
@@ -96,15 +111,30 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 	}
 	else if (pid == 0)
 	{
-		char **argv = NULL;
+		close(pipefd[0]);  /* Ferme l'extrémité de lecture inutilisée */
+		dup2(pipefd[1], STDOUT_FILENO);
+		
+		char **argv = NULL; /* Le script écrit dans STDOUT */
 		if (execve(scriptName.c_str(), argv, this->_envp) < 0)
+		{
 			std::cerr << "execve() failed, errno: " << errno << std::endl;
+			return "";
+		}
+		close(pipefd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
 	}
 	else
 	{
-		std::cerr << "WAIT" << std::endl;
+		close(pipefd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
+		dup2(pipefd[0], STDIN_FILENO);
+		while (ret > 0)
+		{
+			memset(buf, 0, BUF_SIZE);
+			ret = read(STDIN_FILENO, buf, BUF_SIZE - 1);
+			body += buf;
+		}
+		close(pipefd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
 		waitpid(pid, NULL, 0);
 	}
-	// return the body read from stdout
-	return "BODY";
+	// return the body red from stdout
+	return body;
 }

@@ -10,3 +10,15 @@ print "Content-Type: text/plain\n\n";
 for my $var ( sort keys %ENV ) {
     printf "%s=\"%s\"\n", $var, $ENV{$var};
 }
+
+
+# print "content-type: text/html\n\n";
+# print "<HTML>\n";
+# print "<HEAD><TITLE>Variables d'environnement</TITLE></HEAD>\n";
+# print "<BODY>\n";
+
+# foreach $key (sort(keys %ENV)) {
+#   print "$key = $ENV{$key}<BR>\n";
+# }
+# print "</BODY>\n";
+# print "</HTML>\n";
