@@ -7,10 +7,10 @@ class Response
 {
     public:
     const Request &req;
-    std::string buf;
+    std::string &buf;
 
     public:
-    Response(const Request &req);
+    Response(const Request &req, std::string &buf);
     int process();
 };
 

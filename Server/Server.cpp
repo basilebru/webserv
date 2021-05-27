@@ -21,13 +21,13 @@ Server::~Server(void)
 	// Clean up all of the sockets that are open 
 	for (std::map<int, Request*>::const_iterator it = this->client_sockets.begin(); it != this->client_sockets.end();)
 	{
-		if (FD_ISSET(it->first, &this->ready_read_sockets))
-			this->close_socket(it++->first);
-		else
-		{
-			std::cerr << "fd " << it->first << "is still in use." << std::endl;
-			it++;
-		}
+		// if (FD_ISSET(it->first, &this->ready_read_sockets))
+		this->close_socket(it++->first);
+		// else
+		// {
+		// 	std::cerr << "fd " << it->first << "is still in use." << std::endl;
+		// 	it++;
+		// }
 	}
 	for (sockMap::const_iterator it = this->server_sockets.begin(); it != this->server_sockets.end(); ++it)
 	{
@@ -136,35 +136,13 @@ int		Server::loop_client_socket()
 			std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
 			
 			// Parse the request
+			int ret;
 			it->second->parse();
 			it->second->print();
-		// 	Response res(*it->second);
-		// 	if (res.process() == -1) // clear
-		// 	{
-		// 		// Remove client_socket from FD SET and from this->server_socket
-		// 		FD_CLR(it->first, &this->current_sockets);
-		// 		if (it->first == this->max_socket)
-		// 			this->max_socket--;
-		// 		this->close_socket(it++->first); // use post incrementation in order to "copy" next element before deleting current element
-		// 		continue;
-		// 	}
-		// 	if (res.process() == 1) // new request
-		// 	{
-		// 		// save fd and addr, delete request and create new request
-		// 		int fd = it->second->get_fd();
-		// 		sockaddr_in addr = it->second->get_addr();
-		// 		delete it->second;
-		// 		it->second = new Request(fd, addr, this->servers, this->baseConfig);
-		// 	}
-		// }
-			if (it->second->connection_end() || it->second->get_error_code())
+			Response res(*it->second, this->response_buffers[it->first]);
+			ret = res.process();
+			if (ret == -1) // clear
 			{
-				// log message
-				if (it->second->connection_end())
-					std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
-				else
-					std::cout << RED << "Request error, closing connection" << NOCOLOR << std::endl;
-
 				// Remove client_socket from FD SET and from this->server_socket
 				FD_CLR(it->first, &this->current_sockets);
 				if (it->first == this->max_socket)
@@ -172,11 +150,8 @@ int		Server::loop_client_socket()
 				this->close_socket(it++->first); // use post incrementation in order to "copy" next element before deleting current element
 				continue;
 			}
-			if (it->second->request_is_ready())
+			if (ret == 1) // new request
 			{
-				std::cout << "Request ready to be treated" << std::endl;
-				std::cout << ".............." << std::endl;
-				std::cout << "Request deleted" << std::endl;
 				// save fd and addr, delete request and create new request
 				int fd = it->second->get_fd();
 				sockaddr_in addr = it->second->get_addr();
@@ -184,14 +159,14 @@ int		Server::loop_client_socket()
 				it->second = new Request(fd, addr, this->servers, this->baseConfig);
 			}
 		}
-		// if (FD_ISSET(it->first, &this->ready_write_sockets) && it->second->body.size()) // write possible
-		// {
-		// 		int ret;
-		// 		ret = write(it->first, it->second->body.c_str(), it->second->body.size());
-		// 		it->second->body.erase(0, ret);
-		// 		std::cout << "ret: " << ret << std::endl;
-		// 		std::cout << "size: " << it->second->body.size() << std::endl;
-		// }
+		if (FD_ISSET(it->first, &this->ready_write_sockets) && this->response_buffers[it->first].size()) // write possible
+		{
+			int ret;
+			ret = send(it->first, this->response_buffers[it->first].c_str(), this->response_buffers[it->first].size(), MSG_DONTWAIT);
+			this->response_buffers[it->first].erase(0, ret);
+			std::cout << "ret: " << ret << std::endl;
+			std::cout << "size: " << this->response_buffers[it->first].size() << std::endl;
+		}
 		it++;
 	}
 	return SUCCESS;

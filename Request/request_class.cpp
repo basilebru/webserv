@@ -68,13 +68,11 @@ void Request::read_from_socket()
 		this->error_message = "internal-error: malloc error";
 		this->error_code = 500;
     }
-    while ((ret = recv(this->fd, buf, BUF_SIZE, MSG_DONTWAIT)) > 0)
-    {
-        buf[ret] = 0;
-        if (ret == 5 && strcmp(buf, "\xFF\xF4\xFF\xFD\x06") == 0)
-            this->error_code = 400;
-        this->buffer += buf;
-    }
+    ret = recv(this->fd, buf, BUF_SIZE, MSG_DONTWAIT);
+    buf[ret] = 0;
+    if (ret == 5 && strcmp(buf, "\xFF\xF4\xFF\xFD\x06") == 0)
+        this->error_code = 400;
+    this->buffer += buf;
     free(buf);
     if (ret == 0)
         this->end_of_connection = true;

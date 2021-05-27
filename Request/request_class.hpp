@@ -5,7 +5,7 @@
 # include "utils.hpp"
 # include "../Config/ConfParser.hpp"
 
-# define BUF_SIZE 1024
+# define BUF_SIZE 10000
 
 struct request_line
 {
