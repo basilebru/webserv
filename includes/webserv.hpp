@@ -23,6 +23,8 @@
 
 # include <algorithm> //find function and co.
 
+// # include "libft.h"
+
 
 // Utils
 # define TRUE		1
