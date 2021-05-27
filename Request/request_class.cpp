@@ -342,7 +342,7 @@ void Request::init_config()
         return ;
     
     // "allow methods": check req_line.method
-    if (std::find(this->config.allow_methods.begin(), this->config.allow_methods.end(), this->req_line.method) == this->config.allow_methods.end())
+    if (!this->config.allow_methods.empty() && std::find(this->config.allow_methods.begin(), this->config.allow_methods.end(), this->req_line.method) == this->config.allow_methods.end())
     {
         this->error_message = "method not allowed: " + this->req_line.method;
         this->error_code = 405;

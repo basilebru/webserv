@@ -21,10 +21,13 @@ Server::~Server(void)
 	// Clean up all of the sockets that are open 
 	for (std::map<int, Request*>::const_iterator it = this->client_sockets.begin(); it != this->client_sockets.end();)
 	{
-		if (FD_ISSET(it->first, &this->ready_sockets))
+		if (FD_ISSET(it->first, &this->ready_read_sockets))
 			this->close_socket(it++->first);
 		else
-			std::cerr << "fd " << it->first << "is still in use." << std::endl;;
+		{
+			std::cerr << "fd " << it->first << "is still in use." << std::endl;
+			it++;
+		}
 	}
 	for (sockMap::const_iterator it = this->server_sockets.begin(); it != this->server_sockets.end(); ++it)
 	{
@@ -73,8 +76,9 @@ int Server::launch(void)
 int	Server::select()
 {
 	// select is destructive so we need a socket copy
-	this->ready_sockets = this->current_sockets;
-	int sret = ::select(this->max_socket + 1, &this->ready_sockets, NULL, NULL, NULL);
+	this->ready_read_sockets = this->current_sockets;
+	this->ready_write_sockets = this->current_sockets;
+	int sret = ::select(this->max_socket + 1, &this->ready_read_sockets, &this->ready_write_sockets, NULL, NULL);
 	// suite à l'appel à select, this->ready_sockets ne contient plus que les fd disponibles en lecture
 	// (current_sockets contient toujours tous les sockets existants)
 
@@ -98,7 +102,7 @@ int		Server::loop_server_socket()
 	int client_socket;
 	for (sockMap::const_iterator it = this->server_sockets.begin(); it != this->server_sockets.end(); ++it)
 	{
-		if (FD_ISSET(it->first, &this->ready_sockets))
+		if (FD_ISSET(it->first, &this->ready_read_sockets))
 		{
 			this->rdy_fd--;
 			client_socket = this->accept_new_connection(it->first);
@@ -127,13 +131,32 @@ int		Server::loop_client_socket()
 	// On parcourt les client_sockets. S'ils sont disponibles en lecture, c'est qu'on peut parser une requete (rq: une meme requete peut etre envoyee en plusieurs fois)
 	for (std::map<int, Request*>::iterator it = this->client_sockets.begin(); it != this->client_sockets.end() && this->rdy_fd > 0;)
 	{
-		if (FD_ISSET(it->first, &this->ready_sockets))
+		if (FD_ISSET(it->first, &this->ready_read_sockets)) // read() possible
 		{
 			std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
 			
 			// Parse the request
 			it->second->parse();
 			it->second->print();
+		// 	Response res(*it->second);
+		// 	if (res.process() == -1) // clear
+		// 	{
+		// 		// Remove client_socket from FD SET and from this->server_socket
+		// 		FD_CLR(it->first, &this->current_sockets);
+		// 		if (it->first == this->max_socket)
+		// 			this->max_socket--;
+		// 		this->close_socket(it++->first); // use post incrementation in order to "copy" next element before deleting current element
+		// 		continue;
+		// 	}
+		// 	if (res.process() == 1) // new request
+		// 	{
+		// 		// save fd and addr, delete request and create new request
+		// 		int fd = it->second->get_fd();
+		// 		sockaddr_in addr = it->second->get_addr();
+		// 		delete it->second;
+		// 		it->second = new Request(fd, addr, this->servers, this->baseConfig);
+		// 	}
+		// }
 			if (it->second->connection_end() || it->second->get_error_code())
 			{
 				// log message
@@ -154,7 +177,6 @@ int		Server::loop_client_socket()
 				std::cout << "Request ready to be treated" << std::endl;
 				std::cout << ".............." << std::endl;
 				std::cout << "Request deleted" << std::endl;
-
 				// save fd and addr, delete request and create new request
 				int fd = it->second->get_fd();
 				sockaddr_in addr = it->second->get_addr();
@@ -162,6 +184,14 @@ int		Server::loop_client_socket()
 				it->second = new Request(fd, addr, this->servers, this->baseConfig);
 			}
 		}
+		// if (FD_ISSET(it->first, &this->ready_write_sockets) && it->second->body.size()) // write possible
+		// {
+		// 		int ret;
+		// 		ret = write(it->first, it->second->body.c_str(), it->second->body.size());
+		// 		it->second->body.erase(0, ret);
+		// 		std::cout << "ret: " << ret << std::endl;
+		// 		std::cout << "size: " << it->second->body.size() << std::endl;
+		// }
 		it++;
 	}
 	return SUCCESS;

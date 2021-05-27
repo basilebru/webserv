@@ -3,6 +3,7 @@
 
 # include "webserv.hpp"
 # include "request_class.hpp"
+# include "Response.hpp"
 # include "HttpBlock.hpp"
 # include "ServerBlock.hpp"
 # include "utils.hpp"
@@ -12,7 +13,8 @@ class Server {
 	typedef	std::vector<ServerBlock>	servVec;
 
 private:
-	fd_set						ready_sockets; // "ready" sockets (after a call to select())
+	fd_set						ready_read_sockets; // "ready" sockets (after a call to select())
+	fd_set						ready_write_sockets; // "ready" sockets (after a call to select())
 	fd_set 						current_sockets; // all client and server sockets
 	int 						rdy_fd;
 	int							max_socket;
