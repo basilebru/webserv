@@ -1,6 +1,8 @@
 #include "CgiHandler.hpp"
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 #define BUF_SIZE 32
 
@@ -76,17 +78,16 @@ void	CgiHandler::fillEnvp(void)
 	}
 }
 
+
+/**
+ * EXEC SCRIPT WITH COMMUNICATION BY SOCKET
+ *
+ * @param       [param1, param2, ...]
+ * @return      [type]
+ */
+
 std::string	CgiHandler::execScript(std::string const& scriptName)
 {
-	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
-	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
-	Dans le cas de POST, les données sont lues depuis STDIN (depuis le body de la requete)
-
-	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
-	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
-	
-	utilisation de dup, dup2, waitpid, lseek ?
-	*/
 
 	std::string body;
 	char buf[BUF_SIZE];
@@ -95,13 +96,11 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 
 	this->fillEnvp();
 
-	int pipefd[2];
-
-	if (pipe(pipefd) == -1)
-	{
-		std::cerr << "pipe() failed, errno: " << errno << std::endl;
-		return "";
-	}
+	
+	sockaddr_un sockaddr;
+	memset((char *)&sockaddr, 0, sizeof(sockaddr)); 
+	sockaddr.sun_family = AF_LOCAL;
+	strncpy(sockaddr.sun_path, "socket", sizeof(sockaddr.sun_path)-1);
 
 	int pid = fork();
 	if (pid == -1)
@@ -111,30 +110,133 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 	}
 	else if (pid == 0)
 	{
-		close(pipefd[0]);  /* Ferme l'extrémité de lecture inutilisée */
-		dup2(pipefd[1], STDOUT_FILENO);
-		
+		usleep(300000); // mainly for debug
+		int newSocket = socket(AF_LOCAL, SOCK_STREAM, 0);
+
+		if (connect(newSocket, (struct sockaddr *)&sockaddr, sizeof(sockaddr_un)) < 0)
+		{
+			std::cout << "Failed to connect socket. errno: " << errno << std::endl;
+			close(newSocket);
+			return "";
+		}
+
+
+		dup2(newSocket, STDOUT_FILENO);
 		char **argv = NULL; /* Le script écrit dans STDOUT */
 		if (execve(scriptName.c_str(), argv, this->_envp) < 0)
 		{
 			std::cerr << "execve() failed, errno: " << errno << std::endl;
 			return "";
 		}
-		close(pipefd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
+		close(newSocket);
 	}
 	else
 	{
-		close(pipefd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
-		dup2(pipefd[0], STDIN_FILENO);
+
+		unlink("socket");
+		int newSocket = socket(AF_LOCAL, SOCK_STREAM, 0);
+		if (bind(newSocket, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0)
+		{
+			close(newSocket);
+			unlink("socket");
+			if (errno != EADDRINUSE)
+			{
+				std::cout << "Failed to bind" << ". errno: " << errno << std::endl;
+				return "";
+			}
+		}
+		if (listen(newSocket, 10) < 0)
+		{
+			std::cout << "Failed to listen on socket. errno: " << errno << std::endl;
+			close(newSocket);
+			unlink("socket");
+			return "";
+		}
+		int connection;
+		if((connection = accept(newSocket, (struct sockaddr*)NULL, NULL)) < 0) {
+			std::cerr << "Server: Connection cannot be accepted" << std::endl;
+			return "";
+		}
+
 		while (ret > 0)
 		{
 			memset(buf, 0, BUF_SIZE);
-			ret = read(STDIN_FILENO, buf, BUF_SIZE - 1);
+			ret = read(connection, buf, BUF_SIZE - 1);
 			body += buf;
 		}
-		close(pipefd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
+		close(newSocket);
+		unlink("socket");
 		waitpid(pid, NULL, 0);
 	}
-	// return the body red from stdout
 	return body;
 }
+
+/**
+ * EXEC SCRIPT WITH COMMUNICATION BY PIPE
+ *
+ * @param       [param1, param2, ...]
+ * @return      [type]
+ */
+
+
+// std::string	CgiHandler::execScript(std::string const& scriptName)
+// {
+// 	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
+// 	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
+// 	Dans le cas de POST, les données sont lues depuis STDIN (depuis le body de la requete)
+
+// 	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
+// 	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
+
+// 	utilisation de dup, dup2, waitpid, lseek ?
+// 	*/
+
+// 	std::string body;
+// 	char buf[BUF_SIZE];
+// 	int ret = 1;
+
+
+// 	this->fillEnvp();
+
+// 	int pipefd[2];
+
+// 	if (pipe(pipefd) == -1)
+// 	{
+// 		std::cerr << "pipe() failed, errno: " << errno << std::endl;
+// 		return "";
+// 	}
+
+// 	int pid = fork();
+// 	if (pid == -1)
+// 	{
+// 		std::cerr << "fork process failed" << std::endl;
+// 		return "";
+// 	}
+// 	else if (pid == 0)
+// 	{
+// 		close(pipefd[0]);  /* Ferme l'extrémité de lecture inutilisée */
+// 		dup2(pipefd[1], STDOUT_FILENO);
+
+// 		char **argv = NULL; /* Le script écrit dans STDOUT */
+// 		if (execve(scriptName.c_str(), argv, this->_envp) < 0)
+// 		{
+// 			std::cerr << "execve() failed, errno: " << errno << std::endl;
+// 			return "";
+// 		}
+// 		close(pipefd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
+// 	}
+// 	else
+// 	{
+// 		close(pipefd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
+// 		dup2(pipefd[0], STDIN_FILENO);
+// 		while (ret > 0)
+// 		{
+// 			memset(buf, 0, BUF_SIZE);
+// 			ret = read(STDIN_FILENO, buf, BUF_SIZE - 1);
+// 			body += buf;
+// 		}
+// 		close(pipefd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
+// 		waitpid(pid, NULL, 0);
+// 	}
+// 	return body;
+// }
