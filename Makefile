@@ -32,10 +32,10 @@ endif
 # -------------- INCLUDES ------------ #
 
 INCLUDES 		=	./includes/
-SERVER_DIR 		=	./Server/
-REQUEST_DIR 	=	./Request/
-CONF_DIR 		=	./Config/
-UTILS_DIR 		=	./Utils/
+SERVER_DIR 		=	$(SRCS_DIR)/Server/
+REQUEST_DIR 	=	$(SRCS_DIR)/Request/
+CONF_DIR 		=	$(SRCS_DIR)/Config/
+UTILS_DIR 		=	$(SRCS_DIR)/Utils/
 
 ALL_INC			+= 	-I$(INCLUDES)
 ALL_INC			+= 	-I$(SERVER_DIR)
@@ -47,6 +47,8 @@ ALL_INC			+= 	-I$(UTILS_DIR)
 
 # ---------------- SRC --------------- #
 # Add files to compile here
+
+SRCS_DIR = ./srcs
 
 # main sources
 SRCS += webserv.cpp
@@ -72,6 +74,7 @@ SRCS += utils.cpp
 
 
 # Add directories containing files to compile here
+vpath %.cpp $(SRCS_DIR)/
 vpath %.cpp $(SERVER_DIR)
 vpath %.cpp $(REQUEST_DIR)
 vpath %.cpp $(UTILS_DIR)
