@@ -8,7 +8,7 @@
 
 CgiHandler::CgiHandler(void) : _envp(NULL)
 {
-	std::cout << "CGI CTOR" << std::endl;
+	// std::cout << "CGI CTOR" << std::endl;
 	this->initEnv();
 }
 
@@ -20,7 +20,7 @@ CgiHandler::CgiHandler(void) : _envp(NULL)
 
 CgiHandler::~CgiHandler(void)
 {
-	std::cout << "CGI DESTRUCTOR" << std::endl;
+	// std::cout << "CGI DESTRUCTOR" << std::endl;
 	for (size_t i = 0; i < this->_env_map.size(); ++i)
 		delete[] this->_envp[i];
 	delete[] this->_envp;
@@ -218,8 +218,9 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 		close(pipefd[0]);  /* Ferme l'extrémité de lecture inutilisée */
 		dup2(pipefd[1], STDOUT_FILENO);
 
-		char **argv = NULL; /* Le script écrit dans STDOUT */
-		if (execve(scriptName.c_str(), argv, this->_envp) < 0)
+		// char **argv = NULL;
+		char * argv[2] = {const_cast<char*>(scriptName.c_str()), NULL};
+		if (execve(scriptName.c_str(), &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
 		{
 			std::cerr << scriptName.c_str() << std::endl;
 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;

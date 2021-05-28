@@ -2,7 +2,9 @@
 # define AUTOINDEX_HPP
 
 # include "webserv.hpp"
-
+# include "dirent.h"
+# include <sys/stat.h>
+# include <ctime>
 class Autoindex {
 
 private:

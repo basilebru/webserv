@@ -1,12 +1,15 @@
-
 #include "CgiHandler.hpp"
 
-int main()
+int main(int ac, char **av)
 {
-	CgiHandler cgi;
-	std::string ret;
+	if (ac == 2)
+	{
+		CgiHandler cgi;
+		std::string path("../../cgi-bin/" + std::string(av[1]));
+		std::string ret;
 
-	ret = cgi.execScript("/home/julien/Cursus42/webserv/cgi-bin/displayEnv");
-	std::cout << ret << std::endl;
+		ret = cgi.execScript(path);
+		std::cout << ret << std::endl;
+	}
 	return 0;
 }

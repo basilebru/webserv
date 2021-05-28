@@ -28,20 +28,25 @@ void Response::build_response()
 {
     if (this->req.req_line.method == "GET")
     {
-        
-        std::ifstream file;
-        file.open(this->req.target_uri.c_str());
-        std::cout << this->req.target_uri.c_str() << std::endl;
-        if (file.fail())
+
+        if (this->req.req_line.target.find("/cgi-bin") != std::string::npos) //Just pour test, il faudrait extraire le nom du bin à exécuter :-)
+            this->exec_cgi();
+        else
         {
-            this->buf = "Can't open file\n";
-            return ;
-        }
-        std::string line;
-        while (getline(file, line))
-        {
-            this->buf += line;
-            this->buf += '\n';
+            std::ifstream file;
+            file.open(this->req.target_uri.c_str());
+            std::cout << this->req.target_uri.c_str() << std::endl;
+            if (file.fail())
+            {
+                this->buf = "Can't open file\n";
+                return ;
+            }
+            std::string line;
+            while (getline(file, line))
+            {
+                this->buf += line;
+                this->buf += '\n';
+            }
         }
     }
     else
@@ -49,4 +54,13 @@ void Response::build_response()
     // test big buffer (multiple select calls)
     // this->buf.assign(9000000, 'a');
     // this->buf.push_back('\n');
+}
+
+void Response::exec_cgi()
+{
+    CgiHandler cgi;
+    std::string ret;
+
+    this->buf = cgi.execScript("./cgi-bin/test.php");
+    
 }

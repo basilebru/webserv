@@ -34,12 +34,14 @@ endif
 INCLUDES 		=	./includes/
 SERVER_DIR 		=	$(SRCS_DIR)/Server/
 REQUEST_DIR 	=	$(SRCS_DIR)/Request/
+CGI_HAND_DIR 	=	$(SRCS_DIR)/CGI/
 CONF_DIR 		=	$(SRCS_DIR)/Config/
 UTILS_DIR 		=	$(SRCS_DIR)/Utils/
 
 ALL_INC			+= 	-I$(INCLUDES)
 ALL_INC			+= 	-I$(SERVER_DIR)
 ALL_INC			+= 	-I$(REQUEST_DIR)
+ALL_INC			+= 	-I$(CGI_HAND_DIR)
 ALL_INC			+= 	-I$(CONF_DIR)
 ALL_INC			+= 	-I$(UTILS_DIR)
 # ALL_INC			+= 	-I$(LIBFT_DIR)includes/
@@ -59,6 +61,7 @@ SRCS += Response.cpp
 SRCS += request_class.cpp
 SRCS += request_class_store.cpp
 SRCS += request_class_utils.cpp
+SRCS += CgiHandler.cpp
 
 # Config Parser sources
 SRCS += ConfParser.cpp
@@ -77,6 +80,7 @@ SRCS += utils.cpp
 vpath %.cpp $(SRCS_DIR)/
 vpath %.cpp $(SERVER_DIR)
 vpath %.cpp $(REQUEST_DIR)
+vpath %.cpp $(CGI_HAND_DIR)
 vpath %.cpp $(UTILS_DIR)
 vpath %.cpp $(CONF_DIR)
 

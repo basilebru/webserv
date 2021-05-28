@@ -1,7 +1,8 @@
 #ifndef RESPONSE_HPP
 # define RESPONSE_HPP
 
-#include "../Request/request_class.hpp"
+#include "request_class.hpp"
+#include "CgiHandler.hpp"
 
 class Response
 {
@@ -9,6 +10,8 @@ class Response
     const Request &req;
     std::string &buf;
     void build_response();
+    void exec_cgi();
+
 
     public:
     Response(const Request &req, std::string &buf);
