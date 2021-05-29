@@ -321,6 +321,12 @@ void Request::fill_conf()
         this->config.root = this->matched_serv.getRoot();
     if (this->config.root.empty())
         this->config.root = this->base_config.getRoot();
+
+    this->config.cgi_path = this->matched_loc.getCgiPath();
+    if (this->config.cgi_path.empty())
+        this->config.cgi_path = this->matched_serv.getCgiPath();
+    if (this->config.cgi_path.empty())
+        this->config.cgi_path = this->base_config.getCgiPath();
 }
 
 void Request::init_config()

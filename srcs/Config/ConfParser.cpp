@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/26 15:26:25 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/29 15:35:56 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,7 @@ dirMap	ConfParser::setHttpMap()
 	map["chunked_transfer_encoding"] = &ConfParser::setChunkEnc;
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
-	map["cgi_param"] = &ConfParser::setCgiParam;
-	map["cgi_pass"] = &ConfParser::setCgiPass;
+	map["cgi_path"] = &ConfParser::setCgiPath;
 	map["include"] = &ConfParser::parseInclude;
 
 	return map;
@@ -82,8 +81,7 @@ dirMap	ConfParser::setSrvMap()
 	map["chunked_transfer_encoding"] = &ConfParser::setChunkEnc;
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
-	map["cgi_param"] = &ConfParser::setCgiParam;
-	map["cgi_pass"] = &ConfParser::setCgiPass;
+	map["cgi_path"] = &ConfParser::setCgiPath;
 
 	return map;
 }
@@ -102,8 +100,7 @@ dirMap	ConfParser::setLocMap()
 	map["chunked_transfer_encoding"] = &ConfParser::setChunkEnc;
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
-	map["cgi_param"] = &ConfParser::setCgiParam;
-	map["cgi_pass"] = &ConfParser::setCgiPass;
+	map["cgi_path"] = &ConfParser::setCgiPath;
 
 	return map;
 }
@@ -379,14 +376,16 @@ int ConfParser::setAuthBasicFile(void)
 	return 0;
 }
 
-int ConfParser::setCgiParam(void)
+int ConfParser::setCgiPath(void)
 {
-	// std::cout << "SET CGIPARAM FUNCTION" << std::endl;
-	return 0;
-}
-int ConfParser::setCgiPass(void)
-{
-	// std::cout << "SET CGIPASS FUNCTION" << std::endl;
+	this->checkNbrOfArgs(2, &same_as<size_t>);
+	if (this->_block_type == HTTP)
+		this->_httpBlock.setCgiPath(this->_dir_line[1]);
+	else if (this->_block_type == SERVER)
+		this->_servers.back().setCgiPath(this->_dir_line[1]);
+	if (this->_block_type == LOCATION)
+		this->_curr_location->setCgiPath(this->_dir_line[1]);
+
 	return 0;
 }
 

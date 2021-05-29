@@ -1,12 +1,6 @@
 #include "CgiHandler.hpp"
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/socket.h>
-#include <sys/un.h>
 
-#define BUF_SIZE 32
-
-CgiHandler::CgiHandler(void) : _envp(NULL)
+CgiHandler::CgiHandler(Request const& req) : _envp(NULL), _req(req)
 {
 	// std::cout << "CGI CTOR" << std::endl;
 	this->initEnv();
@@ -91,7 +85,7 @@ void	CgiHandler::fillEnvp(void)
 // {
 
 // 	std::string body;
-// 	char buf[BUF_SIZE];
+// 	char buf[CGI_BUF_SIZE];
 // 	int ret = 1;
 
 
@@ -161,8 +155,8 @@ void	CgiHandler::fillEnvp(void)
 
 // 		while (ret > 0)
 // 		{
-// 			memset(buf, 0, BUF_SIZE);
-// 			ret = read(connection, buf, BUF_SIZE - 1);
+// 			memset(buf, 0, CGI_BUF_SIZE);
+// 			ret = read(connection, buf, CGI_BUF_SIZE - 1);
 // 			body += buf;
 // 		}
 // 		close(newSocket);
@@ -189,11 +183,10 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
 	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
 
-	utilisation de dup, dup2, waitpid, lseek ?
 	*/
 
 	std::string body;
-	char buf[BUF_SIZE];
+	char buf[CGI_BUF_SIZE];
 	int ret = 1;
 
 
@@ -211,7 +204,7 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 	if (pid == -1)
 	{
 		std::cerr << "fork process failed" << std::endl;
-		return "";
+		return body;
 	}
 	else if (pid == 0)
 	{
@@ -224,7 +217,7 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 		{
 			std::cerr << scriptName.c_str() << std::endl;
 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
-			return "";
+			return body;
 		}
 		close(pipefd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
 	}
@@ -234,8 +227,8 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 		dup2(pipefd[0], STDIN_FILENO);
 		while (ret > 0)
 		{
-			memset(buf, 0, BUF_SIZE);
-			ret = read(STDIN_FILENO, buf, BUF_SIZE - 1);
+			memset(buf, 0, CGI_BUF_SIZE);
+			ret = read(STDIN_FILENO, buf, CGI_BUF_SIZE - 1);
 			body += buf;
 		}
 		close(pipefd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/19 11:49:21 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/29 15:29:04 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,21 +45,20 @@ private:
 	void	checkDuplicateServer(std::vector<ServerBlock>::iterator);
 
 	// Directive handling functions	
-	int		setListen();
-	int		setServerName();
-	int		setRoot();
-	int		setAutoIndex();
-	int		setIndex();
-	int		setErrorPage();
-	int		setMaxBdySize();
-	int		setKeepAlive();
-	int		setAllowedMethods();
-	int		setChunkEnc();
-	int		setAuthBasic();
-	int		setAuthBasicFile();
-	int		setCgiParam();
-	int		setCgiPass();
-	int		parseInclude();
+	int		setListen(void);
+	int		setServerName(void);
+	int		setRoot(void);
+	int		setAutoIndex(void);
+	int		setIndex(void);
+	int		setErrorPage(void);
+	int		setMaxBdySize(void);
+	int		setKeepAlive(void);
+	int		setAllowedMethods(void);
+	int		setChunkEnc(void);
+	int		setAuthBasic(void);
+	int		setAuthBasicFile(void);
+	int		setCgiPath(void);
+	int		parseInclude(void);
 
 	// Utility functions
 	template <class Compare>

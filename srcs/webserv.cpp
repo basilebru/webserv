@@ -13,7 +13,7 @@ void signal_handler(int signum)
 }
 
 
-// here just for testing purpose
+/*// here just for testing purpose
 LocationBlock match_loc(std::string target_uri, LocMap locations)
 {
     while (target_uri.find('/') != std::string::npos)
@@ -28,7 +28,7 @@ LocationBlock match_loc(std::string target_uri, LocMap locations)
     // if no match, return "empty" location block
     LocationBlock loc;
     return loc;
-}
+}*/
 
 void displayConfig(HttpBlock const& baseConfig, std::vector<ServerBlock> const& servers)
 {
@@ -55,11 +55,7 @@ int main(int ac, char **av)
 			HttpBlock baseConfig = parser.getHttpBlock();
 			std::vector<ServerBlock> servers = parser.getServers();
 
-			// std::cout << "matched loc: " << match_loc("/lost/machin/chose", servers[0].getLocations()) << std::endl;
-			// std::cout << "matched loc: " << match_loc("/last/prout", servers[0].getLocations()) << std::endl;
-			// std::cout << "matched loc: " << match_loc("/last/prout/", servers[0].getLocations()) << std::endl;
-			// std::cout << "matched loc: " << match_loc("/lisst/prout", servers[0].getLocations()) << std::endl;
-			// displayConfig(baseConfig, servers);
+			displayConfig(baseConfig, servers);
 		
 			/*Create and aunch server*/
 			Server *server =  new Server(baseConfig, servers);

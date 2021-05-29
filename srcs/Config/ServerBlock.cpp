@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/25 17:47:53 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/29 15:42:06 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,10 +50,7 @@ ServerBlock::ServerBlock(ServerBlock const & copy)
 	this->_auth_basic = copy._auth_basic;
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_locations = copy._locations;
-	this->_cgi_pass = copy._cgi_pass;
-	this->_cgi_port = copy._cgi_port;
-	this->_cgi_index = copy._cgi_index;
-	this->_cgi_params = copy._cgi_params;
+	this->_cgi_path = copy._cgi_path;
 
 	return ;
 }
@@ -79,6 +76,7 @@ ServerBlock& ServerBlock::operator=(ServerBlock const & rhs)
 	this->_auth_basic = rhs._auth_basic;
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_locations = rhs._locations;
+	this->_cgi_path = rhs._cgi_path;
 
 	// std::cout << RED << "SERVER ASSIGNATION" << NOCOLOR <<std::endl;
 	return *this;
@@ -180,6 +178,7 @@ std::ostream & 	operator<<(std::ostream & o, ServerBlock const & rhs)
 	
 	o << pad << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
 	o << pad << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;
+	o << pad << "CGI PATH: " << rhs.getCgiPath() << std::endl;
 
 	// Locations
 	putLocToOstream(o, rhs.getLocations().begin(), rhs.getLocations().end());

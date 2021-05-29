@@ -1,10 +1,9 @@
 #!/usr/bin/php
-
 <?php
 	$env = getenv();
-	echo("HTTP/1.1 200 OK\n");
-	echo("Content-Type: text/html\n");
-	echo("Connection: close\n\n");
+	// echo("HTTP/1.1 200 OK\n");
+	echo("Content-Type: text/html\r\n");
+	echo("Connection: keep-alive\r\n\r\n");
 	// phpinfo();
 ?>
 <html lang="fr">
@@ -20,5 +19,6 @@
 		echo "<p>$key => $value</p>\n";
 	}
 ?>
+<p><strong>© BB & JN :-)</strong></p>
 </body>
 </html>

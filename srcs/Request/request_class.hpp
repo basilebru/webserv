@@ -16,13 +16,13 @@ struct request_line
 
 struct conf
 {
-        long max_body_size;
-        std::vector<std::string> allow_methods;
-        std::string root;
-        std::vector<std::string> index;
-        int autoindex;
-        errorMap error_pages;
-
+        long                        max_body_size;
+        std::vector<std::string>    allow_methods;
+        std::string                 root;
+        std::vector<std::string>    index;
+        int                         autoindex;
+        errorMap                    error_pages;
+        std::string                 cgi_path; // AVEC ou SANS "/" !?
         // authentification attribute
         // cgi attributes
 };

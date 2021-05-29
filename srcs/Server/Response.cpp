@@ -28,9 +28,13 @@ void Response::build_response()
 {
     if (this->req.req_line.method == "GET")
     {
-
-        if (this->req.req_line.target.find("/cgi-bin") != std::string::npos) //Just pour test, il faudrait extraire le nom du bin à exécuter :-)
+        // std::cerr << "TARGET: " << this->req.req_line.target << std::endl;
+        // std::cerr << "CONFIG: " << this->req.config.cgi_path << std::endl;
+        
+        if (this->req.req_line.target.find(this->req.config.cgi_path) != std::string::npos)
             this->exec_cgi();
+        else if (this->req.req_line.target.find("/favicon.ico") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
+            this->buf = "HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n" ;
         else
         {
             std::ifstream file;
@@ -54,13 +58,18 @@ void Response::build_response()
     // test big buffer (multiple select calls)
     // this->buf.assign(9000000, 'a');
     // this->buf.push_back('\n');
+    // std::cerr << "BUF: " << this->buf << std::endl;
 }
 
-void Response::exec_cgi()
+void Response::exec_cgi(void)
 {
-    CgiHandler cgi;
-    std::string ret;
+    CgiHandler  cgi(this->req);
+    std::string bdy;
 
-    this->buf = cgi.execScript("./cgi-bin/test.php");
-    
+    this->buf = "HTTP/1.1 200 OK\r\n";
+    bdy = cgi.execScript("./cgi-bin/test.php"); //Il faudra extraire le nom du bin à exécuter depuis la target
+    if (!bdy.empty())
+        this->buf += bdy;
+    else
+        this->buf = "HTTP/1.1 500 Internal Server Error\r\n\r\n";
 }

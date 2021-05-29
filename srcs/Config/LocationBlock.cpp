@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/25 17:50:57 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/29 15:42:39 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,10 +41,7 @@ LocationBlock::LocationBlock(LocationBlock const & copy)
 	this->_chunked_transfer_encoding = copy._chunked_transfer_encoding;
 	this->_auth_basic = copy._auth_basic;
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
-	this->_cgi_pass = copy._cgi_pass;
-	this->_cgi_port = copy._cgi_port;
-	this->_cgi_index = copy._cgi_index;
-	this->_cgi_params = copy._cgi_params;
+	this->_cgi_path = copy._cgi_path;
 
 	return ;
 }
@@ -67,10 +64,7 @@ LocationBlock& LocationBlock::operator=(LocationBlock const & rhs)
 	this->_chunked_transfer_encoding = rhs._chunked_transfer_encoding;
 	this->_auth_basic = rhs._auth_basic;
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
-	this->_cgi_pass = rhs._cgi_pass;
-	this->_cgi_port = rhs._cgi_port;
-	this->_cgi_index = rhs._cgi_index;
-	this->_cgi_params = rhs._cgi_params;
+	this->_cgi_path = rhs._cgi_path;
 
 	return *this;
 }
@@ -112,6 +106,7 @@ std::ostream & operator<<(std::ostream & o, LocationBlock const & rhs)
 	
 	o << pad << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
 	o << pad << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;
+	o << pad << "CGI PATH: " << rhs.getCgiPath() << std::endl;
 
 	return o;
 }

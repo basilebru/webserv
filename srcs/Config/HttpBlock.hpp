@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/25 17:48:49 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/05/29 15:56:53 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,7 @@ protected:
 	std::string						_auth_basic_user_file; //httpasswd paths
 
 	/*For CGI*/
-	std::string						_cgi_pass;
-	size_type						_cgi_port; //mixer en std::string avec _cgi_pass ?
-	std::string						_cgi_index;
-	mapCgiParams					_cgi_params;
-
+	std::string						_cgi_path; //path of the directory containing scripts
 
 public:
 	HttpBlock(void);
@@ -63,10 +59,7 @@ public:
 	void	setChunkedEncoding(std::string& state);
 	void	setAuthBasic(std::string path);
 	void	setAuthBasicFile(std::string path);
-	void	setCgiPass(std::string value);
-	void	setCgiPort(size_type port);
-	void	setCgiIndex(std::string index);
-	void	setCgiParams(mapCgiParams params);
+	void	setCgiPath(std::string path);
 
 	// Getters
 	const std::string&		getRoot(void) const;
@@ -79,6 +72,7 @@ public:
 	const int&				getChunkedEncoding(void) const;
 	const std::string&		getAuthBasic(void) const;
 	const std::string&		getAuthBasicFile(void) const;
+	const std::string&		getCgiPath(void) const;
 
 };
 
