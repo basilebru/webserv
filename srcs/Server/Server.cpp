@@ -181,12 +181,8 @@ int Server::setup_sockets(void)
 	
 	// displayVec(this->servers, '\n');
 
-	// sort serverblocks in order to create and bind 0.0.0.0 servers first
-	std::vector<ServerBlock> sorted_blocks(this->servers);
-	std::sort(sorted_blocks.begin(), sorted_blocks.end(), my_comp);
-
-	std::vector<ServerBlock>::const_iterator it = sorted_blocks.begin();
-	while (it != sorted_blocks.end())
+	std::vector<ServerBlock>::const_iterator it = this->servers.begin();
+	while (it != this->servers.end())
 	{
 
 		// 1. Create a socket (IPv4, TCP)
@@ -202,9 +198,14 @@ int Server::setup_sockets(void)
 		if (fcntl(newSocket, F_SETFL, O_NONBLOCK) < 0)
 			std::cout << "Fcntl failed. errno: " << errno << std::endl;
 
-		// 3. In order to reuse the socket quickly after stopping and restarting the server
-		// Don't take TIME_WAIT into consideration
+		// 3. Set socket options
+		// SO_REUSEADDR allows your server to bind to an address which is in a TIME_WAIT state 
+		// --> In order to reuse the socket quickly after stopping and restarting the server
+		// SO_REUSEPORT allows multiple processes to bind to the same address (provided all of them use the SO_REUSEPORT option)
+		// --> So we can have different server blocks with identical listen directives
 		int optval = 1; // The optval sets to 1 (or > 0) enables teh OPTION, sets to 0 disable it
+		if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0)
+			std::cout << "Error: setsockopt(SO_REUSEPORT) failed. errno: " << errno << std::endl;
 		if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
 			std::cout << "Error: setsockopt(SO_REUSEADDR) failed. errno: " << errno << std::endl;
 
@@ -219,25 +220,26 @@ int Server::setup_sockets(void)
 		if (bind(newSocket, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0)
 		{
 			close(newSocket);
-			if (errno != EADDRINUSE)
-			{
-				std::cout << "Failed to bind to port " << ntohs(sockaddr.sin_port) << ". errno: " << errno << std::endl;
-				return (FAILURE);
-			}
+			std::cout << "Failed to bind to port " << ntohs(sockaddr.sin_port) << " on address " << ::ipToString(sockaddr.sin_addr.s_addr)
+			 << ". errno: " << errno << std::endl;
+			return (FAILURE);
 		}
-		else
+		
+		// 5. Start listening. Hold at most 10 connections in the queue
+		if (listen(newSocket, 10) < 0)
 		{
-			// 5. Start listening. Hold at most 10 connections in the queue
-			if (listen(newSocket, 10) < 0)
-			{
-				std::cout << "Failed to listen on socket. errno: " << errno << std::endl;
-				close(newSocket);
-				return (FAILURE);
-			}
-			this->server_sockets.insert(std::pair<int, sockaddr_in>(newSocket, sockaddr));
+			std::cout << "Failed to listen on socket. errno: " << errno << std::endl;
+			close(newSocket);
+			return (FAILURE);
 		}
+		this->server_sockets.insert(std::pair<int, sockaddr_in>(newSocket, sockaddr));
+
 		++it;
 	}
+
+	// if (this->server_sockets.size() == 0)
+	// 	return (FAILURE);
+	
 	return (SUCCESS);
 }
 
