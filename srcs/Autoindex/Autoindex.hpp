@@ -19,7 +19,7 @@ public:
 	~Autoindex(void);
 	Autoindex& operator=(Autoindex const & rhs);
 
-	void	genAutoindex(std::string const& path);
+	std::string	genAutoindex(std::string const& path);
 
 };
 

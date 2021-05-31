@@ -37,6 +37,7 @@ REQUEST_DIR 	=	$(SRCS_DIR)/Request/
 CGI_HAND_DIR 	=	$(SRCS_DIR)/CGI/
 CONF_DIR 		=	$(SRCS_DIR)/Config/
 UTILS_DIR 		=	$(SRCS_DIR)/Utils/
+AUTO_DIR 		=	$(SRCS_DIR)/Autoindex/
 
 ALL_INC			+= 	-I$(INCLUDES)
 ALL_INC			+= 	-I$(SERVER_DIR)
@@ -44,6 +45,7 @@ ALL_INC			+= 	-I$(REQUEST_DIR)
 ALL_INC			+= 	-I$(CGI_HAND_DIR)
 ALL_INC			+= 	-I$(CONF_DIR)
 ALL_INC			+= 	-I$(UTILS_DIR)
+ALL_INC			+= 	-I$(AUTO_DIR)
 # ALL_INC			+= 	-I$(LIBFT_DIR)includes/
 
 
@@ -74,6 +76,7 @@ SRCS += get_next_line.cpp
 SRCS += get_next_line_utils.cpp
 SRCS += ip_manipulation.cpp
 SRCS += utils.cpp
+SRCS += Autoindex.cpp
 
 
 # Add directories containing files to compile here
@@ -83,6 +86,7 @@ vpath %.cpp $(REQUEST_DIR)
 vpath %.cpp $(CGI_HAND_DIR)
 vpath %.cpp $(UTILS_DIR)
 vpath %.cpp $(CONF_DIR)
+vpath %.cpp $(AUTO_DIR)
 
 
 # ---------------- OBJ --------------- #

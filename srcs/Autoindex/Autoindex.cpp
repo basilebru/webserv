@@ -38,7 +38,7 @@ Autoindex::~Autoindex(void)
 	file.close();
 }*/
 
-void	Autoindex::genAutoindex(std::string const& path)
+std::string	Autoindex::genAutoindex(std::string const& path)
 {
 	DIR				*dir;
 	struct dirent	*dir_content;
@@ -52,6 +52,8 @@ void	Autoindex::genAutoindex(std::string const& path)
 	this->buf = "<html>\n<head>\t<title>" + title + "</title>\n</head>\n<h1>" + title + "</h1>\n<hr>\n<pre>\n";
 
 	dir = opendir(path.c_str());
+	if (dir == NULL)
+		return "";
 	while ((dir_content = readdir(dir)))
 	{
 		if (strcmp(dir_content->d_name, ".") != 0)
@@ -63,7 +65,7 @@ void	Autoindex::genAutoindex(std::string const& path)
 			{
 				file_path = path + dir_content->d_name;
 				if (stat(file_path.c_str(), &sb) == -1)
-					return ;
+					return "";
 				std::tm *ptm = std::localtime(&sb.st_mtime);
 				std::strftime(formated_date, 18, "%d-%b-%Y %H:%M", ptm);
 				this->buf += std::string(50 - strlen(dir_content->d_name), ' ');
@@ -81,10 +83,10 @@ void	Autoindex::genAutoindex(std::string const& path)
 	
 
 	this->buf += "</pre>\n<hr>\n<p>BB & JN Webserv</p></body>\n</html>\n";
-
+	return this->buf;
 	// struct dirent *dir;
 
 	// dir = readdir(DIR *dir);
 
-	std::cout << this->buf << std::endl;
+	// std::cout << this->buf << std::endl;
 }
