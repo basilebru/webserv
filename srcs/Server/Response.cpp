@@ -51,7 +51,7 @@ void Response::build_response()
         }
         else if (this->req.req_line.target.find("/image") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
         {
-            this->send_img("/home/julien/Cursus42/webserv/html/images/favicon2.ico");
+            this->send_img("/home/julien/Cursus42/webserv/html/images/favicon.ico");
             return;
         }
 
@@ -114,34 +114,18 @@ void Response::build_response()
 
 void Response::send_img(std::string const& path)
 {
-
-    // std::ifstream fin(path.c_str(), std::ios::binary);
-    // fin.seekg(0, std::ios::end);
-    // std::string data;
-    // data.resize(fin.tellg());
-    // fin.seekg(0, std::ios::beg);
-    // fin.read(&data[0], data.size());
-    // std::cerr << "BUF-size: " << data.size() << std::endl;
-    // fin.close();
-    
-
     std::ifstream ifs(path.c_str(), std::ios::in | std::ios::binary);
-    // std::ostringstream oss;
 
-    this->buf = "Accept-Ranges: bytes\r\n";
-    this->buf += "Content-Length: 4286\r\n";
+    this->buf = "HTTP/1.1 200 OK\r\n";
+    this->buf += "Accept-Ranges: bytes\r\n";
+    this->buf += "Content-Length: 1150\r\n";
     this->buf += "Content-Type: image/vnd.microsoft.icon\r\n";
     this->buf += "Connection: keep-alive\r\n\r\n";
-    // this->buf += ifs.rdbuf();
 
-    // std::string bdy(oss.str());
     this->response.assign(this->buf.begin(), this->buf.end());
     this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 
-    // std::cerr << "BDY SIZE: " << bdy.size() << std::endl;
-
     ifs.close();
-    // delete this->c_buf;
 }
 
 void Response::exec_cgi(std::string const& path)

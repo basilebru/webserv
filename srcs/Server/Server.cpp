@@ -160,7 +160,7 @@ int		Server::loop_client_socket()
 		{
 			ssize_t ret;
 			
-			char tmp[this->response_buffers[it->first].size() + 1];
+			char tmp[this->response_buffers[it->first].size()];
 			std::vector<unsigned char>::iterator vecIt = this->response_buffers[it->first].begin();
 			std::vector<unsigned char>::iterator vecEnd = this->response_buffers[it->first].end();
 			ssize_t i = 0;
@@ -169,7 +169,6 @@ int		Server::loop_client_socket()
 				tmp[i++] = *vecIt;
 				++vecIt;
 			}
-			std::cerr << "CSTR: " << tmp << std::endl;
 			ret = send(it->first, tmp, this->response_buffers[it->first].size(), MSG_DONTWAIT);
 			
 			vecIt = this->response_buffers[it->first].begin();
