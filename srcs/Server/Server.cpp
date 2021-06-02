@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#define	SEND_BUF 1024
 
 /*Server::Server(void)
 {
@@ -157,9 +158,25 @@ int		Server::loop_client_socket()
 		}
 		if (FD_ISSET(it->first, &this->ready_write_sockets) && this->response_buffers[it->first].size()) // write possible
 		{
-			int ret;
-			ret = send(it->first, this->response_buffers[it->first].c_str(), this->response_buffers[it->first].size(), MSG_DONTWAIT);
-			this->response_buffers[it->first].erase(0, ret);
+			ssize_t ret;
+			
+			char tmp[this->response_buffers[it->first].size() + 1];
+			std::vector<unsigned char>::iterator vecIt = this->response_buffers[it->first].begin();
+			std::vector<unsigned char>::iterator vecEnd = this->response_buffers[it->first].end();
+			ssize_t i = 0;
+			while (vecIt != vecEnd)
+			{
+				tmp[i++] = *vecIt;
+				++vecIt;
+			}
+			std::cerr << "CSTR: " << tmp << std::endl;
+			ret = send(it->first, tmp, this->response_buffers[it->first].size(), MSG_DONTWAIT);
+			
+			vecIt = this->response_buffers[it->first].begin();
+			i = 0;
+			while (i++ < ret)
+				++vecIt;
+			this->response_buffers[it->first].erase(this->response_buffers[it->first].begin(), vecIt);
 			std::cout << "ret: " << ret << std::endl;
 			std::cout << "size: " << this->response_buffers[it->first].size() << std::endl;
 		}

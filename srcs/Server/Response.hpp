@@ -8,14 +8,18 @@
 class Response
 {
     private:
-    const Request &req;
-    std::string &buf;
+    const Request               &req;
+    std::string                 buf;
+    std::vector<unsigned char>  &response;
+    
     void build_response();
-    void exec_cgi(void);
+    void exec_cgi(std::string const& path);
+    void send_img(std::string const& path);
 
 
     public:
-    Response(const Request &req, std::string &buf);
+    Response(const Request &req, std::vector<unsigned char> &buf);
+    ~Response(void);
     int process();
 };
 

@@ -22,7 +22,8 @@ private:
 	servVec const&				servers;
 	std::map<int, sockaddr_in>	server_sockets; // stores address (IP + port) of each server socket
 	std::map<int, Request*>		client_sockets;
-	std::map<int, std::string>	response_buffers;
+	// std::map<int, std::string>	response_buffers;
+	std::map<int, std::vector<unsigned char> >	response_buffers;
 	
 	int		setup_sockets(void);
 	int		accept_new_connection(int socket);

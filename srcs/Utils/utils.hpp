@@ -23,6 +23,10 @@ std::string		ipToString(unsigned int ip);
 unsigned short	ft_htons(unsigned short port);
 unsigned short	ft_ntohs(unsigned short port);
 
+/* Base 64 encoding */
+typedef unsigned char BYTE;
+std::string base64_encode(BYTE const* buf, unsigned int bufLen);
+std::vector<BYTE> base64_decode(std::string const&);
 
 template<typename T>
 void displayVec(std::vector<T> const& v, char const separator = ' ')
@@ -31,6 +35,18 @@ void displayVec(std::vector<T> const& v, char const separator = ' ')
 	while (it != v.end())
 	{
 		std::cout << *it << separator;
+		++it;
+	}
+	std::cout << std::endl;
+}
+
+template<typename T>
+void displayVecAsString(std::vector<T> const& v)
+{
+	typename std::vector<T>::const_iterator it = v.begin();
+	while (it != v.end())
+	{
+		std::cout << *it;
 		++it;
 	}
 	std::cout << std::endl;

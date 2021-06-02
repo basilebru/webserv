@@ -184,7 +184,7 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
 
 	*/
-
+	// std::ostringstream os;
 	std::string body;
 	char buf[CGI_BUF_SIZE];
 	int ret = 1;
