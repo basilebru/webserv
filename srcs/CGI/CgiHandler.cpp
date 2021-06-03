@@ -174,7 +174,7 @@ void	CgiHandler::fillEnvp(void)
  */
 
 
-std::string	CgiHandler::execScript(std::string const& scriptName)
+std::vector<unsigned char>	CgiHandler::execScript(std::string const& scriptName)
 {
 	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
 	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
@@ -185,8 +185,8 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 
 	*/
 	// std::ostringstream os;
-	std::string body;
-	char buf[CGI_BUF_SIZE];
+	std::vector<unsigned char> body;
+	char buf;
 	int ret = 1;
 
 
@@ -197,7 +197,7 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 	if (pipe(pipefd) == -1)
 	{
 		std::cerr << "pipe() failed, errno: " << errno << std::endl;
-		return "";
+		return body;
 	}
 
 	int pid = fork();
@@ -227,9 +227,9 @@ std::string	CgiHandler::execScript(std::string const& scriptName)
 		dup2(pipefd[0], STDIN_FILENO);
 		while (ret > 0)
 		{
-			memset(buf, 0, CGI_BUF_SIZE);
-			ret = read(STDIN_FILENO, buf, CGI_BUF_SIZE - 1);
-			body += buf;
+			memset(&buf, 0, CGI_BUF_SIZE);
+			ret = read(STDIN_FILENO, &buf, CGI_BUF_SIZE);
+			body.push_back(buf);
 		}
 		close(pipefd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
 		waitpid(pid, NULL, 0);

@@ -8,7 +8,7 @@
 # include <sys/socket.h>
 # include <sys/un.h>
 
-# define CGI_BUF_SIZE 32
+# define CGI_BUF_SIZE 1
 
 
 class CgiHandler {
@@ -30,8 +30,8 @@ public:
 	~CgiHandler(void);
 	CgiHandler& operator=(CgiHandler const & rhs);
 
-	std::string	execScript(std::string const& scriptName);
-	void		fillEnvp(void);
+	std::vector<unsigned char>	execScript(std::string const& scriptName);
+	void						fillEnvp(void);
 
 };
 

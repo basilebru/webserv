@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
-my $file = "/home/julien/Cursus42/webserv/html/images/favicon.ico";
+my $file = "/home/julien/Cursus42/webserv/html/images/42.png";
 my $length = -s $file;
-# print "Accept-Ranges: bytes\r\n";
-# print "Content-Length: $length \r\n";
-# print "Content-Type: image/png\r\n";
-# print "Connection: keep-alive\r\n\r\n";
+print "Accept-Ranges: bytes\r\n";
+print "Content-Length: $length \r\n";
+print "Content-Type: image/png\r\n";
+print "Connection: keep-alive\r\n\r\n";
 
 binmode STDOUT;
 open (FH,'<', $file) || die "Could not open $file: $!";

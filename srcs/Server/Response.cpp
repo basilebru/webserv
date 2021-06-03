@@ -40,7 +40,7 @@ void Response::build_response()
 
         if (this->req.req_line.target.find(this->req.config.cgi_path) != std::string::npos)
         {
-            this->exec_cgi("./cgi-bin/image.php");
+            this->exec_cgi("./cgi-bin/image.pl");
             return;
         }
         else if (this->req.req_line.target.find("/favicon.ico") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
@@ -130,25 +130,17 @@ void Response::send_img(std::string const& path)
 
 void Response::exec_cgi(std::string const& path)
 {
-    CgiHandler  cgi(this->req);
-    std::string bdy;
+    CgiHandler                  cgi(this->req);
+    std::vector<unsigned char>  cgi_output;
 
-    bdy = cgi.execScript(path); //Il faudra extraire le nom du bin à exécuter depuis la target
-    if (!bdy.empty())
+    cgi_output = cgi.execScript(path); //Il faudra extraire le nom du bin à exécuter depuis la target
+    if (!cgi_output.empty())
     {
         this->buf = "HTTP/1.1 200 OK\r\n";
-        this->buf += "Accept-Ranges: bytes\r\n";
-        this->buf += "Content-Length: 1150\r\n";
-        this->buf += "Content-Type: image/vnd.microsoft.icon\r\n";
-        this->buf += "Connection: keep-alive\r\n\r\n";
-        // this->buf += "Transfer-Encoding: chunked\r\n";
-        // this->buf += bdy;
-        std::vector<unsigned char> v;
-        v = base64_decode(bdy); //Only bdy, not the headers should be base64 encoded --> needs cgi output parsing
-        // std::cerr << "BDY-Size: " << bdy.size() << std::endl;
+        std::cerr << "cgi_output-Size: " << cgi_output.size() << std::endl;
         this->response.assign(this->buf.begin(), this->buf.end());
-        this->response.insert(this->response.end(), v.begin(), v.end());
-        // std::cerr << "BDY: " << bdy << std::endl;
+        this->response.insert(this->response.end(), cgi_output.begin(), cgi_output.end());
+        // std::cerr << "cgi_output: " << cgi_output << std::endl;
     }
     else
     {
