@@ -68,3 +68,11 @@ bool ft_isdigit_string(const std::string& str)
 {
 	return (str.find_first_not_of("0123456789") == std::string::npos);
 }
+
+std::string iToString(size_t size)
+{
+    std::stringstream ss;
+    ss << size;
+
+    return (ss.str());
+}

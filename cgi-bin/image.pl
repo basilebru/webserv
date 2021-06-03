@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-my $file = "/home/julien/Cursus42/webserv/html/images/42.png";
+my $file = "./html/images/42.png";
 my $length = -s $file;
 print "Accept-Ranges: bytes\r\n";
 print "Content-Length: $length \r\n";

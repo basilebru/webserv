@@ -11,6 +11,7 @@ private:
     const Request               &req;
     std::string                 buf;
     std::vector<unsigned char>  &response;
+    
     void build_response();
     void exec_cgi(std::string const& path);
     void send_img(std::string const& path);

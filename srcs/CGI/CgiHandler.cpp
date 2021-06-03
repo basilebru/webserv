@@ -33,7 +33,7 @@ void	CgiHandler::initEnv(void)
 	relatives au serveur, au client, à la requête. */
 
 	this->_env_map["AUTH_TYPE"]			=	"value";	// mode d'authentification, auth_basic ??
-	this->_env_map["CONTENT_LENGTH"]	=	"value";	// content-length de la requete
+	this->_env_map["CONTENT_LENGTH"]	=	iToString(this->_req.body_size);	// content-length de la requete
 	this->_env_map["CONTENT_TYPE"]		=	"value";	// content-type de la requete
 	this->_env_map["GATEWAY_INTERFACE"]	=	"CGI/1.1";	// version du CGI qu'utilise le server
 	this->_env_map["PATH_INFO"]			=	"value";	// derniere partie de l'URI apres le script name
@@ -42,7 +42,7 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["REMOTE_ADDR"]		=	"value";	// adress ip du client
 	this->_env_map["REMOTE_IDENT"]		=	"value";	// nom d'utilisateur du client
 	this->_env_map["REMOTE_USER"]		=	"value";	// nom d'utilisateur (distant) du client
-	this->_env_map["REQUEST_METHOD"]	=	"value";	// GET ou POST ou ...
+	this->_env_map["REQUEST_METHOD"]	=	"POST";	// GET ou POST ou ...
 	this->_env_map["REQUEST_URI"]		=	"value";	// URI
 	this->_env_map["SCRIPT_NAME"]		=	"value";	// full path du fichier de script
 	this->_env_map["SERVER_NAME"]		=	"value";	// DNS ou IP du server (hostname)
@@ -73,6 +73,88 @@ void	CgiHandler::fillEnvp(void)
 	this->_envp[i] = NULL;
 }
 
+/**
+ * EXEC SCRIPT WITH COMMUNICATION BY PIPE
+ *
+ * @param       [param1, param2, ...]
+ * @return      [type]
+ */
+
+std::vector<unsigned char>	CgiHandler::execScript(std::string const& scriptName)
+{
+	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
+	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
+	Dans le cas de POST, les données sont lues depuis STDIN (depuis le body de la requete)
+
+	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
+	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
+
+	*/
+	std::vector<unsigned char> body;
+	char buf;
+	int ret = 1;
+
+
+	this->fillEnvp();
+
+	int cgiToSrv_fd[2]; // Pipe Server <-- CGI
+	int srvToCgi_fd[2]; // Pipe Server --> CGI
+
+	if (pipe(cgiToSrv_fd) == -1)
+	{
+		std::cerr << "pipe() cgiToSrv failed, errno: " << errno << std::endl;
+		return body;
+	}
+	if (pipe(srvToCgi_fd) == -1)
+	{
+		std::cerr << "pipe() srvToCgi failed, errno: " << errno << std::endl;
+		return body;
+	}
+
+	int pid = fork();
+	if (pid == -1)
+	{
+		std::cerr << "fork process failed" << std::endl;
+		return body;
+	}
+	else if (pid == 0)
+	{
+		close(cgiToSrv_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
+		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'ecriture inutilisée */
+		dup2(cgiToSrv_fd[1], STDOUT_FILENO);
+		dup2(srvToCgi_fd[0], STDIN_FILENO);
+
+		char * argv[2] = { const_cast<char*>(scriptName.c_str()), NULL };
+		if (execve(scriptName.c_str(), &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
+		{
+			std::cerr << scriptName.c_str() << std::endl;
+			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
+			return body;
+		}
+		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
+		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
+	}
+	else
+	{
+		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
+		// close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée --> POURQUOI JE NE PEUX PAS FAIRE CA !?*/
+		dup2(cgiToSrv_fd[0], STDIN_FILENO);
+		dup2(srvToCgi_fd[1], STDOUT_FILENO);
+		
+		write(STDOUT_FILENO, this->_req.body.c_str(), this->_req.body.size());
+
+		while (ret > 0)
+		{
+			memset(&buf, 0, CGI_BUF_SIZE);
+			ret = read(STDIN_FILENO, &buf, CGI_BUF_SIZE);
+			body.push_back(buf);
+		}
+		close(cgiToSrv_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
+		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
+		waitpid(pid, NULL, 0);
+	}
+	return body;
+}
 
 /**
  * EXEC SCRIPT WITH COMMUNICATION BY SOCKET
@@ -81,11 +163,11 @@ void	CgiHandler::fillEnvp(void)
  * @return      [type]
  */
 
-// std::string	CgiHandler::execScript(std::string const& scriptName)
+// std::vector<unsigned char>	CgiHandler::execScript(std::string const& scriptName)
 // {
 
-// 	std::string body;
-// 	char buf[CGI_BUF_SIZE];
+// 	std::vector<unsigned char> body;
+// 	char buf;
 // 	int ret = 1;
 
 
@@ -101,7 +183,7 @@ void	CgiHandler::fillEnvp(void)
 // 	if (pid == -1)
 // 	{
 // 		std::cerr << "fork process failed" << std::endl;
-// 		return "";
+// 		return body;
 // 	}
 // 	else if (pid == 0)
 // 	{
@@ -112,16 +194,16 @@ void	CgiHandler::fillEnvp(void)
 // 		{
 // 			std::cout << "Failed to connect socket. errno: " << errno << std::endl;
 // 			close(newSocket);
-// 			return "";
+// 			return body;
 // 		}
 
 
 // 		dup2(newSocket, STDOUT_FILENO);
-// 		char **argv = NULL; /* Le script écrit dans STDOUT */
+// 		char * argv[2] = { const_cast<char*>(scriptName.c_str()), NULL };
 // 		if (execve(scriptName.c_str(), argv, this->_envp) < 0)
 // 		{
 // 			std::cerr << "execve() failed, errno: " << errno << std::endl;
-// 			return "";
+// 			return body;
 // 		}
 // 		close(newSocket);
 // 	}
@@ -137,7 +219,7 @@ void	CgiHandler::fillEnvp(void)
 // 			if (errno != EADDRINUSE)
 // 			{
 // 				std::cout << "Failed to bind" << ". errno: " << errno << std::endl;
-// 				return "";
+// 				return body;
 // 			}
 // 		}
 // 		if (listen(newSocket, 10) < 0)
@@ -145,94 +227,27 @@ void	CgiHandler::fillEnvp(void)
 // 			std::cout << "Failed to listen on socket. errno: " << errno << std::endl;
 // 			close(newSocket);
 // 			unlink("socket");
-// 			return "";
+// 			return body;
 // 		}
 // 		int connection;
 // 		if((connection = accept(newSocket, (struct sockaddr*)NULL, NULL)) < 0) {
 // 			std::cerr << "Server: Connection cannot be accepted" << std::endl;
-// 			return "";
+// 			return body;
 // 		}
-
+		
+// 		// write(connection, "JE SUIS LA LIGNE DE TEST D'ENVOI D'UN BODY EN CAS DE POST", 57);
+		
+// 		// usleep(500000);
 // 		while (ret > 0)
 // 		{
-// 			memset(buf, 0, CGI_BUF_SIZE);
-// 			ret = read(connection, buf, CGI_BUF_SIZE - 1);
-// 			body += buf;
+// 			memset(&buf, 0, CGI_BUF_SIZE);
+// 			ret = read(connection, &buf, CGI_BUF_SIZE);
+// 			body.push_back(buf);
 // 		}
 // 		close(newSocket);
+// 		close(connection);
 // 		unlink("socket");
 // 		waitpid(pid, NULL, 0);
 // 	}
 // 	return body;
 // }
-
-/**
- * EXEC SCRIPT WITH COMMUNICATION BY PIPE
- *
- * @param       [param1, param2, ...]
- * @return      [type]
- */
-
-
-std::vector<unsigned char>	CgiHandler::execScript(std::string const& scriptName)
-{
-	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
-	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
-	Dans le cas de POST, les données sont lues depuis STDIN (depuis le body de la requete)
-
-	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
-	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
-
-	*/
-	// std::ostringstream os;
-	std::vector<unsigned char> body;
-	char buf;
-	int ret = 1;
-
-
-	this->fillEnvp();
-
-	int pipefd[2];
-
-	if (pipe(pipefd) == -1)
-	{
-		std::cerr << "pipe() failed, errno: " << errno << std::endl;
-		return body;
-	}
-
-	int pid = fork();
-	if (pid == -1)
-	{
-		std::cerr << "fork process failed" << std::endl;
-		return body;
-	}
-	else if (pid == 0)
-	{
-		close(pipefd[0]);  /* Ferme l'extrémité de lecture inutilisée */
-		dup2(pipefd[1], STDOUT_FILENO);
-
-		// char **argv = NULL;
-		char * argv[2] = {const_cast<char*>(scriptName.c_str()), NULL};
-		if (execve(scriptName.c_str(), &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
-		{
-			std::cerr << scriptName.c_str() << std::endl;
-			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
-			return body;
-		}
-		close(pipefd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
-	}
-	else
-	{
-		close(pipefd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
-		dup2(pipefd[0], STDIN_FILENO);
-		while (ret > 0)
-		{
-			memset(&buf, 0, CGI_BUF_SIZE);
-			ret = read(STDIN_FILENO, &buf, CGI_BUF_SIZE);
-			body.push_back(buf);
-		}
-		close(pipefd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
-		waitpid(pid, NULL, 0);
-	}
-	return body;
-}

@@ -30,6 +30,7 @@ struct conf
 class Request
 {
     friend class Response;
+    friend class CgiHandler;
     public:
         typedef std::pair<std::string, std::string> header;
 

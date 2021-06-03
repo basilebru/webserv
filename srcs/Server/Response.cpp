@@ -32,7 +32,16 @@ int Response::process()
 void Response::build_response()
 {
 
-    if (this->req.req_line.method == "GET")
+    if (this->req.req_line.method == "POST")
+    {
+        if (this->req.req_line.target.find(this->req.config.cgi_path) != std::string::npos)
+        {
+            this->exec_cgi("./cgi-bin/post.pl");
+            return;
+        }
+
+    }
+    else if (this->req.req_line.method == "GET")
     {
         // A. CGI MODULE
         // std::cerr << "TARGET: " << this->req.req_line.target << std::endl;
@@ -40,26 +49,31 @@ void Response::build_response()
 
         if (this->req.req_line.target.find(this->req.config.cgi_path) != std::string::npos)
         {
-            this->exec_cgi("./cgi-bin/image.pl");
+            this->exec_cgi("./cgi-bin/displayEnv");
             return;
         }
         else if (this->req.req_line.target.find("/favicon.ico") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
         {
             // this->buf = "HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n" ;
-            this->send_img("/home/julien/Cursus42/webserv/html/images/favicon.ico");
+            this->send_img("./html/images/favicon.ico");
             return;
         }
         else if (this->req.req_line.target.find("/image") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
         {
-            this->send_img("/home/julien/Cursus42/webserv/html/images/favicon.ico");
+            this->send_img("./html/images/favicon.ico");
+            return;
+        }
+        else if (this->req.req_line.target.find("/redir") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
+        {
+            this->buf = "HTTP/1.1 301 Moved Permanently\r\n";
+            this->buf += "Location: https://safrandelaventue.fr\r\n\r\n";
             return;
         }
 
         // B. INDEX / AUTOINDEX MODULE
         this->buf = "HTTP/1.1 200 OK\r\n";
         this->buf += "Content-type:text/html\r\n";
-        this->buf += "Content-Length: 673\r\n"; // A calculer
-        this->buf += "Connection: keep-alive\r\n\r\n";
+        this->buf += "Connection: keep-alive\r\n";
         if (this->req.target_uri[this->req.target_uri.size() - 1] == '/')
         {
             // if (!this->req.config.index.empty())
@@ -69,6 +83,7 @@ void Response::build_response()
             // }
             if (this->req.config.autoindex == 1)
             {
+                this->buf += "Content-Length: 673\r\n\r\n"; // A calculer
                 std::cout << "auto" << std::endl;
                 Autoindex ind;
                 this->buf += ind.genAutoindex(this->req.target_uri); // TO DO: gestion des "erreurs": cas ou genAutoindex renvoie "" (dossier qui n'existe pas...)
@@ -93,12 +108,18 @@ void Response::build_response()
             return ;
         }
         std::string line;
+        std::string bdy;
         while (getline(file, line))
         {
-            this->buf += line;
-            this->buf += '\n';
+            bdy += line;
+            bdy += '\n';
         }
+        this->buf += "Content-Length: ";
+        this->buf += iToString(bdy.size());
+        this->buf += CRLF;
+
         this->response.assign(this->buf.begin(), this->buf.end());
+        this->response.insert(this->response.end(), bdy.begin(), bdy.end());
     }
 
     else
@@ -137,10 +158,10 @@ void Response::exec_cgi(std::string const& path)
     if (!cgi_output.empty())
     {
         this->buf = "HTTP/1.1 200 OK\r\n";
-        std::cerr << "cgi_output-Size: " << cgi_output.size() << std::endl;
+        // std::cerr << "cgi_output-Size: " << cgi_output.size() << std::endl;
         this->response.assign(this->buf.begin(), this->buf.end());
         this->response.insert(this->response.end(), cgi_output.begin(), cgi_output.end());
-        // std::cerr << "cgi_output: " << cgi_output << std::endl;
+        // displayVecAsString(cgi_output);
     }
     else
     {
