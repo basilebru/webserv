@@ -11,13 +11,16 @@ private:
     const Request               &req;
     std::string                 buf;
     std::vector<unsigned char>  &response;
-    std::vector<unsigned char>  body;
-    std::vector<unsigned char>  headers;
+    // std::vector<unsigned char>  body;
+    // std::vector<unsigned char>  headers;
     void build_response();
+    void build_headers();
     void index_module();
-    void get_file_module();
-    void exec_cgi(std::string const& path);
+    void file_module();
+    void error_module(int error_code);
+    void cgi_module();
     void send_img(std::string const& path);
+    bool is_cgi_extension();
     
     Response(void);
 

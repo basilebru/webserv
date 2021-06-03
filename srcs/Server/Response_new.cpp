@@ -1,12 +1,17 @@
-#include "Response.hpp"
+#include "Response_new.hpp"
 #include <iterator>
 
 Response::Response(const Request &req, std::vector<unsigned char> &buf): req(req), response(buf)
-{}
+{
+    std::cout << "Response created" << std::endl;
+    // this->body = new std::vector<unsigned char>;
+    // this->headers = new std::vector<unsigned char>;
+}
 
 Response::~Response(void)
 {
-    std::cerr << "RESPONSE DESTRUCTOR" << std::endl;
+    // delete body;
+    // delete headers;
 }
 
 int Response::process()
@@ -34,39 +39,11 @@ void Response::build_response()
 
     if (this->req.req_line.method == "GET")
     {
-        this->buf = "HTTP/1.1 200 OK\r\n";
-        this->buf += "Content-type:text/html\r\n";
-        this->buf += "Content-Length: 10\r\n"; // A calculer
-        this->buf += "Connection: keep-alive\r\n\r\n";
-
-
-        // A. CGI MODULE
-        // std::cerr << "TARGET: " << this->req.req_line.target << std::endl;
-        // std::cerr << "CONFIG: " << this->req.config.cgi_path << std::endl;
-
-        // if (this->req.req_line.target.find(this->req.config.cgi_path) != std::string::npos)
-        // {
-        //     this->exec_cgi("./cgi-bin/image.pl");
-        //     return;
-        // }
-        // else if (this->req.req_line.target.find("/favicon.ico") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
-        // {
-        //     // this->buf = "HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n" ;
-        //     this->send_img("./html/images/favicon.ico");
-        //     return;
-        // }
-        // else if (this->req.req_line.target.find("/image") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
-        // {
-        //     this->send_img("/home/julien/Cursus42/webserv/html/images/favicon.ico");
-        //     return;
-        // }
-
-        // if cgi extension
-        // -> go cgi
         if (this->req.target_uri[this->req.target_uri.size() - 1] == '/')
             this->index_module();
         else
-            this->get_file_module();
+            this->file_module();
+        // this->build_headers();
     }
 
     else
@@ -78,6 +55,16 @@ void Response::build_response()
     // this->buf.assign(9000000, 'a');
     // this->buf.push_back('\n');
     std::cerr << "BUF: " << this->buf << std::endl;
+}
+
+bool Response::is_cgi_extension()
+{
+    std::string ext = this->req.target_uri.substr(this->req.target_uri.find_last_of('.'));
+    
+    std::cout << "ext " << ext << std::endl;
+    if (ext == ".php") // chercher dans le param cgi_ext de config
+        return true;
+    return false;
 }
 
 void Response::index_module()
@@ -101,18 +88,41 @@ void Response::index_module()
     this->response.assign(this->buf.begin(), this->buf.end());
 }
 
-void Response::get_file_module()
+void Response::error_module(int error_code)
 {
-    std::ifstream ifs(path.c_str(), std::ios::in | std::ios::binary);
-
-    this->buf = "HTTP/1.1 200 OK\r\n";
-    this->buf += "Accept-Ranges: bytes\r\n";
-    this->buf += "Content-Length: 1150\r\n";
-    this->buf += "Content-Type: image/vnd.microsoft.icon\r\n";
-    this->buf += "Connection: keep-alive\r\n\r\n";
-
+    std::stringstream ss;
+    ss << error_code;
+    this->buf = "HTTP/1.1 ";
+    this->buf += ss.str();
+    this->buf += " Error \r\n";
+    this->buf += "Content-Length: 9\r\n\r\n";
+    this->buf += "Error ";
+    this->buf += ss.str();
     this->response.assign(this->buf.begin(), this->buf.end());
-    this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+
+}
+
+void Response::file_module()
+{
+       
+    std::ifstream ifs(this->req.target_uri.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
+    if (ifs.fail())
+    {
+        this->error_module(404);
+        return ;
+    }
+    if (this->is_cgi_extension())
+        this->cgi_module();
+    else
+    {
+        this->buf = "HTTP/1.1 200 OK\r\n";
+        this->buf += "Accept-Ranges: bytes\r\n";
+        this->buf += "Content-Length: 1150\r\n";
+        this->buf += "Content-Type: image/vnd.microsoft.icon\r\n";
+        this->buf += "Connection: keep-alive\r\n\r\n";
+        this->response.assign(this->buf.begin(), this->buf.end());
+        this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+    }
 
     ifs.close();
 
@@ -134,16 +144,18 @@ void Response::get_file_module()
     // this->response.assign(this->buf.begin(), this->buf.end());
 }
 
-void Response::send_img(std::string const& path)
-{
-}
+// void Response::send_img(std::string const& path)
+// {
+// }
 
-void Response::exec_cgi(std::string const& path)
+void Response::cgi_module()
 {
+    // std::cerr << "TARGET: " << this->req.req_line.target << std::endl;
+    // std::cerr << "CONFIG: " << this->req.config.cgi_path << std::endl;
     CgiHandler                  cgi(this->req);
     std::vector<unsigned char>  cgi_output;
 
-    cgi_output = cgi.execScript(path); //Il faudra extraire le nom du bin à exécuter depuis la target
+    cgi_output = cgi.execScript(this->req.target_uri); //Il faudra extraire le nom du bin à exécuter depuis la target
     if (!cgi_output.empty())
     {
         this->buf = "HTTP/1.1 200 OK\r\n";
@@ -154,7 +166,8 @@ void Response::exec_cgi(std::string const& path)
     }
     else
     {
-        this->buf = "HTTP/1.1 500 Internal Server Error\r\n\r\n";
-        this->response.assign(this->buf.begin(), this->buf.end());
+        this->error_module(500);
+        // this->buf = "HTTP/1.1 500 Internal Server Error\r\n\r\n";
+        // this->response.assign(this->buf.begin(), this->buf.end());
     }
 }
