@@ -26,7 +26,7 @@ private:
 	CgiHandler(void);
 	void	initEnv(void);
 	void	fillEnvp(void);
-	void	storeBuffer(std::vector<unsigned char>&, const char *buf);
+	void	storeBuffer(std::vector<unsigned char>&, const char *buf, int len);
 	void	fillOutputs(std::vector<unsigned char>&);
 
 public:

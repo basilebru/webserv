@@ -74,10 +74,13 @@ void	CgiHandler::fillEnvp(void)
 }
 
 
-void	CgiHandler::storeBuffer(std::vector<unsigned char> &body, const char *buf)
+void	CgiHandler::storeBuffer(std::vector<unsigned char> &body, const char *buf, int len)
 {
-	size_t i = 0;
-	while(i < CGI_BUF_SIZE)
+	int i = 0;
+
+	if (len < CGI_BUF_SIZE)
+		len++;
+	while(i < len)
 	{
 		body.push_back(buf[i++]);
 	}
@@ -146,7 +149,7 @@ int	CgiHandler::execScript(std::string const& scriptName)
 	std::vector<unsigned char> body;
 	std::vector<unsigned char[CGI_BUF_SIZE]> test;
 	char buf[CGI_BUF_SIZE];
-	int ret = 1;
+	int ret = CGI_BUF_SIZE;
 
 
 	this->fillEnvp();
@@ -195,11 +198,12 @@ int	CgiHandler::execScript(std::string const& scriptName)
 		
 		write(STDOUT_FILENO, this->_req.body.c_str(), this->_req.body.size()); // /!\ _req.body ne devrait pas etre un std::string
 
-		while (ret > 0)
+		while (ret == CGI_BUF_SIZE)
 		{
 			memset(buf, 0, CGI_BUF_SIZE);
 			ret = read(cgiToSrv_fd[0], buf, CGI_BUF_SIZE);
-			this->storeBuffer(body, buf);
+			std::cerr << "ret: " << ret << std::endl;
+			this->storeBuffer(body, buf, ret);
 		}
 
 		fillOutputs(body);
