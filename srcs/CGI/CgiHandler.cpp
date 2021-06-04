@@ -86,6 +86,7 @@ void	CgiHandler::storeBuffer(std::vector<unsigned char> &body, const char *buf)
 void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 {
 	size_t		i = 0;
+	size_t		pos = 0;
 	int			count = 0;
 	std::string	upper;
 
@@ -97,23 +98,31 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 	    if (count == 2)
 	    {
 	    	transform(this->_headers.begin(), this->_headers.end(), std::back_inserter(upper), toupper);
-	    	if ((this->_headers.find("\n\n") != std::string::npos
-	    		|| this->_headers.find("\r\n\r\n") != std::string::npos)
-	    		&& upper.find("CONTENT-TYPE") != std::string::npos)
-	    		break;
+	    	if (upper.find("CONTENT-TYPE") != std::string::npos)
+	    	{
+	    		if ((pos = this->_headers.find("\n\n")) != std::string::npos)
+	    		{
+	    			this->_headers.replace(pos, 2, "\r\n\r\n");
+	    			break ;
+	    		}
+	    		if (this->_headers.find("\r\n\r\n") != std::string::npos)
+	    			break ;
+	    		--count;
+	    	}
 	    	else
 	    		--count;
 	    }
+
 	    ++i;
 	}
 	++i;
-	// std::cerr << "HEADERS: " << this->_headers << std::endl;
-	while(i <= buffer.size())
+	std::cerr << "HEADERS: " << this->_headers << std::endl;
+	while(i < buffer.size() - 1)
 	{
 	    this->_body.push_back(buffer[i]);
 	    i++;
 	}
-	// std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
+	std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
 
 }
 

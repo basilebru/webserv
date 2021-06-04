@@ -46,7 +46,6 @@
 # define DEFAULT_ROOT			"html"
 # define DEFAULT_AUTH_BASIC		"off"
 # define DEFAULT_CHUNKED_ENC	1				// ON
-// # define DEFAULT_CGI_PORT		9000
 # define MAX_TCP_PORT			65535
 # define DEFAULT_CONF_FILE		"./conf.d/webserv.conf"
 
