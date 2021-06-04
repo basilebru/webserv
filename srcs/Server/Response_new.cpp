@@ -3,6 +3,7 @@
 
 Response::Response(const Request &req, std::vector<unsigned char> &buf): req(req), response(buf)
 {
+    this->response_code = this->req.error_code;
     std::cout << "Response created" << std::endl;
     // this->body = new std::vector<unsigned char>;
     // this->headers = new std::vector<unsigned char>;
@@ -33,6 +34,25 @@ int Response::process()
     }
     return 0;
 }
+void Response::build_headers()
+{
+    std::string buf;
+    
+    // response line
+    buf = "HTTP/1.1 ";
+    buf += iToString(this->response_code);
+    buf += " OK?\r\n"; // look into a map to get signigication of response_code
+
+    // headers
+    buf += "Content-length: ";
+    buf += iToString(this->response.size());
+    buf += "\r\n";
+    if (this->req.target_uri.find("images") != std::string::npos)
+        buf += "Content-Type: image/vnd.microsoft.icon\r\n";
+    // buf += "Accept-Ranges: bytes\r\n";
+    buf+= "\r\n";
+    this->response.insert(this->response.begin(), buf.begin(), buf.end());
+}
 
 void Response::build_response()
 {
@@ -43,18 +63,13 @@ void Response::build_response()
             this->index_module();
         else
             this->file_module();
-        // this->build_headers();
+        this->build_headers();
     }
 
     else
     {
-        this->buf = "still working on it :)\n";
-        this->response.assign(this->buf.begin(), this->buf.end());
+        this->error_module(500);
     }
-    // test big buffer (multiple select calls)
-    // this->buf.assign(9000000, 'a');
-    // this->buf.push_back('\n');
-    std::cerr << "BUF: " << this->buf << std::endl;
 }
 
 bool Response::is_cgi_extension()
@@ -69,6 +84,15 @@ bool Response::is_cgi_extension()
 
 void Response::index_module()
 {
+    // check if directory exists
+    DIR *dir;
+    if (!(dir = opendir(this->req.target_uri.c_str())))
+    {
+        this->error_module(404);
+        return ;
+    }
+    closedir(dir);
+
     // if (!this->req.config.index.empty())
     // {
     //     // try to GET index
@@ -76,30 +100,23 @@ void Response::index_module()
     // }
     if (this->req.config.autoindex == 1)
     {
-        std::cout << "auto" << std::endl;
         Autoindex ind;
-        this->buf += ind.genAutoindex(this->req.target_uri); // TO DO: gestion des "erreurs": cas ou genAutoindex renvoie "" (dossier qui n'existe pas...)
-        this->response.assign(this->buf.begin(), this->buf.end());
-        // displayVecAsString(this->response);
-        // std::cerr << "BUF: " << this->buf << std::endl;
+        std::string auto_index = ind.genAutoindex(this->req.target_uri);
+        this->response.assign(auto_index.begin(), auto_index.end()); // TO DO: gestion des "erreurs": cas ou genAutoindex renvoie "" (dossier qui n'existe pas...)
         return ;
     }
-    this->buf = "HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n" ;
-    this->response.assign(this->buf.begin(), this->buf.end());
+    this->error_module(404);
 }
 
 void Response::error_module(int error_code)
 {
-    std::stringstream ss;
-    ss << error_code;
-    this->buf = "HTTP/1.1 ";
-    this->buf += ss.str();
-    this->buf += " Error \r\n";
-    this->buf += "Content-Length: 9\r\n\r\n";
-    this->buf += "Error ";
-    this->buf += ss.str();
-    this->response.assign(this->buf.begin(), this->buf.end());
+    // look into conf error_codes to fill body
 
+    this->response_code = error_code;
+    std::string buf;
+    buf = "Error ";
+    buf += iToString(error_code);
+    this->response.assign(buf.begin(), buf.end());
 }
 
 void Response::file_module()
@@ -115,13 +132,8 @@ void Response::file_module()
         this->cgi_module();
     else
     {
-        this->buf = "HTTP/1.1 200 OK\r\n";
-        this->buf += "Accept-Ranges: bytes\r\n";
-        this->buf += "Content-Length: 1150\r\n";
-        this->buf += "Content-Type: image/vnd.microsoft.icon\r\n";
-        this->buf += "Connection: keep-alive\r\n\r\n";
-        this->response.assign(this->buf.begin(), this->buf.end());
-        this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+        this->response_code = 200;
+        this->response.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
     }
 
     ifs.close();
@@ -158,10 +170,8 @@ void Response::cgi_module()
     cgi_output = cgi.execScript(this->req.target_uri); //Il faudra extraire le nom du bin à exécuter depuis la target
     if (!cgi_output.empty())
     {
-        this->buf = "HTTP/1.1 200 OK\r\n";
         std::cerr << "cgi_output-Size: " << cgi_output.size() << std::endl;
-        this->response.assign(this->buf.begin(), this->buf.end());
-        this->response.insert(this->response.end(), cgi_output.begin(), cgi_output.end());
+        this->response = cgi_output;
         // std::cerr << "cgi_output: " << cgi_output << std::endl;
     }
     else

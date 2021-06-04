@@ -13,6 +13,8 @@ private:
     std::vector<unsigned char>  &response;
     // std::vector<unsigned char>  body;
     // std::vector<unsigned char>  headers;
+    int                         response_code;
+
     void build_response();
     void build_headers();
     void index_module();
