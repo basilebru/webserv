@@ -11,6 +11,7 @@ struct request_line
 {
     std::string method;
     std::string target;
+    std::string query_string;
     std::string version;
 };
 
