@@ -4,6 +4,7 @@
 # include "request_class.hpp"
 # include "CgiHandler.hpp"
 # include "Autoindex.hpp"
+# include <iterator>
 
 class Response {
 

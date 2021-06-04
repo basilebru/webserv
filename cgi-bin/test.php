@@ -2,9 +2,9 @@
 <?php
 	$env = getenv();
 	// echo("HTTP/1.1 200 OK\n");
-	echo("Content-Type: text/html\r\n");
-	echo("Content-Length: 768\r\n");
-	echo("Connection: keep-alive\r\n\r\n");
+	echo("Content-Type: text/html\n");
+	echo("Content-Length: 768\n");
+	echo("Connection: keep-alive\n\n");
 	// phpinfo();
 ?>
 <html lang="en">

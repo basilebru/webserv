@@ -73,6 +73,50 @@ void	CgiHandler::fillEnvp(void)
 	this->_envp[i] = NULL;
 }
 
+
+void	CgiHandler::storeBuffer(std::vector<unsigned char> &body, const char *buf)
+{
+	size_t i = 0;
+	while(i < CGI_BUF_SIZE)
+	{
+		body.push_back(buf[i++]);
+	}
+}
+
+void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
+{
+	size_t		i = 0;
+	int			count = 0;
+	std::string	upper;
+
+	while(i < buffer.size())
+	{
+	    this->_headers.push_back(buffer[i]);
+	    if (buffer[i] == '\n')
+	    	++count;
+	    if (count == 2)
+	    {
+	    	transform(this->_headers.begin(), this->_headers.end(), std::back_inserter(upper), toupper);
+	    	if ((this->_headers.find("\n\n") != std::string::npos
+	    		|| this->_headers.find("\r\n\r\n") != std::string::npos)
+	    		&& upper.find("CONTENT-TYPE") != std::string::npos)
+	    		break;
+	    	else
+	    		--count;
+	    }
+	    ++i;
+	}
+	++i;
+	// std::cerr << "HEADERS: " << this->_headers << std::endl;
+	while(i <= buffer.size())
+	{
+	    this->_body.push_back(buffer[i]);
+	    i++;
+	}
+	// std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
+
+}
+
 /**
  * EXEC SCRIPT WITH COMMUNICATION BY PIPE
  *
@@ -80,7 +124,7 @@ void	CgiHandler::fillEnvp(void)
  * @return      [type]
  */
 
-std::vector<unsigned char>	CgiHandler::execScript(std::string const& scriptName)
+int	CgiHandler::execScript(std::string const& scriptName)
 {
 	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
 	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
@@ -91,7 +135,8 @@ std::vector<unsigned char>	CgiHandler::execScript(std::string const& scriptName)
 
 	*/
 	std::vector<unsigned char> body;
-	char buf;
+	std::vector<unsigned char[CGI_BUF_SIZE]> test;
+	char buf[CGI_BUF_SIZE];
 	int ret = 1;
 
 
@@ -103,19 +148,19 @@ std::vector<unsigned char>	CgiHandler::execScript(std::string const& scriptName)
 	if (pipe(cgiToSrv_fd) == -1)
 	{
 		std::cerr << "pipe() cgiToSrv failed, errno: " << errno << std::endl;
-		return body;
+		return FAILURE;
 	}
 	if (pipe(srvToCgi_fd) == -1)
 	{
 		std::cerr << "pipe() srvToCgi failed, errno: " << errno << std::endl;
-		return body;
+		return FAILURE;
 	}
 
 	int pid = fork();
 	if (pid == -1)
 	{
 		std::cerr << "fork process failed" << std::endl;
-		return body;
+		return FAILURE;
 	}
 	else if (pid == 0)
 	{
@@ -129,7 +174,7 @@ std::vector<unsigned char>	CgiHandler::execScript(std::string const& scriptName)
 		{
 			std::cerr << scriptName.c_str() << std::endl;
 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
-			return body;
+			return FAILURE;
 		}
 		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
@@ -143,16 +188,33 @@ std::vector<unsigned char>	CgiHandler::execScript(std::string const& scriptName)
 
 		while (ret > 0)
 		{
-			memset(&buf, 0, CGI_BUF_SIZE);
-			ret = read(cgiToSrv_fd[0], &buf, CGI_BUF_SIZE);
-			body.push_back(buf);
+			memset(buf, 0, CGI_BUF_SIZE);
+			ret = read(cgiToSrv_fd[0], buf, CGI_BUF_SIZE);
+			this->storeBuffer(body, buf);
 		}
+
+		fillOutputs(body);
+
 		close(cgiToSrv_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
 		waitpid(pid, NULL, 0);
 	}
-	return body;
+	return SUCCESS;
 }
+
+
+/* Getters */
+
+std::string&                CgiHandler::getHeaders(void)
+{
+	return this->_headers;
+}
+
+std::vector<unsigned char>& CgiHandler::getBody(void)
+{
+	return this->_body;
+}
+
 
 /**
  * EXEC SCRIPT WITH COMMUNICATION BY SOCKET

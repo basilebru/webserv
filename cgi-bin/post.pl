@@ -12,9 +12,9 @@ read( STDIN, $query, $ENV{CONTENT_LENGTH} ) == $ENV{CONTENT_LENGTH}
 
 my $length = 127 + $ENV{CONTENT_LENGTH};
 
-print "Content-Type: text/html\r\n";
-print "Content-Length: $length \r\n";
-print "Connection: keep-alive\r\n\r\n";
+print "Content-Type: text/html\n";
+print "Content-Length: $length \n";
+print "Connection: keep-alive\n\n";
 
 print "<html>\n";
 print "<head><title>POST Result</title><meta charset=\"UTF-8\"></head>\n";

@@ -8,7 +8,7 @@
 # include <sys/socket.h>
 # include <sys/un.h>
 
-# define CGI_BUF_SIZE 1
+# define CGI_BUF_SIZE 32
 
 
 class CgiHandler {
@@ -17,12 +17,17 @@ public:
 	typedef std::map<std::string, std::string> stringMap;
 
 private:
-	char			**_envp;
-	stringMap		_env_map;
-	const Request&	_req;
+	char						**_envp;
+	stringMap					_env_map;
+	const Request&				_req;
+	std::string					_headers;
+	std::vector<unsigned char>	_body;
 
 	CgiHandler(void);
 	void	initEnv(void);
+	void	fillEnvp(void);
+	void	storeBuffer(std::vector<unsigned char>&, const char *buf);
+	void	fillOutputs(std::vector<unsigned char>&);
 
 public:
 	CgiHandler(Request const& req);
@@ -30,8 +35,11 @@ public:
 	~CgiHandler(void);
 	CgiHandler& operator=(CgiHandler const & rhs);
 
-	std::vector<unsigned char>	execScript(std::string const& scriptName);
-	void						fillEnvp(void);
+	int	execScript(std::string const& scriptName);
+	
+	/* Getters */
+	std::string&				getHeaders(void);
+	std::vector<unsigned char>&	getBody(void);
 
 };
 
