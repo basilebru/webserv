@@ -322,11 +322,11 @@ void Request::fill_conf()
     if (this->config.root.empty())
         this->config.root = this->base_config.getRoot();
 
-    this->config.cgi_path = this->matched_loc.getCgiPath();
-    if (this->config.cgi_path.empty())
-        this->config.cgi_path = this->matched_serv.getCgiPath();
-    if (this->config.cgi_path.empty())
-        this->config.cgi_path = this->base_config.getCgiPath();
+    this->config.cgi_allowed_ext = this->matched_loc.getCgiAllowedExt();
+    if (this->config.cgi_allowed_ext.empty())
+        this->config.cgi_allowed_ext = this->matched_serv.getCgiAllowedExt();
+    if (this->config.cgi_allowed_ext.empty())
+        this->config.cgi_allowed_ext = this->base_config.getCgiAllowedExt();
 }
 
 void Request::init_config()

@@ -51,7 +51,10 @@
 # define DEFAULT_CONF_FILE		"./conf.d/webserv.conf"
 
 //CARRIAGE AND NEWLINES
-# define CRLF "\r\n\r\n"
+# define CR "\r"
+# define LF "\n"
+# define CRLF "\r\n"
+# define CRLFX2 "\r\n\r\n"
 
 
 // Colors

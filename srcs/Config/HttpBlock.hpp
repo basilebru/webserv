@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/29 15:56:53 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/04 09:22:57 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,6 @@
 
 class HttpBlock {
 
-public:
-		typedef std::map<std::string, std::string>		mapCgiParams;
-
 protected:
 
 	std::string						_root;
@@ -40,7 +37,7 @@ protected:
 	std::string						_auth_basic_user_file; //httpasswd paths
 
 	/*For CGI*/
-	std::string						_cgi_path; //path of the directory containing scripts
+	std::vector<std::string>		_cgi_allowed_ext; //File types that are allowed as CGI scripts
 
 public:
 	HttpBlock(void);
@@ -59,7 +56,7 @@ public:
 	void	setChunkedEncoding(std::string& state);
 	void	setAuthBasic(std::string path);
 	void	setAuthBasicFile(std::string path);
-	void	setCgiPath(std::string path);
+	void	setCgiAllowedExt(strVecIterator first, strVecIterator last);
 
 	// Getters
 	const std::string&		getRoot(void) const;
@@ -72,7 +69,7 @@ public:
 	const int&				getChunkedEncoding(void) const;
 	const std::string&		getAuthBasic(void) const;
 	const std::string&		getAuthBasicFile(void) const;
-	const std::string&		getCgiPath(void) const;
+	const stringVec&		getCgiAllowedExt(void) const;
 
 };
 

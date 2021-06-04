@@ -10,14 +10,14 @@ my $query = "";
 read( STDIN, $query, $ENV{CONTENT_LENGTH} ) == $ENV{CONTENT_LENGTH}
   or return undef;
 
-my $length = 142 + $ENV{CONTENT_LENGTH};
+my $length = 127 + $ENV{CONTENT_LENGTH};
 
 print "Content-Type: text/html\r\n";
 print "Content-Length: $length \r\n";
 print "Connection: keep-alive\r\n\r\n";
 
 print "<html>\n";
-print "<head><title>Variables d'environnement</title><meta charset=\"UTF-8\"></head>\n";
+print "<head><title>POST Result</title><meta charset=\"UTF-8\"></head>\n";
 print "<body>\n";
 print "<h1>Vous avez posté :</h1>\n";
 print "<p>";

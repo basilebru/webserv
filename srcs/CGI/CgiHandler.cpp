@@ -137,16 +137,14 @@ std::vector<unsigned char>	CgiHandler::execScript(std::string const& scriptName)
 	else
 	{
 		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
-		// close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée --> POURQUOI JE NE PEUX PAS FAIRE CA !?*/
-		dup2(cgiToSrv_fd[0], STDIN_FILENO);
-		dup2(srvToCgi_fd[1], STDOUT_FILENO);
+		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */		
 		
-		write(STDOUT_FILENO, this->_req.body.c_str(), this->_req.body.size());
+		write(STDOUT_FILENO, this->_req.body.c_str(), this->_req.body.size()); // /!\ _req.body ne devrait pas etre un std::string
 
 		while (ret > 0)
 		{
 			memset(&buf, 0, CGI_BUF_SIZE);
-			ret = read(STDIN_FILENO, &buf, CGI_BUF_SIZE);
+			ret = read(cgiToSrv_fd[0], &buf, CGI_BUF_SIZE);
 			body.push_back(buf);
 		}
 		close(cgiToSrv_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */

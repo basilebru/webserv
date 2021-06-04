@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/29 15:35:56 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/04 09:42:46 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ dirMap	ConfParser::setHttpMap()
 	map["chunked_transfer_encoding"] = &ConfParser::setChunkEnc;
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
-	map["cgi_path"] = &ConfParser::setCgiPath;
+	map["cgi_allowed_extensions"] = &ConfParser::setCgiAllowedExt;
 	map["include"] = &ConfParser::parseInclude;
 
 	return map;
@@ -81,7 +81,7 @@ dirMap	ConfParser::setSrvMap()
 	map["chunked_transfer_encoding"] = &ConfParser::setChunkEnc;
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
-	map["cgi_path"] = &ConfParser::setCgiPath;
+	map["cgi_allowed_extensions"] = &ConfParser::setCgiAllowedExt;
 
 	return map;
 }
@@ -100,7 +100,7 @@ dirMap	ConfParser::setLocMap()
 	map["chunked_transfer_encoding"] = &ConfParser::setChunkEnc;
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
-	map["cgi_path"] = &ConfParser::setCgiPath;
+	map["cgi_allowed_extensions"] = &ConfParser::setCgiAllowedExt;
 
 	return map;
 }
@@ -376,15 +376,17 @@ int ConfParser::setAuthBasicFile(void)
 	return 0;
 }
 
-int ConfParser::setCgiPath(void)
+int ConfParser::setCgiAllowedExt(void)
 {
-	this->checkNbrOfArgs(2, &same_as<size_t>);
+	this->checkNbrOfArgs(1, &is_higher<size_t>);
+
+	std::vector<std::string>::iterator first = this->_dir_line.begin();
 	if (this->_block_type == HTTP)
-		this->_httpBlock.setCgiPath(this->_dir_line[1]);
+		this->_httpBlock.setCgiAllowedExt(++first, this->_dir_line.end());
 	else if (this->_block_type == SERVER)
-		this->_servers.back().setCgiPath(this->_dir_line[1]);
+		this->_servers.back().setCgiAllowedExt(++first, this->_dir_line.end());
 	if (this->_block_type == LOCATION)
-		this->_curr_location->setCgiPath(this->_dir_line[1]);
+		this->_curr_location->setCgiAllowedExt(++first, this->_dir_line.end());
 
 	return 0;
 }

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/29 15:42:39 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/04 09:44:38 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ LocationBlock::LocationBlock(LocationBlock const & copy)
 	this->_chunked_transfer_encoding = copy._chunked_transfer_encoding;
 	this->_auth_basic = copy._auth_basic;
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
-	this->_cgi_path = copy._cgi_path;
+	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
 
 	return ;
 }
@@ -64,7 +64,7 @@ LocationBlock& LocationBlock::operator=(LocationBlock const & rhs)
 	this->_chunked_transfer_encoding = rhs._chunked_transfer_encoding;
 	this->_auth_basic = rhs._auth_basic;
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
-	this->_cgi_path = rhs._cgi_path;
+	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
 
 	return *this;
 }
@@ -106,7 +106,9 @@ std::ostream & operator<<(std::ostream & o, LocationBlock const & rhs)
 	
 	o << pad << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
 	o << pad << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;
-	o << pad << "CGI PATH: " << rhs.getCgiPath() << std::endl;
+
+	o << pad << "CGI ALLOWED EXT: ";
+	putVecToOstream(o, rhs.getCgiAllowedExt().begin(), rhs.getCgiAllowedExt().end());
 
 	return o;
 }

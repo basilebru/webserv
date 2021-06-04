@@ -36,7 +36,7 @@ void displayConfig(HttpBlock const& baseConfig, std::vector<ServerBlock> const& 
 	std::cout << "Nbr of servers: " << servers.size() << std::endl << std::endl;
 	
 	std::cout << baseConfig;
-	displayVec(servers, '\n');
+	displayVec(servers, "\n");
 }
 
 int main(int ac, char **av)
@@ -55,7 +55,7 @@ int main(int ac, char **av)
 			HttpBlock baseConfig = parser.getHttpBlock();
 			std::vector<ServerBlock> servers = parser.getServers();
 
-			displayConfig(baseConfig, servers);
+			// displayConfig(baseConfig, servers);
 		
 			/*Create and aunch server*/
 			Server *server =  new Server(baseConfig, servers);

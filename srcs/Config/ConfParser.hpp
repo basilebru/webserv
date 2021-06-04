@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/29 15:29:04 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/04 09:22:21 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ private:
 	int		setChunkEnc(void);
 	int		setAuthBasic(void);
 	int		setAuthBasicFile(void);
-	int		setCgiPath(void);
+	int		setCgiAllowedExt(void);
 	int		parseInclude(void);
 
 	// Utility functions

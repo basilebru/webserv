@@ -104,3 +104,22 @@ void Request::print() const
         std::cout << std::endl;
     }
 }
+
+void    Request::print2(void) const
+{
+    std::cout << "REQUEST DETAILS: " << std::endl;
+    std::cout << "--------------------------------" << std::endl;
+
+    std::cout << "HOST: " << this->host_uri << std::endl;
+    std::cout << "METHOD: " << this->req_line.method << std::endl;
+    std::cout << "TARGET: " << this->req_line.target << std::endl;
+    std::cout << "VERSION: " << this->req_line.version << std::endl;
+    std::cout << "TARGET PATH: " << this->target_uri << std::endl;
+    
+    std::cout << "BODY: " << this->body << std::endl;
+    std::cout << "BDY SIZE: " << iToString(this->body_size) << std::endl;
+    
+    std::cout << "CHUNK SIZE: " << iToString(this->chunk_size) << std::endl;
+
+    std::cout << "--------------------------------" << std::endl;
+}

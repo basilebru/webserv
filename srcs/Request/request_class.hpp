@@ -3,7 +3,7 @@
 
 # include "webserv.hpp"
 # include "utils.hpp"
-# include "../Config/ConfParser.hpp"
+# include "ConfParser.hpp"
 
 # define BUF_SIZE 10000
 
@@ -22,9 +22,8 @@ struct conf
         std::vector<std::string>    index;
         int                         autoindex;
         errorMap                    error_pages;
-        std::string                 cgi_path; // AVEC ou SANS "/" !?
+        std::vector<std::string>    cgi_allowed_ext;
         // authentification attribute
-        // cgi attributes
 };
 
 class Request
@@ -118,7 +117,8 @@ class Request
         void parse();
         // void reset();
         // utils
-        void print() const;
+        void print(void) const;
+        void print2(void) const;
         // getters & setters
         int get_error_code() const;
         int get_fd() const;
@@ -132,6 +132,8 @@ class Request
 bool content_length_present(std::pair<std::string, std::string> header);
 bool transfer_encoding_present(std::pair<std::string, std::string> header);
 bool host_present(std::pair<std::string, std::string> header);
+
+std::ostream & operator<<(std::ostream & o, Request const & rhs);
 
 
 #endif

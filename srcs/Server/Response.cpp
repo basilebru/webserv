@@ -29,12 +29,14 @@ int Response::process()
     return 0;
 }
 
+static std::string error404 = "<html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>404 Not Found</title></head><body><h1>OUPS ! THIS IS A 404 !</h1></body></html>";
+
 void Response::build_response()
 {
 
     if (this->req.req_line.method == "POST")
     {
-        if (this->req.req_line.target.find(this->req.config.cgi_path) != std::string::npos)
+        if (this->req.req_line.target.find("/cgi-bin") != std::string::npos)
         {
             this->exec_cgi("./cgi-bin/post.pl");
             return;
@@ -44,12 +46,10 @@ void Response::build_response()
     else if (this->req.req_line.method == "GET")
     {
         // A. CGI MODULE
-        // std::cerr << "TARGET: " << this->req.req_line.target << std::endl;
-        // std::cerr << "CONFIG: " << this->req.config.cgi_path << std::endl;
-
-        if (this->req.req_line.target.find(this->req.config.cgi_path) != std::string::npos)
+        this->req.print2();
+        if (this->req.req_line.target.find("/cgi-bin") != std::string::npos)
         {
-            this->exec_cgi("./cgi-bin/displayEnv");
+            this->exec_cgi("./cgi-bin/displayEnv.pl");
             return;
         }
         else if (this->req.req_line.target.find("/favicon.ico") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
@@ -88,11 +88,12 @@ void Response::build_response()
                 Autoindex ind;
                 this->buf += ind.genAutoindex(this->req.target_uri); // TO DO: gestion des "erreurs": cas ou genAutoindex renvoie "" (dossier qui n'existe pas...)
                 this->response.assign(this->buf.begin(), this->buf.end());
-                // displayVecAsString(this->response);
+                // displayVec(this->response);
                 // std::cerr << "BUF: " << this->buf << std::endl;
                 return ;
             }
-            this->buf = "HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n" ;
+            this->buf = "HTTP/1.1 404 Not Found\r\nContent-type:text/html\r\nContent-Length: 200\r\nConnection: close\r\n\r\n" ;
+            this->buf += error404;
             this->response.assign(this->buf.begin(), this->buf.end());
             return ;
         }
@@ -100,10 +101,11 @@ void Response::build_response()
         // C. GET FILE Module
         std::ifstream file;
         file.open(this->req.target_uri.c_str());
-        std::cout << this->req.target_uri.c_str() << std::endl;
+        // std::cout << this->req.target_uri.c_str() << std::endl;
         if (file.fail())
         {
-            this->buf = "Can't open file\n";
+            this->buf = "HTTP/1.1 404 Not Found\r\nContent-type:text/html\r\nContent-Length: 200\r\nConnection: close\r\n\r\n" ;
+            this->buf += error404;
             this->response.assign(this->buf.begin(), this->buf.end());
             return ;
         }
@@ -116,7 +118,7 @@ void Response::build_response()
         }
         this->buf += "Content-Length: ";
         this->buf += iToString(bdy.size());
-        this->buf += CRLF;
+        this->buf += CRLFX2;
 
         this->response.assign(this->buf.begin(), this->buf.end());
         this->response.insert(this->response.end(), bdy.begin(), bdy.end());
@@ -130,7 +132,7 @@ void Response::build_response()
     // test big buffer (multiple select calls)
     // this->buf.assign(9000000, 'a');
     // this->buf.push_back('\n');
-    std::cerr << "BUF: " << this->buf << std::endl;
+    // std::cerr << "BUF: " << this->buf << std::endl;
 }
 
 void Response::send_img(std::string const& path)
@@ -161,7 +163,7 @@ void Response::exec_cgi(std::string const& path)
         // std::cerr << "cgi_output-Size: " << cgi_output.size() << std::endl;
         this->response.assign(this->buf.begin(), this->buf.end());
         this->response.insert(this->response.end(), cgi_output.begin(), cgi_output.end());
-        // displayVecAsString(cgi_output);
+        // displayVec(cgi_output);
     }
     else
     {
