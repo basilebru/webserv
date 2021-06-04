@@ -119,13 +119,13 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 	    ++i;
 	}
 	++i;
-	std::cerr << "HEADERS: " << this->_headers << std::endl;
+	// std::cerr << "HEADERS: " << this->_headers << std::endl;
 	while(i < buffer.size() - 1)
 	{
 	    this->_body.push_back(buffer[i]);
 	    i++;
 	}
-	std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
+	// std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
 
 }
 
@@ -202,7 +202,7 @@ int	CgiHandler::execScript(std::string const& scriptName)
 		{
 			memset(buf, 0, CGI_BUF_SIZE);
 			ret = read(cgiToSrv_fd[0], buf, CGI_BUF_SIZE);
-			std::cerr << "ret: " << ret << std::endl;
+			// std::cerr << "ret: " << ret << std::endl;
 			this->storeBuffer(body, buf, ret);
 		}
 
