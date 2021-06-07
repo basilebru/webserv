@@ -8,13 +8,19 @@
 class Response {
 
 private:
-    const Request               &req;
-    std::string                 buf;
-    std::vector<unsigned char>  &response;
-    // std::vector<unsigned char>  body;
-    // std::vector<unsigned char>  headers;
-    int                         response_code;
+    typedef std::map<std::string, std::string> str_map;
 
+    const Request               &req;
+    std::string                 headers;
+    std::vector<unsigned char>  &response;
+    int                         response_code;
+    std::string                 extension;
+    std::string                 target;
+    static str_map extension_map;
+    static str_map init_ext_map();
+
+    void build_response_line();
+    std::string get_content_type();
     void build_response();
     void build_headers();
     void index_module();

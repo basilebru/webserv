@@ -23,14 +23,24 @@ void Request::store_req_line(std::string line)
     }
     this->req_line.version = line.substr(pos);
 
+    // separate query_string from target
     pos = this->req_line.target.find('?');
     if (pos != std::string::npos)
     {
         this->req_line.query_string = this->req_line.target.substr(pos + 1);
         this->req_line.target.erase(pos);
     }
+    
+    // fill extension
+    pos = this->req_line.target.find('.');
+    if (pos != std::string::npos)
+        this->req_line.extension = this->req_line.target.substr(pos + 1);
+    
     // std::cout << "target: " << this->req_line.target << std::endl;
     // std::cout << "qs: " << this->req_line.query_string << std::endl;
+    // std::cout << "ext: " << this->req_line.extension << std::endl;
+
+    
     // check that method is known
     if (std::find(Request::known_methods.begin(), Request::known_methods.end(), this->req_line.method) == Request::known_methods.end())
     {

@@ -4,7 +4,9 @@
 Response::Response(const Request &req, std::vector<unsigned char> &buf): req(req), response(buf)
 {
     this->response_code = this->req.error_code;
-    std::cout << "Response created" << std::endl;
+    this->extension = this->req.req_line.extension;
+    this->target = this->req.target_uri;
+    // std::cout << "Response created" << std::endl;
     // this->body = new std::vector<unsigned char>;
     // this->headers = new std::vector<unsigned char>;
 }
@@ -34,24 +36,70 @@ int Response::process()
     }
     return 0;
 }
+
+void Response::build_response_line()
+{
+    std::string ret;
+    ret = "HTTP/1.1 ";
+    ret += iToString(this->response_code);
+    ret += " STATUS\r\n"; // look into a map to get signigication of response_code
+    this->response.insert(this->response.begin(), ret.begin(), ret.end());
+}
+
+bool my_equal(char c1, char c2)
+{
+    if (toupper(c1) == toupper(c2))
+        return true;
+    return false;
+}
+
+Response::str_map Response::extension_map = Response::init_ext_map();
+
+Response::str_map Response::init_ext_map()
+{
+    str_map mp;
+    mp["html"] = "text/html";
+    mp["txt"] = "text/plain";
+    mp["css"] = "text/css";
+    mp["js"] = "text/javascript";
+    mp["jpeg"] = "image/jpeg";
+    mp["jpg"] = "image/jpeg";
+    mp["png"] = "image/png";
+    mp["bmp"] = "image/bmp";
+    return mp;
+}
+
 void Response::build_headers()
 {
-    std::string buf;
-    
-    // response line
-    buf = "HTTP/1.1 ";
-    buf += iToString(this->response_code);
-    buf += " OK?\r\n"; // look into a map to get signigication of response_code
-
+    bool empty_headers = this->headers.empty();
     // headers
-    buf += "Content-length: ";
-    buf += iToString(this->response.size());
-    buf += "\r\n";
-    if (this->req.target_uri.find("images") != std::string::npos)
-        buf += "Content-Type: image/vnd.microsoft.icon\r\n";
-    // buf += "Accept-Ranges: bytes\r\n";
-    buf+= "\r\n";
-    this->response.insert(this->response.begin(), buf.begin(), buf.end());
+    std::string buf = "Content-Length";
+    if (std::search(this->headers.begin(), this->headers.end(), buf.begin(), buf.end(), my_equal) == this->headers.end())
+    {
+        std::cout << "building content-length" << std::endl;
+        std::cout << this->response.size() << std::endl;
+        this->headers += "Content-length: ";
+        this->headers += iToString(this->response.size());
+        this->headers += "\r\n";
+    }
+
+    buf = "Content-type";
+    if (std::search(this->headers.begin(), this->headers.end(), buf.begin(), buf.end(), my_equal) == this->headers.end())
+    {
+        // std::cout << "building content-type" << std::endl;
+        this->headers += "Content-type: ";
+        str_map::iterator it;
+        if ((it = this->extension_map.find(this->extension)) != this->extension_map.end())
+            this->headers += it->second;
+        else
+            this->headers += "application/octet-stream"; // ou text/plain ?
+        this->headers += "\r\n";
+    }
+
+    if (empty_headers)
+        this->headers += "\r\n";
+    this->response.insert(this->response.begin(), this->headers.begin(), this->headers.end());
+    this->build_response_line();
 }
 
 void Response::build_response()
@@ -59,50 +107,63 @@ void Response::build_response()
 
     if (this->req.req_line.method == "GET")
     {
-        if (this->req.target_uri[this->req.target_uri.size() - 1] == '/')
+        if (this->target[this->target.size() - 1] == '/')
             this->index_module();
         else
             this->file_module();
-        this->build_headers();
     }
-
     else
     {
         this->error_module(500);
     }
+    this->build_headers();
 }
 
 bool Response::is_cgi_extension()
 {
-    std::string ext = this->req.target_uri.substr(this->req.target_uri.find_last_of('.'));
-    
-    std::cout << "ext " << ext << std::endl;
-    if (ext == ".php") // chercher dans le param cgi_ext de config
+    if (std::find(this->req.config.cgi_allowed_ext.begin(), this->req.config.cgi_allowed_ext.end(), this->extension) != this->req.config.cgi_allowed_ext.end())
         return true;
     return false;
 }
 
 void Response::index_module()
 {
-    // check if directory exists
+    // check if directory exists // better to make a check with stat ? https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
     DIR *dir;
-    if (!(dir = opendir(this->req.target_uri.c_str())))
+    if (!(dir = opendir(this->target.c_str())))
     {
         this->error_module(404);
         return ;
     }
     closedir(dir);
 
-    // if (!this->req.config.index.empty())
-    // {
-    //     // try to GET index
-    //     return ;
-    // }
+    struct stat buffer;
+    for (std::vector<std::string>::const_iterator it = this->req.config.index.begin(); it != this->req.config.index.end(); it++)
+    {
+        // std::cout << "index: " << *it << std::endl;
+        std::string target;
+
+        target =  "./" + this->req.config.root + '/' + *it;
+        // std::cout << "target: " << this->target << std::endl; 
+        if (stat(target.c_str(), &buffer) == 0)
+        {
+            size_t pos;
+            pos = it->find('.');
+            if (pos != std::string::npos)
+                this->extension = it->substr(pos + 1);
+            // std::cout << "ext:" << this->extension << std::endl;
+            this->target = target;
+            return this->file_module();
+        }
+    }
     if (this->req.config.autoindex == 1)
     {
+        std::cout << "auto" << std::endl;
         Autoindex ind;
-        std::string auto_index = ind.genAutoindex(this->req.target_uri);
+        std::string auto_index = ind.genAutoindex(this->target);
         this->response.assign(auto_index.begin(), auto_index.end()); // TO DO: gestion des "erreurs": cas ou genAutoindex renvoie "" (dossier qui n'existe pas...)
+        this->response_code = 200;
+        this->extension = "html";
         return ;
     }
     this->error_module(404);
@@ -117,12 +178,12 @@ void Response::error_module(int error_code)
     buf = "Error ";
     buf += iToString(error_code);
     this->response.assign(buf.begin(), buf.end());
+    this->extension = "html";
 }
 
 void Response::file_module()
 {
-       
-    std::ifstream ifs(this->req.target_uri.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
+    std::ifstream ifs(this->target.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
     if (ifs.fail())
     {
         this->error_module(404);
@@ -135,49 +196,33 @@ void Response::file_module()
         this->response_code = 200;
         this->response.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
     }
-
     ifs.close();
-
-    // std::ifstream file;
-    // file.open(this->req.target_uri.c_str());
-    // std::cout << this->req.target_uri.c_str() << std::endl;
-    // if (file.fail())
-    // {
-    //     this->buf = "Can't open file\n";
-    //     this->response.assign(this->buf.begin(), this->buf.end());
-    //     return ;
-    // }
-    // std::string line;
-    // while (getline(file, line))
-    // {
-    //     this->buf += line;
-    //     this->buf += '\n';
-    // }
-    // this->response.assign(this->buf.begin(), this->buf.end());
 }
-
-// void Response::send_img(std::string const& path)
-// {
-// }
 
 void Response::cgi_module()
 {
     // std::cerr << "TARGET: " << this->req.req_line.target << std::endl;
     // std::cerr << "CONFIG: " << this->req.config.cgi_path << std::endl;
     CgiHandler                  cgi(this->req);
-    std::vector<unsigned char>  cgi_output;
 
-    cgi_output = cgi.execScript(this->req.target_uri); //Il faudra extraire le nom du bin à exécuter depuis la target
-    if (!cgi_output.empty())
+    std::cout << "cgi module" << std::endl;
+    if (cgi.execScript(this->target) == SUCCESS)
     {
-        std::cerr << "cgi_output-Size: " << cgi_output.size() << std::endl;
-        this->response = cgi_output;
-        // std::cerr << "cgi_output: " << cgi_output << std::endl;
+        this->response_code = 200;
+        this->headers = cgi.getHeaders();
+
+        // if no Content-type header, return error 500
+        std::string buf = "Content-Type";
+        if (std::search(this->headers.begin(), this->headers.end(), buf.begin(), buf.end(), my_equal) == this->headers.end())
+        {
+            std::cout << "ct" << std::endl;
+            this->error_module(500);
+            return ;
+        }
+        this->response = cgi.getBody();
     }
     else
     {
         this->error_module(500);
-        // this->buf = "HTTP/1.1 500 Internal Server Error\r\n\r\n";
-        // this->response.assign(this->buf.begin(), this->buf.end());
     }
 }
