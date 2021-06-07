@@ -10,7 +10,7 @@ my $query = "";
 read( STDIN, $query, $ENV{CONTENT_LENGTH} ) == $ENV{CONTENT_LENGTH}
   or return undef;
 
-my $length = 127 + $ENV{CONTENT_LENGTH};
+my $length = 128 + $ENV{CONTENT_LENGTH};
 
 print "Content-Type: text/html\n";
 print "Content-Length: $length \n";

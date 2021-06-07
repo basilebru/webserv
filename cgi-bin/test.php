@@ -3,7 +3,7 @@
 	$env = getenv();
 	// echo("HTTP/1.1 200 OK\n");
 	echo("Content-Type: text/html\n");
-	echo("Content-Length: 768\n");
+	echo("Content-Length: 765\n");
 	echo("Connection: keep-alive\n\n");
 	// phpinfo();
 ?>

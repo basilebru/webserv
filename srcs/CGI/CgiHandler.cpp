@@ -78,7 +78,7 @@ void	CgiHandler::storeBuffer(std::vector<unsigned char> &body, const char *buf, 
 {
 	int i = 0;
 
-	if (len < CGI_BUF_SIZE)
+	if (len < CGI_BUF_SIZE && len != 0)
 		len++;
 	while(i < len)
 	{
@@ -119,13 +119,13 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 	    ++i;
 	}
 	++i;
-	// std::cerr << "HEADERS: " << this->_headers << std::endl;
+	std::cerr << "HEADERS: " << this->_headers << std::endl;
 	while(i < buffer.size() - 1)
 	{
 	    this->_body.push_back(buffer[i]);
 	    i++;
 	}
-	// std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
+	std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
 
 }
 
@@ -194,9 +194,10 @@ int	CgiHandler::execScript(std::string const& scriptName)
 	else
 	{
 		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
-		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */		
+		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée --> POURQUOI JE NE PEUX PAS FAIRE CA !?*/
 		
-		write(STDOUT_FILENO, this->_req.body.c_str(), this->_req.body.size()); // /!\ _req.body ne devrait pas etre un std::string
+		write(srvToCgi_fd[1], this->_req.body.c_str(), this->_req.body.size()); // /!\ _req.body ne devrait pas etre un std::string
+		// std::cerr << "REQ BDY: " << this->_req.body.c_str() << std::endl;
 
 		while (ret == CGI_BUF_SIZE)
 		{
