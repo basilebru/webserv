@@ -1,16 +1,15 @@
 #include "CgiHandler.hpp"
 
-CgiHandler::CgiHandler(Request const& req) : _envp(NULL), _req(req)
+CgiHandler::CgiHandler(Request const& req) : _envp(NULL), _req(req), _hasCL(false)
 {
 	// std::cout << "CGI CTOR" << std::endl;
 	this->initEnv();
 }
 
-/*CgiHandler::CgiHandler(CgiHandler const & copy)
-{
+CgiHandler::CgiHandler(CgiHandler const & copy) :
+_envp(copy._envp), _req(copy._req), _hasCL(copy._hasCL)
+{}
 
-}
-*/
 
 CgiHandler::~CgiHandler(void)
 {
@@ -20,11 +19,32 @@ CgiHandler::~CgiHandler(void)
 	delete[] this->_envp;
 }
 
-/*CgiHandler::CgiHandler& operator=(CgiHandler const & rhs)
+CgiHandler& CgiHandler::operator=(CgiHandler const & rhs)
 {
+	this->_envp = rhs._envp;
+	// this->_req = rhs._req;
+	this->_hasCL = rhs._hasCL;
 
+	return *this;
 }
-*/
+
+
+/*std::pair<std::string, std::string> splitHostPort(std::string const& host_uri)
+{
+	std::pair<std::string, std::string> hostNport;
+
+	size_t find;
+	if ((find = host_uri.find(':')) == std::string::npos)
+	{
+		hostNport.first = host_uri;
+	}
+	else
+	{
+		hostNport.first = host_uri.substr(0, find);
+		hostNport.second = host_uri.substr(find + 1);
+	}
+	return (hostNport);
+}*/
 
 
 void	CgiHandler::initEnv(void)
@@ -38,20 +58,19 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["GATEWAY_INTERFACE"]	=	"CGI/1.1";	// version du CGI qu'utilise le server
 	this->_env_map["PATH_INFO"]			=	"value";	// derniere partie de l'URI apres le script name
 	this->_env_map["PATH_TRANSLATED"]	=	"value";	// adresse reelle du script (idem PATH_INFO pour nous)
-	this->_env_map["QUERY_STRING"]		=	"value";	// Contient tout ce qui suit le « ? » dans l'URL envoyée par le client.
+	this->_env_map["QUERY_STRING"]		=	this->_req.req_line.query_string;	// Contient tout ce qui suit le « ? » dans l'URL envoyée par le client.
 	this->_env_map["REMOTE_ADDR"]		=	"value";	// adress ip du client
 	this->_env_map["REMOTE_IDENT"]		=	"value";	// nom d'utilisateur du client
 	this->_env_map["REMOTE_USER"]		=	"value";	// nom d'utilisateur (distant) du client
-	this->_env_map["REQUEST_METHOD"]	=	"POST";	// GET ou POST ou ...
+	this->_env_map["REQUEST_METHOD"]	=	this->_req.req_line.method;	// GET ou POST ou ...
 	this->_env_map["REQUEST_URI"]		=	"value";	// URI
 	this->_env_map["SCRIPT_NAME"]		=	"value";	// full path du fichier de script
-	this->_env_map["SERVER_NAME"]		=	"value";	// DNS ou IP du server (hostname)
-	this->_env_map["SERVER_PORT"]		=	"value";	// port ayant reçu la requête
-	this->_env_map["SERVER_PROTOCOL"]	=	"HTTP/1.1";	// protocol HTTP (toujours HTTP/1.1 ?)
+	this->_env_map["SERVER_NAME"]		=	this->_req.host_uri;	// DNS ou IP du server (hostname)
+	this->_env_map["SERVER_PORT"]		=	this->_req.host_port;	// port ayant reçu la requête
+	this->_env_map["SERVER_PROTOCOL"]	=	this->_req.req_line.version;;	// protocol HTTP (toujours HTTP/1.1 ?)
 	this->_env_map["SERVER_SOFTWARE"]	=	"webserv";
 
 }
-
 
 void	CgiHandler::fillEnvp(void)
 {
@@ -73,7 +92,6 @@ void	CgiHandler::fillEnvp(void)
 	this->_envp[i] = NULL;
 }
 
-
 void	CgiHandler::storeBuffer(std::vector<unsigned char> &body, const char *buf, int len)
 {
 	int i = 0;
@@ -86,44 +104,62 @@ void	CgiHandler::storeBuffer(std::vector<unsigned char> &body, const char *buf, 
 	}
 }
 
+void	CgiHandler::replaceLF(void)
+{
+	size_t pos = 0;
+
+	while ((pos = this->_headers.find_first_of("\n", pos)) != std::string::npos)
+	{
+		this->_headers.replace(pos, 1, "\r\n");
+		pos += 2;
+	}
+}
+
+void	CgiHandler::flagHeaders(std::string const& upper)
+{
+	if (upper.find("CONTENT-LENGTH") != std::string::npos)
+	{
+		std::cerr << "FIND CONTENT LENGTH" << std::endl;
+		this->_hasCL = true;
+	}
+}
+
 void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 {
 	size_t		i = 0;
-	size_t		pos = 0;
 	int			count = 0;
 	std::string	upper;
 
 	while(i < buffer.size())
 	{
-	    this->_headers.push_back(buffer[i]);
-	    if (buffer[i] == '\n')
-	    	++count;
-	    if (count == 2)
-	    {
-	    	transform(this->_headers.begin(), this->_headers.end(), std::back_inserter(upper), toupper);
-	    	if (upper.find("CONTENT-TYPE") != std::string::npos)
-	    	{
-	    		if ((pos = this->_headers.find("\n\n")) != std::string::npos)
-	    		{
-	    			this->_headers.replace(pos, 2, "\r\n\r\n");
-	    			break ;
-	    		}
-	    		if (this->_headers.find("\r\n\r\n") != std::string::npos)
-	    			break ;
-	    		--count;
-	    	}
-	    	else
-	    		--count;
-	    }
-
-	    ++i;
+		this->_headers.push_back(buffer[i]);
+		if (buffer[i] == '\n')
+			++count;
+		if (count == 2)
+		{
+			transform(this->_headers.begin(), this->_headers.end(), std::back_inserter(upper), toupper);
+			if (upper.find("CONTENT-TYPE") != std::string::npos)
+			{
+				if (this->_headers.find("\r\n\r\n") != std::string::npos
+					|| this->_headers.find("\n\n") != std::string::npos)
+					break ;
+				--count;
+			}
+			else
+				--count;
+			upper.clear();
+		}
+		++i;
 	}
+	replaceLF();
+	flagHeaders(this->_headers);
 	++i;
-	std::cerr << "HEADERS: " << this->_headers << std::endl;
+	// std::cerr << "UPPER: " << upper << std::endl;
+	// std::cerr << "HEADERS: " << this->_headers << std::endl;
 	while(i < buffer.size() - 1)
 	{
-	    this->_body.push_back(buffer[i]);
-	    i++;
+		this->_body.push_back(buffer[i]);
+		i++;
 	}
 	std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
 
@@ -147,7 +183,6 @@ int	CgiHandler::execScript(std::string const& scriptName)
 
 	*/
 	std::vector<unsigned char> body;
-	std::vector<unsigned char[CGI_BUF_SIZE]> test;
 	char buf[CGI_BUF_SIZE];
 	int ret = CGI_BUF_SIZE;
 
@@ -229,6 +264,11 @@ std::vector<unsigned char>& CgiHandler::getBody(void)
 	return this->_body;
 }
 
+bool&						CgiHandler::getHasCL(void)
+{
+	return this->_hasCL;
+}
+
 
 /**
  * EXEC SCRIPT WITH COMMUNICATION BY SOCKET
@@ -247,7 +287,7 @@ std::vector<unsigned char>& CgiHandler::getBody(void)
 
 // 	this->fillEnvp();
 
-	
+
 // 	sockaddr_un sockaddr;
 // 	memset((char *)&sockaddr, 0, sizeof(sockaddr)); 
 // 	sockaddr.sun_family = AF_LOCAL;
@@ -308,9 +348,9 @@ std::vector<unsigned char>& CgiHandler::getBody(void)
 // 			std::cerr << "Server: Connection cannot be accepted" << std::endl;
 // 			return body;
 // 		}
-		
+
 // 		// write(connection, "JE SUIS LA LIGNE DE TEST D'ENVOI D'UN BODY EN CAS DE POST", 57);
-		
+
 // 		// usleep(500000);
 // 		while (ret > 0)
 // 		{

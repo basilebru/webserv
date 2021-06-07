@@ -100,18 +100,18 @@ void Request::store_host()
     }
     std::string host;
     std::string port;
-    this->host_uri = std::find_if(this->headers.begin(), this->headers.end(), host_present)->second;
-    // size_t find;
-    // if ((find = host.find(':')) == std::string::npos)
-    // {
-    //     this->host_uri = host;
-    //     return;
-    // }
-    // else
-    // {
-    //     this->host_uri = host.substr(0, find);
-    //     port = host.substr(find + 1);
-    // }
+    host = std::find_if(this->headers.begin(), this->headers.end(), host_present)->second;
+    size_t find;
+    if ((find = host.find(':')) == std::string::npos)
+    {
+        this->host_uri = host;
+        return;
+    }
+    else
+    {
+        this->host_uri = host.substr(0, find);
+        this->host_port = host.substr(find + 1);
+    }
     // if (!port.empty() && ft_isdigit_str(port.c_str()))
     //     this->host_port = strtol(port.c_str(), NULL,10);
     // else

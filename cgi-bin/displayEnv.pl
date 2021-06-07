@@ -6,10 +6,10 @@ printenv — a CGI program that just prints its environment
 
 =cut
 
-my $length = 517 + $ENV{CONTENT_LENGTH};
+my $length = 514 + $ENV{CONTENT_LENGTH};
 
 print "Content-Type: text/html\n";
-print "Content-Length: $length \n";
+# print "Content-Length: $length \n";
 print "Connection: keep-alive\n\n";
 
 print "<HTML>\n";

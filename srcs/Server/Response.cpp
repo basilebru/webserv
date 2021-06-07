@@ -48,7 +48,7 @@ void Response::build_response()
         this->req.print2();
         if (this->req.req_line.target.find("/cgi-bin") != std::string::npos)
         {
-            this->exec_cgi("./cgi-bin/image.pl");
+            this->exec_cgi("./cgi-bin/displayEnv.pl");
             return;
         }
         else if (this->req.req_line.target.find("/favicon.ico") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
@@ -154,17 +154,28 @@ void Response::exec_cgi(std::string const& path)
 {
     CgiHandler                  cgi(this->req);
     std::vector<unsigned char>  cgi_body;
+    std::string                 headers;
 
     if (cgi.execScript(path) == SUCCESS)  //Il faudra extraire le nom du bin à exécuter depuis la target
     {
         this->buf = "HTTP/1.1 200 OK\r\n";
 
-        this->buf += cgi.getHeaders();
-        this->response.assign(this->buf.begin(), this->buf.end());
-
+        headers = cgi.getHeaders();
         cgi_body = cgi.getBody();
+        if (cgi.getHasCL() == false)
+        {
+            this->buf += "Content-Length: ";
+            this->buf += iToString(cgi_body.size());
+            this->buf += CRLF;
+        }
+        this->buf += headers;
+        this->response.assign(this->buf.begin(), this->buf.end());
         this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());
-        // displayVec(cgi_body);
+        // for (size_t i = 0; i < this->response.size(); ++i)
+        // {
+        //     std::cout << this->response[i];
+        // }
+        // std::cout << std::endl;
     }
     else
     {

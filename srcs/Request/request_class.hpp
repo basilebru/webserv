@@ -56,7 +56,7 @@ class Request
         unsigned long chunk_size;
         std::string body;
         std::string host_uri;
-        // int host_port;
+        std::string host_port;
         std::string target_uri; // concatenation of config.root and req_line.target
         
         // bools
