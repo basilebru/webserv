@@ -102,6 +102,12 @@ std::map<std::string, std::string> const& Request::get_headers() const
     return this->headers;
 } 
 
+std::map<int, std::string> const&     Request::getErrorPages(void) const
+{
+    return this->config.error_pages;
+}
+
+
 // void Request::set_error_code(int code)
 // {
 //     this->error_code = code;

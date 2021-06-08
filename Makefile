@@ -59,8 +59,8 @@ SRCS += webserv.cpp
 
 # core sources
 SRCS += Server.cpp
-# SRCS += Response_new.cpp
-SRCS += Response.cpp
+SRCS += Response_new.cpp
+# SRCS += Response.cpp
 SRCS += request_class.cpp
 SRCS += request_class_store.cpp
 SRCS += request_class_utils.cpp

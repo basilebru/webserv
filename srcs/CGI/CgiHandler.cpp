@@ -1,6 +1,7 @@
 #include "CgiHandler.hpp"
 
-CgiHandler::CgiHandler(Request const& req) : _envp(NULL), _req(req), _hasCL(false)
+CgiHandler::CgiHandler(Request const& req) :
+_envp(NULL), _req(req), _hasCL(false), _hasCT(false), _hasRedir(false)
 {
 	// std::cout << "CGI CTOR" << std::endl;
 	this->initEnv();
@@ -119,12 +120,33 @@ void	CgiHandler::replaceLF(void)
 	}
 }
 
-void	CgiHandler::flagHeaders(std::string const& upper)
+void	CgiHandler::flagHeaders(void)
 {
+	size_t pos = 0;
+	std::string	upper;
+
+	transform(this->_headers.begin(), this->_headers.end(), std::back_inserter(upper), toupper);
+	// std::cerr << "UPPER: " << upper << std::endl;
+
 	if (upper.find("CONTENT-LENGTH") != std::string::npos)
 	{
-		std::cerr << "FIND CONTENT LENGTH" << std::endl;
+		// std::cerr << "FOUND CONTENT LENGTH" << std::endl;
 		this->_hasCL = true;
+	}
+	if (upper.find("CONTENT-TYPE") != std::string::npos)
+	{
+		// std::cerr << "FOUND CONTENT TYPE" << std::endl;
+		this->_hasCT = true;
+	}
+	if (upper.find("LOCATION") != std::string::npos)
+	{
+		// std::cerr << "FOUND REDIRECTION" << std::endl;
+		this->_hasRedir = true;
+	}
+	if ((pos = upper.find("STATUS")) != std::string::npos)
+	{
+		// std::cerr << "FOUND STATUS" << std::endl;
+		this->_status = upper.substr(pos + 6, upper.find("\n", pos) - pos - 6);
 	}
 }
 
@@ -132,7 +154,6 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 {
 	size_t		i = 0;
 	int			count = 0;
-	std::string	upper;
 
 	while(i < buffer.size())
 	{
@@ -141,24 +162,16 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 			++count;
 		if (count == 2)
 		{
-			transform(this->_headers.begin(), this->_headers.end(), std::back_inserter(upper), toupper);
-			if (upper.find("CONTENT-TYPE") != std::string::npos)
-			{
-				if (this->_headers.find("\r\n\r\n") != std::string::npos
-					|| this->_headers.find("\n\n") != std::string::npos)
-					break ;
-				--count;
-			}
-			else
-				--count;
-			upper.clear();
+			if (this->_headers.find("\r\n\r\n") != std::string::npos
+				|| this->_headers.find("\n\n") != std::string::npos)
+				break ;
+			--count;
 		}
 		++i;
 	}
 	replaceLF();
-	flagHeaders(this->_headers);
+	flagHeaders();
 	++i;
-	// std::cerr << "UPPER: " << upper << std::endl;
 	// std::cerr << "HEADERS: " << this->_headers << std::endl;
 	while(i < buffer.size() - 1)
 	{
@@ -233,7 +246,7 @@ int	CgiHandler::execScript(std::string const& scriptName)
 	else
 	{
 		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
-		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée --> POURQUOI JE NE PEUX PAS FAIRE CA !?*/
+		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
 		
 		write(srvToCgi_fd[1], this->_req.body.c_str(), this->_req.body.size()); // /!\ _req.body ne devrait pas etre un std::string
 		// std::cerr << "REQ BDY: " << this->_req.body.c_str() << std::endl;
@@ -268,9 +281,24 @@ std::vector<unsigned char>& CgiHandler::getBody(void)
 	return this->_body;
 }
 
-bool&						CgiHandler::getHasCL(void)
+bool&						CgiHandler::getHasContentLength(void)
 {
 	return this->_hasCL;
+}
+
+bool&						CgiHandler::getHasContentType(void)
+{
+	return this->_hasCT;
+}
+
+bool&						CgiHandler::getHasRedir(void)
+{
+	return this->_hasRedir;
+}
+
+std::string&				CgiHandler::getStatus(void)
+{
+	return this->_status;
 }
 
 

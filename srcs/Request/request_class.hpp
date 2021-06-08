@@ -132,6 +132,7 @@ class Request
         sockaddr_in get_addr() const;
         bool request_is_ready() const;
         std::map<std::string, std::string> const& get_headers() const;
+        std::map<int, std::string> const&     getErrorPages(void) const;
         bool connection_end() const;
         // void set_error_code(int code);
 

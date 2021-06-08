@@ -165,28 +165,51 @@ void Response::index_module()
 
 void Response::error_module(int error_code)
 {
-    // look into conf error_codes to fill body
+	std::map<int, std::string> error_pages = this->req.getErrorPages();
+	std::string buf;
 
-    std::cout << "error module" << std::endl;
+    this->target = error_pages[error_code];
     this->response_code = error_code;
-    std::string buf;
-    buf = "Error ";
-    buf += iToString(error_code);
-    this->response.assign(buf.begin(), buf.end());
-    this->extension = "html";
+
+    std::ifstream ifs(this->target.c_str(), std::ios::in);
+    if (ifs.fail())
+    {
+    	this->response_code = 500;
+        buf = "500 Internal Server Error";
+	    this->extension = "txt";
+        this->response.assign(buf.begin(), buf.end());
+    }
+    else
+    {
+	    this->extension = "html";
+	    this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+
+    }
     this->build_headers();
+	std::cout << "Contenu de la reponse:" << std::endl;
+    std::cout << "---------------------------" << std::endl;
+    for (size_t i = 0; i < this->response.size(); ++i)
+    {
+        std::cout << this->response[i];
+    }
+    std::cout << std::endl;
+    std::cout << "---------------------------" << std::endl;
+    ifs.close();
 }
 
 void Response::file_module()
 {
+    if (this->is_cgi_extension())
+    {
+        this->cgi_module();
+        return ;
+    }
     std::ifstream ifs(this->target.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
     if (ifs.fail())
     {
         this->error_module(404);
         return ;
     }
-    if (this->is_cgi_extension())
-        this->cgi_module();
     else
     {
         this->response_code = 200;
@@ -196,7 +219,7 @@ void Response::file_module()
     this->build_headers();
 }
 
-void Response::cgi_module()
+/*void Response::cgi_module()
 {
     // std::cerr << "TARGET: " << this->req.req_line.target << std::endl;
     // std::cerr << "CONFIG: " << this->req.config.cgi_path << std::endl;
@@ -214,6 +237,54 @@ void Response::cgi_module()
         this->response_code = 200;
         this->response = cgi.getBody();
         this->build_headers();
+    }
+    else
+        this->error_module(500);
+}*/
+
+void Response::cgi_module()
+{
+    CgiHandler                  cgi(this->req);
+    std::vector<unsigned char>  cgi_body;
+    std::string                 cgi_headers;
+
+    if (cgi.execScript(this->target) == SUCCESS)
+    {
+        cgi_headers = cgi.getHeaders();
+        cgi_body = cgi.getBody();
+        if (!cgi.getStatus().empty())
+        {
+            this->headers = "HTTP/1.1"; // devrait etre le protocole de la requete ?
+            this->headers += cgi.getStatus();
+            this->headers += CRLF;
+        }
+        else if (cgi.getHasRedir() == true)
+            this->headers = "HTTP/1.1 302 FOUND\r\n";
+        else
+            this->headers = "HTTP/1.1 200 OK\r\n";
+        if (cgi.getHasContentLength() == false)
+        {
+            this->headers += "Content-Length: ";
+            this->headers += iToString(cgi_body.size());
+            this->headers += CRLF;
+        }
+        if (cgi.getHasContentType() == false && cgi.getHasRedir() == false)
+        {
+            this->headers += "Content-Type: application/octet-stream";
+            this->headers += CRLF;
+        }
+        this->headers += cgi_headers;
+        this->response.assign(this->headers.begin(), this->headers.end());
+        this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());
+
+        std::cout << "Contenu de la reponse:" << std::endl;
+        std::cout << "---------------------------" << std::endl;
+        for (size_t i = 0; i < this->response.size(); ++i)
+        {
+            std::cout << this->response[i];
+        }
+        std::cout << std::endl;
+        std::cout << "---------------------------" << std::endl;
     }
     else
         this->error_module(500);

@@ -48,7 +48,7 @@ void Response::build_response()
         this->req.print2();
         if (this->req.req_line.target.find("/cgi-bin") != std::string::npos)
         {
-            this->exec_cgi("./cgi-bin/displayEnv.pl");
+            this->exec_cgi("./cgi-bin/redir.pl");
             return;
         }
         else if (this->req.req_line.target.find("/favicon.ico") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
@@ -156,26 +156,40 @@ void Response::exec_cgi(std::string const& path)
     std::vector<unsigned char>  cgi_body;
     std::string                 headers;
 
-    if (cgi.execScript(path) == SUCCESS)  //Il faudra extraire le nom du bin à exécuter depuis la target
+    if (cgi.execScript(path) == SUCCESS)
     {
-        this->buf = "HTTP/1.1 200 OK\r\n";
-
         headers = cgi.getHeaders();
         cgi_body = cgi.getBody();
-        if (cgi.getHasCL() == false)
+        if (!cgi.getStatus().empty())
+        {
+            std::cerr << "STATUS IS NOT EMPTY" << std::endl;
+            this->buf = "HTTP/1.1"; // devrait etre le protocole de la requete ?
+            this->buf += cgi.getStatus();
+            this->buf += CRLF;
+        }
+        else if (cgi.getHasRedir() == true)
+            this->buf = "HTTP/1.1 302 FOUND\r\n";
+        else
+            this->buf = "HTTP/1.1 200 OK\r\n";
+        if (cgi.getHasContentLength() == false)
         {
             this->buf += "Content-Length: ";
             this->buf += iToString(cgi_body.size());
             this->buf += CRLF;
         }
+        if (cgi.getHasContentType() == false && cgi.getHasRedir() == false)
+        {
+            this->buf += "Content-Type: application/octet-stream";
+            this->buf += CRLF;
+        }
         this->buf += headers;
         this->response.assign(this->buf.begin(), this->buf.end());
         this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());
-        // for (size_t i = 0; i < this->response.size(); ++i)
-        // {
-        //     std::cout << this->response[i];
-        // }
-        // std::cout << std::endl;
+        for (size_t i = 0; i < this->response.size(); ++i)
+        {
+            std::cout << this->response[i];
+        }
+        std::cout << std::endl;
     }
     else
     {

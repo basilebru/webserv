@@ -23,6 +23,9 @@ private:
 	std::string					_headers;
 	std::vector<unsigned char>	_body;
 	bool						_hasCL;
+	bool						_hasCT;
+	bool						_hasRedir;
+	std::string					_status;
 
 	CgiHandler(void);
 	void	initEnv(void);
@@ -30,7 +33,7 @@ private:
 	void	storeBuffer(std::vector<unsigned char>&, const char *buf, int len);
 	void	fillOutputs(std::vector<unsigned char>&);
 	void	replaceLF(void);
-	void	flagHeaders(std::string const& upper);
+	void	flagHeaders(void);
 
 
 
@@ -45,7 +48,10 @@ public:
 	/* Getters */
 	std::string&				getHeaders(void);
 	std::vector<unsigned char>&	getBody(void);
-	bool&						getHasCL(void);
+	bool&						getHasContentLength(void);
+	bool&						getHasContentType(void);
+	bool&						getHasRedir(void);
+	std::string&				getStatus(void);
 
 };
 
