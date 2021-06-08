@@ -15,6 +15,30 @@ std::vector<std::string> Request::build_known_methods()
     return methods;
 }
 
+void                    Request::initHeaders(void)
+{
+    this->headers["accept-charsets"] = "";
+    this->headers["accept-language"] = "";
+    this->headers["allow"] = "";
+    this->headers["auth-scheme"] = "";
+    this->headers["authorization"] = "";
+    this->headers["content-language"] = "";
+    this->headers["content-length"] = "";
+    this->headers["content-location"] = "";
+    this->headers["content-type"] = "";
+    this->headers["date"] = "";
+    this->headers["host"] = "";
+    this->headers["last-modified"] = "";
+    this->headers["location"] = "";
+    this->headers["referer"] = "";
+    this->headers["retry-after"] = "";
+    this->headers["server"] = "";
+    this->headers["transfer-encoding"] = "";
+    this->headers["user-agent"] = "";
+    this->headers["www-authenticate"] = "";
+    this->headers["connection"] = "";
+}
+
 std::vector<std::string> Request::known_methods = Request::build_known_methods();
 
 
@@ -73,6 +97,11 @@ bool Request::request_is_ready() const
     return this->request_ready;
 }
 
+std::map<std::string, std::string> const& Request::get_headers() const
+{
+    return this->headers;
+} 
+
 // void Request::set_error_code(int code)
 // {
 //     this->error_code = code;
@@ -91,7 +120,7 @@ void Request::print() const
     std::cout << " . Target: " << this->req_line.target << std::endl;
     std::cout << " . Version: " << this->req_line.version << std::endl;
     std::cout << std::endl;
-    for (std::list<header>::const_iterator it = this->headers.begin(); it != this->headers.end(); it++)
+    for (std::map<std::string, std::string>::const_iterator it = this->headers.begin(); it != this->headers.end(); it++)
     {
         std::cout << "Header line:" << std::endl;
         std::cout << " . field_name: " << "[" << it->first << "]" << std::endl;

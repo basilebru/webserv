@@ -25,7 +25,8 @@ struct conf
         int                         autoindex;
         errorMap                    error_pages;
         std::vector<std::string>    cgi_allowed_ext;
-        // authentification attribute
+        std::string                 auth_basic;
+        std::string                 auth_basic_user_file;
 };
 
 class Request
@@ -33,13 +34,16 @@ class Request
     friend class Response;
     friend class CgiHandler;
     public:
-        typedef std::pair<std::string, std::string> header;
+        // typedef std::pair<std::string, std::string> header;
 
         // ATTRIBUTES
     private:
         // known HTTP methods
         static std::vector<std::string> known_methods;
         static std::vector<std::string> build_known_methods();
+
+        void    initHeaders(void);
+
 
         // reading from connection
         int fd;
@@ -51,7 +55,8 @@ class Request
         
         // storing request
         request_line req_line;
-        std::list<header> headers;
+        // std::list<header> headers;
+        std::map<std::string, std::string> headers;
         unsigned long body_size;
         unsigned long chunk_size;
         std::string body;
@@ -126,9 +131,10 @@ class Request
         int get_fd() const;
         sockaddr_in get_addr() const;
         bool request_is_ready() const;
+        std::map<std::string, std::string> const& get_headers() const;
         bool connection_end() const;
         // void set_error_code(int code);
-        
+
 };
 
 bool content_length_present(std::pair<std::string, std::string> header);

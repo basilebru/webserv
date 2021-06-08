@@ -9,14 +9,16 @@
 # include <algorithm>
 
 /* utils.cpp */
-bool		is_whitespace(char c);
-void		trim_whitespace(std::string &s);
-int			ft_isdigit(int c);
-int			ft_isdigit_str(const char *str);
-int			ft_isxdigit(int c);
-int			ft_isxdigit_str(const char *str);
-bool		ft_isdigit_string(const std::string& str);
-std::string iToString(size_t size);
+bool			is_whitespace(char c);
+void			trim_whitespace(std::string &s);
+int				ft_isdigit(int c);
+int				ft_isdigit_str(const char *str);
+int				ft_isxdigit(int c);
+int				ft_isxdigit_str(const char *str);
+bool			ft_isdigit_string(const std::string& str);
+std::string 	iToString(size_t size);
+std::string&	to_lower(std::string& str);
+std::string&	to_upper(std::string& str);
 
 
 /* ip_manipulation.cpp */
