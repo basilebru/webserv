@@ -35,6 +35,11 @@
 # define OFF		0
 # define NOT_SET	-1
 
+// Response return value
+#define CLOSE -1
+#define SEND 1
+#define SKIP 0
+
 // Default server config values
 # define DEFAULT_INDEX			"index.html"
 # define DEFAULT_AUTOINDEX		0				// OFF

@@ -1,8 +1,7 @@
 #ifndef RESPONSE_HPP
 # define RESPONSE_HPP
 
-# include "CgiHandler.hpp"
-# include "Autoindex.hpp"
+# include "webserv.hpp"
 # include "request_class.hpp"
 
 class Response {
@@ -13,9 +12,9 @@ private:
     const Request               &req;
     std::string                 headers;
     std::vector<unsigned char>  &response;
-    int                         response_code;
-    std::string                 extension;
-    std::string                 target;
+    int                         response_code; 
+    std::string                 extension; // copy from request, in order to be able to modify value (request is const)
+    std::string                 target; // // copy from request, in order to be able to modify value (request is const)
     static str_map extension_map;
     static str_map init_ext_map();
 

@@ -142,12 +142,12 @@ int		Server::loop_client_socket()
 			it->second->print();
 			Response res(*it->second, this->response_buffers[it->first]);
 			ret = res.process();
-			if (ret == -1) // clear
+			if (ret == CLOSE)
 			{
 				this->close_socket(it++->first); // use post incrementation in order to "copy" next element before deleting current element
 				continue;
 			}
-			if (ret == 1) // new request
+			if (ret == SEND)
 			{
 				// save fd and addr, delete request and create new request
 				int fd = it->second->get_fd();
