@@ -52,18 +52,22 @@ void	CgiHandler::initEnv(void)
 	/* Les variables d'environnement permettent au script d'accéder à des informations
 	relatives au serveur, au client, à la requête. */
 
-	this->_env_map["AUTH_TYPE"]			=	"value";	// mode d'authentification, auth_basic ??
+	std::map<std::string, std::string> headers = this->_req.get_headers();
+
+	if (this->_req.config.auth_basic != DEFAULT_AUTH_BASIC)
+		this->_env_map["AUTH_TYPE"]		=	"Basic";	// mode d'authentification, auth_basic ??
+	
 	this->_env_map["CONTENT_LENGTH"]	=	iToString(this->_req.body_size);	// content-length de la requete
-	this->_env_map["CONTENT_TYPE"]		=	"value";	// content-type de la requete
+	this->_env_map["CONTENT_TYPE"]		=	headers["content-type"];	// content-type de la requete (POST)
 	this->_env_map["GATEWAY_INTERFACE"]	=	"CGI/1.1";	// version du CGI qu'utilise le server
 	this->_env_map["PATH_INFO"]			=	"value";	// derniere partie de l'URI apres le script name
 	this->_env_map["PATH_TRANSLATED"]	=	"value";	// adresse reelle du script (idem PATH_INFO pour nous)
 	this->_env_map["QUERY_STRING"]		=	this->_req.req_line.query_string;	// Contient tout ce qui suit le « ? » dans l'URL envoyée par le client.
-	this->_env_map["REMOTE_ADDR"]		=	"value";	// adress ip du client
-	this->_env_map["REMOTE_IDENT"]		=	"value";	// nom d'utilisateur du client
-	this->_env_map["REMOTE_USER"]		=	"value";	// nom d'utilisateur (distant) du client
+	this->_env_map["REMOTE_ADDR"]		=	this->_req.host_uri;	// adress ip du client
+	this->_env_map["REMOTE_IDENT"]		=	headers["authorization"];	// nom d'utilisateur du client
+	this->_env_map["REMOTE_USER"]		=	headers["authorization"];	// nom d'utilisateur (distant) du client
 	this->_env_map["REQUEST_METHOD"]	=	this->_req.req_line.method;	// GET ou POST ou ...
-	this->_env_map["REQUEST_URI"]		=	"value";	// URI
+	// this->_env_map["REQUEST_URI"]		=	this->_req.host_uri + ":" + this->_req.host_port + "?" + this->_req.req_line.query_string;	// URI
 	this->_env_map["SCRIPT_NAME"]		=	"value";	// full path du fichier de script
 	this->_env_map["SERVER_NAME"]		=	this->_req.host_uri;	// DNS ou IP du server (hostname)
 	this->_env_map["SERVER_PORT"]		=	this->_req.host_port;	// port ayant reçu la requête

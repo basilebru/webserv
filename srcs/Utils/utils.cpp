@@ -76,3 +76,15 @@ std::string iToString(size_t size)
 
     return (ss.str());
 }
+
+std::string& to_lower(std::string& str)
+{
+	std::transform(str.begin(), str.end(), str.begin(), tolower);
+	return (str);
+}
+
+std::string& to_upper(std::string& str)
+{
+	std::transform(str.begin(), str.end(), str.begin(), toupper);
+	return (str);
+}

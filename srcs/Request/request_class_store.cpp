@@ -84,7 +84,7 @@ void Request::store_header(std::string line)
     }
     field_value = line.substr(find + 1);
     trim_whitespace(field_value);
-    this->headers.push_back(header(field_name, field_value));
+    this->headers[to_lower(field_name)] = field_value;
 }
 
 
@@ -100,7 +100,7 @@ void Request::store_host()
     }
     std::string host;
     std::string port;
-    host = std::find_if(this->headers.begin(), this->headers.end(), host_present)->second;
+    host = this->headers["host"];
     size_t find;
     if ((find = host.find(':')) == std::string::npos)
     {
@@ -123,13 +123,13 @@ void Request::store_host()
 
 void Request::store_body_headers()
 {
-    if (this->has_transfer_encoding())
+    if (this->headers["transfer-encoding"] != "")
     {
         this->store_encoding();
         this->body_size = 0;
         return ; // priorité au transfer-encoding header sur le body-length header
     }
-    if (this->has_content_length())
+    if (this->headers["content-length"] != "")
         this->store_body_size();
 }
 
@@ -161,8 +161,8 @@ void Request::store_chunk_size(std::string line)
 void Request::store_encoding()
 {
     std::string encoding;
-    encoding =  std::find_if(this->headers.begin(), this->headers.end(), transfer_encoding_present)->second;
-    if (encoding == "chunked" || encoding == "Chunked")
+    encoding =  this->headers["transfer-encoding"];
+    if (to_lower(encoding) == "chunked")
         this->chunked_encoding = true;
     else
     {
@@ -174,7 +174,7 @@ void Request::store_encoding()
 void Request::store_body_size()
 {
     std::string body_size;
-    body_size =  std::find_if(this->headers.begin(), this->headers.end(), content_length_present)->second;
+    body_size =  this->headers["content-length"];
     if (ft_isdigit_str(body_size.c_str()) == false)
     {
         this->error_message = "parsing error: Content-length header value is invalid: " + body_size;
@@ -203,7 +203,7 @@ void Request::store_body_size()
     }
 }
 
-bool Request::has_transfer_encoding() const
+bool Request::has_transfer_encoding()  const
 {
     if (std::find_if(this->headers.begin(), this->headers.end(), transfer_encoding_present) != this->headers.end())
         return true;
