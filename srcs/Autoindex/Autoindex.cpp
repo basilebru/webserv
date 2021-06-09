@@ -5,21 +5,23 @@ Autoindex::Autoindex(Request const& req) : _req(req)
 	return ;
 }
 
-/*Autoindex::Autoindex(Autoindex const & copy)
+Autoindex::Autoindex(Autoindex const & copy) : _buf(copy._buf), _req(copy._req)
 {
-
-}*/
+	return ;
+}
 
 Autoindex::~Autoindex(void)
 {
 	return ;
 }
 
-/*Autoindex::Autoindex& operator=(Autoindex const & rhs)
+Autoindex& Autoindex::operator=(Autoindex const & rhs)
 {
+	this->_buf = rhs._buf;
+	// this->_req = rhs._req;
 
+	return (*this);
 }
-*/
 
 void		Autoindex::genLink(char *d_name, unsigned char d_type)
 {

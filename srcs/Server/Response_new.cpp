@@ -70,6 +70,7 @@ Response::str_map Response::init_ext_map()
     mp["jpg"] = "image/jpeg";
     mp["png"] = "image/png";
     mp["bmp"] = "image/bmp";
+    mp["gif"] = "image/gif";
     mp["ico"] = "image/x-icon";
     return mp;
 }
