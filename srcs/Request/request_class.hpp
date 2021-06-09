@@ -33,6 +33,7 @@ class Request
 {
     friend class Response;
     friend class CgiHandler;
+    friend class Autoindex;
     public:
         // typedef std::pair<std::string, std::string> header;
 

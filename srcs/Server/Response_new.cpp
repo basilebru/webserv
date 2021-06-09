@@ -70,6 +70,7 @@ Response::str_map Response::init_ext_map()
     mp["jpg"] = "image/jpeg";
     mp["png"] = "image/png";
     mp["bmp"] = "image/bmp";
+    mp["ico"] = "image/x-icon";
     return mp;
 }
 
@@ -152,9 +153,11 @@ void Response::index_module()
 
     // build autoindex
     std::cout << "auto" << std::endl;
-    Autoindex ind;
-    std::string auto_index = ind.genAutoindex(this->target);
-    if (auto_index.empty())
+    Autoindex ind(this->req);
+    std::string auto_index;
+    if (ind.genAutoindex(this->target) == SUCCESS)
+        auto_index = ind.getAutoindex();
+    else
         return error_module(500);
     this->response.assign(auto_index.begin(), auto_index.end()); 
     this->response_code = 200;

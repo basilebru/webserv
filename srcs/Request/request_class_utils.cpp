@@ -146,6 +146,7 @@ void    Request::print2(void) const
     std::cout << "--------------------------------" << std::endl;
 
     std::cout << "HOST: " << this->host_uri << std::endl;
+    std::cout << "PORT: " << this->host_port << std::endl;
     std::cout << "METHOD: " << this->req_line.method << std::endl;
     std::cout << "TARGET: " << this->req_line.target << std::endl;
     std::cout << "VERSION: " << this->req_line.version << std::endl;

@@ -59,7 +59,7 @@ void Response::build_response()
         }
         else if (this->req.req_line.target.find("/image") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
         {
-            this->send_img("./html/images/favicon.ico");
+            this->send_img("./html/images/42.png");
             return;
         }
         else if (this->req.req_line.target.find("/redir") != std::string::npos) //Test pour l'envoi de l'icone du site que le navigateur demande systematiquement
@@ -140,8 +140,8 @@ void Response::send_img(std::string const& path)
 
     this->buf = "HTTP/1.1 200 OK\r\n";
     this->buf += "Accept-Ranges: bytes\r\n";
-    this->buf += "Content-Length: 1150\r\n";
-    this->buf += "Content-Type: image/vnd.microsoft.icon\r\n";
+    this->buf += "Content-Length: 11061\r\n";
+    this->buf += "Content-Type: image/png\r\n";
     this->buf += "Connection: keep-alive\r\n\r\n";
 
     this->response.assign(this->buf.begin(), this->buf.end());
