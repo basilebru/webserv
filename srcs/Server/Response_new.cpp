@@ -6,6 +6,7 @@
 Response::Response(const Request &req, std::vector<unsigned char> &buf): req(req), response(buf)
 {
     this->target = this->req.target_uri;
+    this->extension = this->req.req_line.extension;
     this->response_code = 0;
     // std::cout << "Response created" << std::endl;
 }
@@ -142,6 +143,7 @@ void Response::index_module()
         if (stat(target.c_str(), &buffer) == 0)
         {
             this->target = target;
+            this->get_target_extension();
             return this->file_module();
         }
     }
@@ -166,6 +168,7 @@ void Response::error_module(int error_code)
 	std::string buf;
 
     this->target = error_pages[error_code];
+    this->get_target_extension();
     this->response_code = error_code;
 
     std::ifstream ifs(this->target.c_str(), std::ios::in);
@@ -214,7 +217,6 @@ void Response::file_module()
         return this->error_module(404); // depend de errno ?
     else
     {
-        this->get_target_extension();
         if (this->response_code == 0)
             this->response_code = 200;
         this->response.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
