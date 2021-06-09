@@ -17,6 +17,7 @@ private:
     std::string                 target; // // copy from request, in order to be able to modify value (request is const)
     static str_map extension_map;
     static str_map init_ext_map();
+    static std::string delete_response;
 
     void build_response_line();
     void get_target_extension();

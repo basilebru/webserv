@@ -84,8 +84,9 @@ void Response::build_response()
             {
                 this->buf += "Content-Length: 673\r\n\r\n"; // A calculer
                 std::cout << "auto" << std::endl;
-                Autoindex ind;
-                this->buf += ind.genAutoindex(this->req.target_uri); // TO DO: gestion des "erreurs": cas ou genAutoindex renvoie "" (dossier qui n'existe pas...)
+                Autoindex ind(this->req);
+                if (ind.genAutoindex(this->req.target_uri) == SUCCESS) // TO DO: gestion des "erreurs": cas ou genAutoindex renvoie "" (dossier qui n'existe pas...)
+                    this->buf += ind.getAutoindex(); 
                 this->response.assign(this->buf.begin(), this->buf.end());
                 // displayVec(this->response);
                 // std::cerr << "BUF: " << this->buf << std::endl;
@@ -122,7 +123,15 @@ void Response::build_response()
         this->response.assign(this->buf.begin(), this->buf.end());
         this->response.insert(this->response.end(), bdy.begin(), bdy.end());
     }
-
+    else if (this->req.req_line.method == "DELETE")
+    {
+        std::cerr << "DELETE: " << this->req.target_uri << std::endl;
+        if (remove (this->req.target_uri.c_str()) != 0)
+        {
+            this->buf = "HTTP/1.1 500 Internal Server Error\r\n\r\n";
+            this->response.assign(this->buf.begin(), this->buf.end());
+        }
+    }
     else
     {
         this->buf = "still working on it :)\n";

@@ -75,6 +75,12 @@ Response::str_map Response::init_ext_map()
     return mp;
 }
 
+std::string Response::delete_response = "<html>\
+<body>\
+<h1>File deleted.</h1>\
+</body>\
+</html>";
+
 void Response::build_headers()
 {
     bool empty_headers = this->headers.empty();
@@ -119,6 +125,19 @@ void Response::build_response()
             return this->index_module();
         else
             return this->file_module();
+    }
+    else if (this->req.req_line.method == "DELETE")
+    {
+        std::cerr << "DELETE: " << this->req.target_uri << std::endl;
+        if (remove (this->req.target_uri.c_str()) == 0)
+        {
+            this->response_code = 200;
+            this->extension = "html";
+            this->response.assign(Response::delete_response.begin(), Response::delete_response.end());
+            this->build_headers();
+        }
+        else
+            return this->error_module(500);
     }
     else
         return this->error_module(500);
@@ -180,7 +199,7 @@ void Response::error_module(int error_code)
     {
     	this->response_code = 500;
         buf = "500 Internal Server Error";
-	    this->extension = "txt";
+        this->extension = "txt";
         this->response.assign(buf.begin(), buf.end());
         return this->build_headers();
     }
