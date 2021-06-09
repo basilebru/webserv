@@ -126,6 +126,10 @@ void Response::build_response()
         else
             return this->file_module();
     }
+    else if (this->req.req_line.method == "POST")
+    {
+        this->cgi_module();
+    }
     else if (this->req.req_line.method == "DELETE")
     {
         std::cerr << "DELETE: " << this->req.target_uri << std::endl;
@@ -203,23 +207,23 @@ void Response::error_module(int error_code)
         this->response.assign(buf.begin(), buf.end());
         return this->build_headers();
     }
-    this->file_module();
-    // else
-    // {
-	//     this->extension = "html";
-	//     this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+    // this->file_module();
+    else
+    {
+	    this->extension = "html";
+	    this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 
-    // }
-    // this->build_headers();
-	// std::cout << "Contenu de la reponse:" << std::endl;
-    // std::cout << "---------------------------" << std::endl;
-    // for (size_t i = 0; i < this->response.size(); ++i)
-    // {
-    //     std::cout << this->response[i];
-    // }
-    // std::cout << std::endl;
-    // std::cout << "---------------------------" << std::endl;
-    // ifs.close();
+    }
+    this->build_headers();
+	std::cout << "Contenu de la reponse:" << std::endl;
+    std::cout << "---------------------------" << std::endl;
+    for (size_t i = 0; i < this->response.size(); ++i)
+    {
+        std::cout << this->response[i];
+    }
+    std::cout << std::endl;
+    std::cout << "---------------------------" << std::endl;
+    ifs.close();
 }
 
 void Response::get_target_extension()

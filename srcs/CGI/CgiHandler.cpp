@@ -199,9 +199,10 @@ int	CgiHandler::execScript(std::string const& scriptName)
 	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
 
 	*/
-	std::vector<unsigned char> body;
-	char buf[CGI_BUF_SIZE];
-	int ret = CGI_BUF_SIZE;
+	std::vector<unsigned char>	body;
+	char	buf[CGI_BUF_SIZE];
+	int		ret = CGI_BUF_SIZE;
+	int		status;
 
 
 	this->fillEnvp();
@@ -238,7 +239,10 @@ int	CgiHandler::execScript(std::string const& scriptName)
 		{
 			std::cerr << scriptName.c_str() << std::endl;
 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
-			return FAILURE;
+			close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
+			close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
+			_exit(1);
+			// write(STDOUT_FILENO, "Status: 500 Internal Server Error\r\n\r\n", 37);
 		}
 		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
@@ -254,16 +258,25 @@ int	CgiHandler::execScript(std::string const& scriptName)
 		while (ret == CGI_BUF_SIZE)
 		{
 			memset(buf, 0, CGI_BUF_SIZE);
-			ret = read(cgiToSrv_fd[0], buf, CGI_BUF_SIZE);
-			// std::cerr << "ret: " << ret << std::endl;
+			if ((ret = read(cgiToSrv_fd[0], buf, CGI_BUF_SIZE)) < 0)
+				return FAILURE;
 			this->storeBuffer(body, buf, ret);
 		}
 
-		fillOutputs(body);
+		if (!body.empty())
+			fillOutputs(body);
 
 		close(cgiToSrv_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
-		waitpid(pid, NULL, 0);
+		if (waitpid(pid, &status, 0) == -1)
+			return FAILURE;
+
+		if (WIFEXITED(status))
+		{
+			if (WEXITSTATUS(status) == 1)
+				return FAILURE;
+		}
+
 	}
 	return SUCCESS;
 }
