@@ -32,7 +32,7 @@ void		Autoindex::genLink(char *d_name, unsigned char d_type)
 		this->_buf += ':';
 		this->_buf += this->_req.host_port;
 	}
-	this->_buf += '/';
+	this->_buf += this->_req.req_line.target;
 	this->_buf +=  d_name;
 	if (d_type == DT_DIR)
 		this->_buf += '/';
