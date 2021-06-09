@@ -19,6 +19,7 @@ private:
     static str_map init_ext_map();
 
     void build_response_line();
+    void get_target_extension();
     std::string get_content_type();
     void build_response();
     void build_headers();

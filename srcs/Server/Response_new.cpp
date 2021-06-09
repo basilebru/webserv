@@ -5,7 +5,6 @@
 
 Response::Response(const Request &req, std::vector<unsigned char> &buf): req(req), response(buf)
 {
-    this->extension = this->req.req_line.extension;
     this->target = this->req.target_uri;
     // std::cout << "Response created" << std::endl;
 }
@@ -75,7 +74,7 @@ Response::str_map Response::init_ext_map()
 void Response::build_headers()
 {
     bool empty_headers = this->headers.empty();
-    // headers
+    
     std::string buf = "Content-Length";
     if (std::search(this->headers.begin(), this->headers.end(), buf.begin(), buf.end(), my_equal) == this->headers.end())
     {
@@ -141,9 +140,6 @@ void Response::index_module()
         std::string target =  "./" + this->req.target_uri + *it;
         if (stat(target.c_str(), &buffer) == 0)
         {
-            size_t pos = it->find('.');
-            if (pos != std::string::npos)
-                this->extension = it->substr(pos + 1);
             this->target = target;
             return this->file_module();
         }
@@ -157,7 +153,7 @@ void Response::index_module()
     std::string auto_index = ind.genAutoindex(this->target);
     if (auto_index.empty())
         return error_module(500);
-    this->response.assign(auto_index.begin(), auto_index.end()); // TO DO: gestion des "erreurs": cas ou genAutoindex renvoie "" (dossier qui n'existe pas...)
+    this->response.assign(auto_index.begin(), auto_index.end()); 
     this->response_code = 200;
     this->extension = "html";
     this->build_headers();
@@ -170,48 +166,57 @@ void Response::error_module(int error_code)
 
     this->target = error_pages[error_code];
     this->response_code = error_code;
+    this->file_module();
 
-    std::ifstream ifs(this->target.c_str(), std::ios::in);
-    if (ifs.fail())
-    {
-    	this->response_code = 500;
-        buf = "500 Internal Server Error";
-	    this->extension = "txt";
-        this->response.assign(buf.begin(), buf.end());
-    }
-    else
-    {
-	    this->extension = "html";
-	    this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+    // std::ifstream ifs(this->target.c_str(), std::ios::in);
+    // if (ifs.fail())
+    // {
+    // 	this->response_code = 500;
+    //     buf = "500 Internal Server Error";
+	//     this->extension = "txt";
+    //     this->response.assign(buf.begin(), buf.end());
+    // }
+    // else
+    // {
+	//     this->extension = "html";
+	//     this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 
-    }
-    this->build_headers();
-	std::cout << "Contenu de la reponse:" << std::endl;
-    std::cout << "---------------------------" << std::endl;
-    for (size_t i = 0; i < this->response.size(); ++i)
-    {
-        std::cout << this->response[i];
-    }
-    std::cout << std::endl;
-    std::cout << "---------------------------" << std::endl;
-    ifs.close();
+    // }
+    // this->build_headers();
+	// std::cout << "Contenu de la reponse:" << std::endl;
+    // std::cout << "---------------------------" << std::endl;
+    // for (size_t i = 0; i < this->response.size(); ++i)
+    // {
+    //     std::cout << this->response[i];
+    // }
+    // std::cout << std::endl;
+    // std::cout << "---------------------------" << std::endl;
+    // ifs.close();
+}
+
+void Response::get_target_extension()
+{
+    size_t pos = this->target.find_last_of('.');
+    if (pos != std::string::npos)
+        this->extension = this->target.substr(pos + 1);
+    std::cout << "ext:" << this->extension << std::endl;
 }
 
 void Response::file_module()
 {
+    struct stat buffer;
+    if (stat(this->target.c_str(), &buffer) == -1)
+        return this->error_module(404);
+
     if (this->is_cgi_extension())
-    {
-        this->cgi_module();
-        return ;
-    }
+        return this->cgi_module();
+    
     std::ifstream ifs(this->target.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
     if (ifs.fail())
-    {
-        this->error_module(404);
-        return ;
-    }
+        return this->error_module(500);
     else
     {
+        this->get_target_extension();
         this->response_code = 200;
         this->response.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
     }
