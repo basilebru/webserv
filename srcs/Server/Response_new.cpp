@@ -46,6 +46,7 @@ void Response::build_response_line()
     std::string ret;
     ret = "HTTP/1.1 ";
     ret += iToString(this->response_code);
+    ret += " ";
     ret += code_map[this->response_code];
     ret += "\r\n"; // look into a map to get signigication of response_code
     this->response.insert(this->response.begin(), ret.begin(), ret.end());
