@@ -46,7 +46,8 @@ void Response::build_response_line()
     std::string ret;
     ret = "HTTP/1.1 ";
     ret += iToString(this->response_code);
-    ret += " STATUS\r\n"; // look into a map to get signigication of response_code
+    ret += code_map[this->response_code];
+    ret += "\r\n"; // look into a map to get signigication of response_code
     this->response.insert(this->response.begin(), ret.begin(), ret.end());
 }
 
@@ -75,6 +76,17 @@ Response::str_map Response::init_ext_map()
     return mp;
 }
 
+Response::int_map Response::code_map = Response::init_code_map();
+
+Response::int_map Response::init_code_map()
+{
+    int_map mp;
+    mp[200] = "OK";
+    mp[404] = "Not found";
+    mp[500] = "Internal server error";
+    return mp;
+}
+
 std::string Response::delete_response = "<html>\
 <body>\
 <h1>File deleted.</h1>\
@@ -86,27 +98,19 @@ void Response::build_headers()
     bool empty_headers = this->headers.empty();
     
     std::string buf = "Content-Length";
-    if (std::search(this->headers.begin(), this->headers.end(), buf.begin(), buf.end(), my_equal) == this->headers.end())
-    {
-        std::cout << "building content-length" << std::endl;
-        std::cout << this->response.size() << std::endl;
-        this->headers += "Content-length: ";
-        this->headers += iToString(this->response.size());
-        this->headers += "\r\n";
-    }
+    std::cout << this->response.size() << std::endl;
+    this->headers += "Content-length: ";
+    this->headers += iToString(this->response.size());
+    this->headers += "\r\n";
 
     buf = "Content-type";
-    if (std::search(this->headers.begin(), this->headers.end(), buf.begin(), buf.end(), my_equal) == this->headers.end())
-    {
-        // std::cout << "building content-type" << std::endl;
-        this->headers += "Content-type: ";
-        str_map::iterator it;
-        if ((it = this->extension_map.find(this->extension)) != this->extension_map.end())
-            this->headers += it->second;
-        else
-            this->headers += "application/octet-stream"; // ou text/plain ?
-        this->headers += "\r\n";
-    }
+    this->headers += "Content-type: ";
+    str_map::iterator it;
+    if ((it = this->extension_map.find(this->extension)) != this->extension_map.end())
+        this->headers += it->second;
+    else
+        this->headers += "application/octet-stream"; // ou text/plain ?
+    this->headers += "\r\n";
 
     if (empty_headers)
         this->headers += "\r\n";
@@ -156,10 +160,11 @@ bool Response::is_cgi_extension()
 
 void Response::index_module()
 {
+    // std::cout << "index module" << std::endl;
     // check if dir exists
     struct stat buffer;
     if (stat(this->target.c_str(), &buffer) == -1)
-        return this->error_module(500);
+        return this->error_module(404);
     
     // try each file in index directive
     for (std::vector<std::string>::const_iterator it = this->req.config.index.begin(); it != this->req.config.index.end(); it++)
@@ -172,6 +177,7 @@ void Response::index_module()
             return this->file_module();
         }
     }
+    // std::cout << "autoindex module" << std::endl;
     if (this->req.config.autoindex == 0)
         return this->error_module(404);
 
@@ -238,7 +244,6 @@ void Response::file_module()
 {
     if (this->is_cgi_extension())
         return this->cgi_module();
-    
     std::ifstream ifs(this->target.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
     if (ifs.fail())
         return this->error_module(404); // depend de errno ?

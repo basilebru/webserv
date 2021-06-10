@@ -8,6 +8,7 @@ class Response {
 
 private:
     typedef std::map<std::string, std::string> str_map;
+    typedef std::map<int, std::string> int_map;
 
     const Request               &req;
     std::string                 headers;
@@ -17,6 +18,8 @@ private:
     std::string                 target; // // copy from request, in order to be able to modify value (request is const)
     static str_map extension_map;
     static str_map init_ext_map();
+    static int_map code_map;
+    static int_map init_code_map();
     static std::string delete_response;
 
     void build_response_line();
