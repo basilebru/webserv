@@ -48,7 +48,6 @@ class Request
 
         // reading from connection
         int fd;
-        // std::string buffer;
         std::vector<unsigned char> buffer;
         
         // error
@@ -61,8 +60,7 @@ class Request
         std::map<std::string, std::string> headers;
         unsigned long body_size;
         unsigned long chunk_size;
-        std::string body;
-        // std::vector<unsigned char> body;
+        std::vector<unsigned char> body;
         std::string host_uri;
         std::string host_port;
         std::string target_uri; // concatenation of config.root and req_line.target
@@ -105,6 +103,7 @@ class Request
         void parse_body_chunked();
         bool parse_chunked_size();
         bool parse_chunked_data();
+        std::vector<unsigned char>::iterator find_crlf();
         bool read_buf_line(std::string &line);
         void read_from_socket();
 

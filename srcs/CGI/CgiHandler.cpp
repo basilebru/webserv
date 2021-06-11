@@ -251,8 +251,8 @@ int	CgiHandler::execScript(std::string const& scriptName)
 	{
 		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
-		
-		write(srvToCgi_fd[1], this->_req.body.c_str(), this->_req.body.size()); // /!\ _req.body ne devrait pas etre un std::string
+		if (!this->_req.body.empty())
+			write(srvToCgi_fd[1], &this->_req.body[0], this->_req.body.size()); // /!\ _req.body ne devrait pas etre un std::string
 		// std::cerr << "REQ BDY: " << this->_req.body.c_str() << std::endl;
 
 		while (ret == CGI_BUF_SIZE)

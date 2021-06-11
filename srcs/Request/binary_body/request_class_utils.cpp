@@ -148,7 +148,9 @@ void Request::print() const
     }
     if (!this->body.empty())
     {
-        std::cout << "body: " << this->body << std::endl;
+        std::string bdy;
+        bdy.assign(this->body.begin(), this->body.end());
+        std::cout << "body: " << bdy << std::endl;
         std::cout << std::endl;
     }
 }
@@ -165,7 +167,9 @@ void    Request::print2(void) const
     std::cout << "VERSION: " << this->req_line.version << std::endl;
     std::cout << "TARGET PATH: " << this->target_uri << std::endl;
     
-    std::cout << "BODY: " << this->body << std::endl;
+    std::string bdy;
+    bdy.assign(this->body.begin(), this->body.end());
+    std::cout << "BODY: " << bdy << std::endl;
     std::cout << "BDY SIZE: " << iToString(this->body_size) << std::endl;
     
     std::cout << "CHUNK SIZE: " << iToString(this->chunk_size) << std::endl;

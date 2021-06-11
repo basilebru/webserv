@@ -44,7 +44,9 @@ void Request::parse()
         this->read_from_socket();
         if (this->error_code)
             return;
-        std::cout << "buffer: " << this->buffer << std::endl;
+        std::string buf;
+        buf.assign(this->buffer.begin(), this->buffer.end());
+        std::cout << "buffer: " << buf << std::endl;
         this->parse_buffer();
     }
     catch(const std::exception& e)
@@ -72,9 +74,11 @@ void Request::read_from_socket()
     ret = recv(this->fd, &buf[0], BUF_SIZE, MSG_DONTWAIT);
     if (ret > 0)
     {
-        if (ret == 5 && buf == Request::ctrl_c)
+        // buf.resize(ret);
+        if (ret == 5 && buf[0] == Request::ctrl_c[0]) // à modifier
             this->error_code = 400;
-        this->buffer.insert(this->buffer.begin(), buf.begin(), buf.end());
+        this->buffer.insert(this->buffer.begin(), buf.begin(), buf.begin() + ret);
+        // std::cout << "buf size: " << this->buffer.size();
     }
     if (ret == 0)
         this->end_of_connection = true;
@@ -148,10 +152,12 @@ void Request::parse_body()
 void Request::parse_body_normal()
 {
     std::cout << "Parsing body normal..." << std::endl;
+    std::cout << "buf size" << this->buffer.size() << std::endl;
+    std::cout << "bdy size" << this->body_size << std::endl;
     if (this->buffer.size() >= this->body_size)
     {
-        this->body = this->buffer.substr(0, this->body_size);
-        this->buffer.erase(0, this->body_size);
+        this->body.assign(this->buffer.begin(), this->buffer.begin() + this->body_size);
+        this->buffer.erase(this->buffer.begin(), this->buffer.begin() + this->body_size);
         this->request_ready = true;
     }
 }
@@ -196,28 +202,42 @@ bool Request::parse_chunked_data()
 {
     if (this->buffer.size() < this->chunk_size + 2) // + 2 because we also want to read crlf after chunk data
         return false;
-    this->body += this->buffer.substr(0, this->chunk_size);
-    this->buffer.erase(0, this->chunk_size);
-    std::string crlf = this->buffer.substr(0, 2);
-    if (crlf != "\r\n")
+    this->body.insert(this->body.end(), this->buffer.begin(), this->buffer.begin() + this->chunk_size);
+    this->buffer.erase(this->buffer.begin(), this->buffer.begin() + this->chunk_size);
+    if (this->buffer.size() < 2 || this->buffer[0] != '\r' || this->buffer[1] != '\n')
     {
         this->error_message = "parsing error: no CRLF after chunked data";
         this->error_code = 400;
         return false;
     }
-    this->buffer.erase(0, 2);
+    this->buffer.erase(this->buffer.begin(), this->buffer.begin() +2);
     return true;
 }
 
+std::vector<unsigned char>::iterator Request::find_crlf()
+{
+    for (std::vector<unsigned char>::iterator it = this->buffer.begin(); it != this->buffer.end();)
+    {
+        if (*it == '\r')
+        {
+            if (*++it == '\n')
+                return --it;
+        }
+        else
+            it++;
+    }
+    return this->buffer.end();
+    
+}
 
 bool Request::read_buf_line(std::string &line)
 {
-    size_t pos;
-    pos = this->buffer.find("\r\n");
-    if (pos == std::string::npos)
+
+    std::vector<unsigned char>::iterator pos = this->find_crlf();
+    if (pos == this->buffer.end())
         return false;
-    line = this->buffer.substr(0, pos);
-    this->buffer.erase(0, pos + 2);
+    line.assign(this->buffer.begin(), pos);
+    this->buffer.erase(this->buffer.begin(), pos + 2);
     return true;
 }
 
