@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/04 09:44:38 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/11 15:58:56 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ LocationBlock::LocationBlock(LocationBlock const & copy)
 {
 	// std::cout << YELLOW << "CPY LOC CTOR" << NOCOLOR <<std::endl;
 	this->_path = copy._path;
+	this->_cgi_path = copy._cgi_path;
 	this->_root = copy._root;
 	this->_autoindex = copy._autoindex;
 	this->_indexes = copy._indexes;
@@ -42,6 +43,7 @@ LocationBlock::LocationBlock(LocationBlock const & copy)
 	this->_auth_basic = copy._auth_basic;
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
+	this->_returns = copy._returns;
 
 	return ;
 }
@@ -54,6 +56,7 @@ LocationBlock::~LocationBlock(void)
 LocationBlock& LocationBlock::operator=(LocationBlock const & rhs)
 {
 	this->_path = rhs._path;
+	this->_cgi_path = rhs._cgi_path;
 	this->_root = rhs._root;
 	this->_autoindex = rhs._autoindex;
 	this->_indexes = rhs._indexes;
@@ -65,20 +68,31 @@ LocationBlock& LocationBlock::operator=(LocationBlock const & rhs)
 	this->_auth_basic = rhs._auth_basic;
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
+	this->_returns = rhs._returns;
 
 	return *this;
 }
 
 // Setters
-void	LocationBlock::setPath(std::string path)
+void	LocationBlock::setPath(std::string const& path)
 {
 	this->_path = path;
+}
+
+void	LocationBlock::setCgiPath(std::string const& path)
+{
+	this->_cgi_path = path;
 }
 
 // Getters
 const std::string&		LocationBlock::getPath(void) const
 {
 	return this->_path;
+}
+
+const std::string&		LocationBlock::getCgiPath(void) const
+{
+	return this->_cgi_path;
 }
 
 
@@ -99,14 +113,18 @@ std::ostream & operator<<(std::ostream & o, LocationBlock const & rhs)
 	o << pad << "ERROR PAGES: ";
 	putMapToOstream(o, rhs.getErrorPages().begin(), rhs.getErrorPages().end());	
 
+	o << pad << "REDIRECTIONS: ";
+	putMapToOstream(o, rhs.getReturns().begin(), rhs.getReturns().end());	
+
 	o << pad << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
-	o << pad << "KEEP. TIMEOUT: " << rhs.getKeepaliveTime() << std::endl;
+	o << pad << "KEEP. TIMEOUT: " << rhs.getKeepaliveTimeout() << std::endl;
 
 	o << pad << "CHUNKED ENC.: "; putState(o, rhs.getChunkedEncoding());
 	
 	o << pad << "AUTH BASIC: " << rhs.getAuthBasic() << std::endl;
 	o << pad << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;
 
+	o << pad << "CGI PATH: " << rhs.getCgiPath() << std::endl;
 	o << pad << "CGI ALLOWED EXT: ";
 	putVecToOstream(o, rhs.getCgiAllowedExt().begin(), rhs.getCgiAllowedExt().end());
 

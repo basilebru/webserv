@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/04 09:44:52 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/11 16:06:05 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ HttpBlock::HttpBlock(HttpBlock const & copy)
 	this->_auth_basic = copy._auth_basic;
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
+	this->_returns = copy._returns;
 
 	return ;
 }
@@ -56,17 +57,18 @@ HttpBlock& HttpBlock::operator=(HttpBlock const & rhs)
 	this->_auth_basic = rhs._auth_basic;
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
+	this->_returns = rhs._returns;
 
 	return *this;
 }
 
 
-void	HttpBlock::setRoot(std::string path)
+void	HttpBlock::setRoot(std::string const& path)
 {
 	this->_root = path;
 }
 
-void	HttpBlock::setAutoIndex(std::string& state)
+void	HttpBlock::setAutoIndex(std::string const& state)
 {
 	if (state == "on")
 		this->_autoindex = ON;
@@ -84,7 +86,7 @@ void	HttpBlock::setLimitExcept(strVecIterator first, strVecIterator last)
 	this->_limit_except.assign(first, last);
 }
 
-int		HttpBlock::setErrorPages(strVecIterator first, strVecIterator last, std::string& val)
+int		HttpBlock::setErrorPages(strVecIterator first, strVecIterator last, std::string const& val)
 {
 	int key(0);
 
@@ -99,16 +101,16 @@ int		HttpBlock::setErrorPages(strVecIterator first, strVecIterator last, std::st
 	return (SUCCESS);
 }
 
-void HttpBlock::setMaxBdySize(size_type size)
+void HttpBlock::setMaxBdySize(size_type const& size)
 {
 	this->_client_max_body_size = size;
 }
-void HttpBlock::setKeepaliveTimeout(size_type timeout)
+void HttpBlock::setKeepaliveTimeout(size_type const& timeout)
 {
 	this->_keepalive_timeout = timeout;
 }
 
-void	HttpBlock::setChunkedEncoding(std::string& state)
+void	HttpBlock::setChunkedEncoding(std::string const& state)
 {
 	if (state == "on")
 		this->_chunked_transfer_encoding = ON;
@@ -116,12 +118,12 @@ void	HttpBlock::setChunkedEncoding(std::string& state)
 		this->_chunked_transfer_encoding = OFF;
 }
 
-void	HttpBlock::setAuthBasic(std::string value)
+void	HttpBlock::setAuthBasic(std::string const& value)
 {
 	this->_auth_basic = value;
 }
 
-void	HttpBlock::setAuthBasicFile(std::string path)
+void	HttpBlock::setAuthBasicFile(std::string const& path)
 {
 	this->_auth_basic_user_file = path;
 }
@@ -129,6 +131,18 @@ void	HttpBlock::setAuthBasicFile(std::string path)
 void	HttpBlock::setCgiAllowedExt(strVecIterator first, strVecIterator last)
 {
 	this->_cgi_allowed_ext.assign(first, last);
+}
+
+int		HttpBlock::setReturn(std::string const& code, std::string const& url)
+{
+	int key(0);
+
+		key = atoi(code.c_str());
+		if (key < 300 || key > 599)
+			return (FAILURE);
+		this->_returns.insert(std::make_pair(key, url));
+
+	return (SUCCESS);
 }
 
 // Getters
@@ -162,7 +176,7 @@ const long int&		HttpBlock::getMaxBdySize(void) const
 	return this->_client_max_body_size;
 }
 
-const long int&		HttpBlock::getKeepaliveTime(void) const
+const long int&		HttpBlock::getKeepaliveTimeout(void) const
 {
 	return this->_keepalive_timeout;
 }
@@ -187,6 +201,11 @@ const stringVec&	HttpBlock::getCgiAllowedExt(void) const
 	return this->_cgi_allowed_ext;
 }
 
+const redirMap&	HttpBlock::getReturns(void) const
+{
+	return this->_returns;
+}
+
 std::ostream & operator<<(std::ostream & o, HttpBlock const & rhs)
 {
 
@@ -206,7 +225,7 @@ std::ostream & operator<<(std::ostream & o, HttpBlock const & rhs)
 	putMapToOstream(o, rhs.getErrorPages().begin(), rhs.getErrorPages().end());
 	
 	o << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
-	o << "KEEP. TIMEOUT: " << rhs.getKeepaliveTime() << std::endl;
+	o << "KEEP. TIMEOUT: " << rhs.getKeepaliveTimeout() << std::endl;
 
 	o << "CHUNKED ENC.: "; putState(o, rhs.getChunkedEncoding());
 	

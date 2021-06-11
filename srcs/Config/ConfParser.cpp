@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/04 09:42:46 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/11 15:50:12 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,7 @@ dirMap	ConfParser::setSrvMap()
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_allowed_extensions"] = &ConfParser::setCgiAllowedExt;
+	map["return"] = &ConfParser::setReturn;
 
 	return map;
 }
@@ -101,6 +102,8 @@ dirMap	ConfParser::setLocMap()
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_allowed_extensions"] = &ConfParser::setCgiAllowedExt;
+	map["cgi_path"] = &ConfParser::setCgiPath;
+	map["return"] = &ConfParser::setReturn;
 
 	return map;
 }
@@ -242,11 +245,11 @@ int ConfParser::setErrorPage(void)
 		ret  = this->_httpBlock.setErrorPages(++first, --end, this->_dir_line.back());
 	else if (this->_block_type == SERVER)
 	{
-		this->_servers.back().setErrorPages(++first, --end, this->_dir_line.back());
+		ret = this->_servers.back().setErrorPages(++first, --end, this->_dir_line.back());
 	}
 	if (this->_block_type == LOCATION)
 	{
-		this->_curr_location->setErrorPages(++first, --end, this->_dir_line.back());
+		ret = this->_curr_location->setErrorPages(++first, --end, this->_dir_line.back());
 	}
 	if (ret == FAILURE)
 		throw InvalidValue(this->_dir_line[0], this);
@@ -387,6 +390,35 @@ int ConfParser::setCgiAllowedExt(void)
 		this->_servers.back().setCgiAllowedExt(++first, this->_dir_line.end());
 	if (this->_block_type == LOCATION)
 		this->_curr_location->setCgiAllowedExt(++first, this->_dir_line.end());
+
+	return 0;
+}
+
+int ConfParser::setCgiPath(void)
+{
+	this->checkNbrOfArgs(2, &same_as<size_t>);
+
+	if (this->_block_type == LOCATION)
+		this->_curr_location->setCgiPath(this->_dir_line[1]);
+
+	return 0;
+}
+
+int ConfParser::setReturn(void)
+{
+	int ret = SUCCESS;
+
+	this->checkNbrOfArgs(3, &same_as<size_t>);
+	if (!ft_isdigit_string(this->_dir_line[1]))
+		throw InvalidValue(this->_dir_line[0], this);
+
+	if (this->_block_type == SERVER)
+		ret = this->_servers.back().setReturn(this->_dir_line[1], this->_dir_line[2]);
+	else if (this->_block_type == LOCATION)
+		ret = this->_curr_location->setReturn(this->_dir_line[1], this->_dir_line[2]);
+
+	if (ret == FAILURE)
+		throw InvalidValue(this->_dir_line[0], this);
 
 	return 0;
 }
