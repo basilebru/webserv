@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/04 09:22:57 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/11 16:08:40 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 	typedef std::vector<std::string>	stringVec;
 	typedef stringVec::iterator			strVecIterator;
 	typedef std::map<int, std::string>	errorMap;
+	typedef std::map<int, std::string>	redirMap;
 
 class HttpBlock {
 
@@ -35,6 +36,7 @@ protected:
 	int								_chunked_transfer_encoding; // on | off
 	std::string						_auth_basic; // string | off
 	std::string						_auth_basic_user_file; //httpasswd paths
+	std::map<int, std::string>		_returns; //only for serv et loc blocks
 
 	/*For CGI*/
 	std::vector<std::string>		_cgi_allowed_ext; //File types that are allowed as CGI scripts
@@ -46,17 +48,18 @@ public:
 	HttpBlock& operator=(HttpBlock const & rhs);
 
 	// Setters
-	void	setRoot(std::string path);
-	void	setAutoIndex(std::string& state);
+	void	setRoot(std::string const& path);
+	void	setAutoIndex(std::string const& state);
 	void	setIndexes(strVecIterator first, strVecIterator last);
 	void	setLimitExcept(strVecIterator first, strVecIterator last);
-	int		setErrorPages(strVecIterator first, strVecIterator last, std::string& val);
-	void	setMaxBdySize(size_type size);
-	void	setKeepaliveTimeout(size_type timeout);
-	void	setChunkedEncoding(std::string& state);
-	void	setAuthBasic(std::string path);
-	void	setAuthBasicFile(std::string path);
+	int		setErrorPages(strVecIterator first, strVecIterator last, std::string const& val);
+	void	setMaxBdySize(size_type const& size);
+	void	setKeepaliveTimeout(size_type const& timeout);
+	void	setChunkedEncoding(std::string const& state);
+	void	setAuthBasic(std::string const& path);
+	void	setAuthBasicFile(std::string const& path);
 	void	setCgiAllowedExt(strVecIterator first, strVecIterator last);
+	int		setReturn(std::string const& code, std::string const& url);
 
 	// Getters
 	const std::string&		getRoot(void) const;
@@ -65,11 +68,12 @@ public:
 	const stringVec&		getLimitExcept(void) const;
 	const errorMap&			getErrorPages(void) const;
 	const long int&			getMaxBdySize(void) const;
-	const long int&			getKeepaliveTime(void) const;
+	const long int&			getKeepaliveTimeout(void) const;
 	const int&				getChunkedEncoding(void) const;
 	const std::string&		getAuthBasic(void) const;
 	const std::string&		getAuthBasicFile(void) const;
 	const stringVec&		getCgiAllowedExt(void) const;
+	const redirMap&			getReturns(void) const;
 
 };
 

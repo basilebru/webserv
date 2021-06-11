@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/04/20 17:42:07 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/11 15:44:19 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,6 +127,17 @@ void	HttpBlock::setAuthBasicFile(std::string path)
 	this->_auth_basic_user_file = path;
 }
 
+int		HttpBlock::setReturn(std::string const& code, std::string const& url)
+{
+	int key(0);
+
+	key = atoi(code->c_str());
+	if (key < 300 || key > 599)
+		return (FAILURE);
+	this->_returns.insert(std::make_pair(key, url));
+	return (SUCCESS);
+}
+
 
 // Getters
 const std::string&	HttpBlock::getRoot(void) const
@@ -179,6 +190,10 @@ const std::string&	HttpBlock::getAuthBasicFile(void) const
 	return this->_auth_basic_user_file;
 }
 
+const redirMap&		HttpBlock::getReturns(void) const
+{
+	return this->_returns;
+}
 
 const std::vector<ServerBlock>&	HttpBlock::getServers() const
 {

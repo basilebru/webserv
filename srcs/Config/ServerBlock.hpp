@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:23:44 by julnolle          #+#    #+#             */
-/*   Updated: 2021/05/18 11:15:28 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/11 16:12:42 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,10 @@ public:
 	
 	// Setters
 	int		setListenIp(std::string ip);
-	int		setListenPort(std::string port);
+	int		setListenPort(std::string const& port);
 	void	setServerNames(strVecIterator first, strVecIterator last);
 
-	std::pair<LocMap::iterator,bool>	addLocation(std::string path);
+	std::pair<LocMap::iterator,bool>	addLocation(std::string const& path);
 
 	// Getters
 	const unsigned int&		getListenIP(void) const;

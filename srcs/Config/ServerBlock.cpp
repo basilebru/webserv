@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/04 09:44:26 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/11 16:12:36 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ ServerBlock::ServerBlock(ServerBlock const & copy)
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_locations = copy._locations;
 	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
+	this->_returns = copy._returns;
 
 	return ;
 }
@@ -77,6 +78,7 @@ ServerBlock& ServerBlock::operator=(ServerBlock const & rhs)
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_locations = rhs._locations;
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
+	this->_returns = rhs._returns;
 
 	// std::cout << RED << "SERVER ASSIGNATION" << NOCOLOR <<std::endl;
 	return *this;
@@ -97,7 +99,7 @@ int		ServerBlock::setListenIp(std::string ip)
 	return FAILURE;
 }
 
-int		ServerBlock::setListenPort(std::string port)
+int		ServerBlock::setListenPort(std::string const& port)
 {
 	if (ft_isdigit_string(port))
 	{
@@ -113,7 +115,7 @@ void	ServerBlock::setServerNames(strVecIterator first, strVecIterator last)
 	this->_server_names.assign(first, last);
 }
 
-std::pair<LocMap::iterator,bool>	 ServerBlock::addLocation(std::string path)
+std::pair<LocMap::iterator,bool>	 ServerBlock::addLocation(std::string const& path)
 {
 	LocationBlock loc;
 	return this->_locations.insert(std::make_pair(path, loc));
@@ -170,9 +172,12 @@ std::ostream & 	operator<<(std::ostream & o, ServerBlock const & rhs)
 
 	o << pad << "ERROR PAGES: ";
 	putMapToOstream(o, rhs.getErrorPages().begin(), rhs.getErrorPages().end());
+
+	o << pad << "REDIRECTIONS: ";
+	putMapToOstream(o, rhs.getReturns().begin(), rhs.getReturns().end());	
 	
 	o << pad << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
-	o << pad << "KEEP. TIMEOUT: " << rhs.getKeepaliveTime() << std::endl;
+	o << pad << "KEEP. TIMEOUT: " << rhs.getKeepaliveTimeout() << std::endl;
 	
 	o << pad << "CHUNKED ENC.: "; putState(o, rhs.getChunkedEncoding());
 	
