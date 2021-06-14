@@ -197,8 +197,10 @@ bool Request::parse_chunked_data()
 {
     if (this->buffer.size() < this->chunk_size + 2) // + 2 because we also want to read crlf after chunk data
         return false;
+    // read data
     this->body += this->buffer.substr(0, this->chunk_size);
     this->buffer.erase(0, this->chunk_size);
+    // read crlf
     std::string crlf = this->buffer.substr(0, 2);
     if (crlf != "\r\n")
     {

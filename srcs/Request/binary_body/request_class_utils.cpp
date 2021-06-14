@@ -49,6 +49,7 @@ std::vector<unsigned char> Request::build_ctrl_c()
     vec.push_back('\xFF');
     vec.push_back('\xF4');
     vec.push_back('\xFF');
+    vec.push_back('\xFD');
     vec.push_back('\x06');
     return vec;
         // if (ret == 5 && strcmp(buf, "\xFF\xF4\xFF\xFD\x06") == 0)

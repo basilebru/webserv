@@ -74,11 +74,10 @@ void Request::read_from_socket()
     ret = recv(this->fd, &buf[0], BUF_SIZE, MSG_DONTWAIT);
     if (ret > 0)
     {
-        // buf.resize(ret);
-        if (ret == 5 && buf[0] == Request::ctrl_c[0]) // à modifier
+        buf.resize(ret);
+        if (ret == 5 && buf == Request::ctrl_c)
             this->error_code = 400;
-        this->buffer.insert(this->buffer.begin(), buf.begin(), buf.begin() + ret);
-        // std::cout << "buf size: " << this->buffer.size();
+        this->buffer.insert(this->buffer.end(), buf.begin(), buf.begin() + ret);
     }
     if (ret == 0)
         this->end_of_connection = true;

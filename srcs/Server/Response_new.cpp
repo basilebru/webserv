@@ -18,13 +18,17 @@ Response::~Response(void)
 
 int Response::process()
 {
-    if (this->req.connection_end())
+    if (this->req.connection_end()) // client has disconected (read received EOF)
     {
         std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
         return CLOSE;
     }
-
-    if (this->req.request_is_ready() || this->req.error_code)
+    if (this->req.error_code) // request not well formated, ctrl-c... (like nginx: closes connection)
+    {
+        this->error_module(this->req.error_code); // Conf object not necessarly filled -> would not work
+        return CLOSE;
+    }
+    if (this->req.request_is_ready())
     {
         std::cout << "Request ready to be treated" << std::endl;
         try
