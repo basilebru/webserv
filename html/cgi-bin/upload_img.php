@@ -1,23 +1,24 @@
-#!/usr/bin/php
+#!/usr/bin/php-cgi
 <?php
-$uploaddir = '../uploads/';
+$uploaddir = '../upload/';
 $uploadfile = $uploaddir . basename($_FILES['file']['name']);
-echo("Content-Type: text/plain\n");
-echo("Connection: keep-alive\n\n");
 
-echo($uploadfile);
-
-// echo '<pre>';
-// if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
-//     echo "Le fichier est valide, et a été téléchargé
-//            avec succès. Voici plus d'informations :\n";
-// } else {
-//     echo "Attaque potentielle par téléchargement de fichiers.
-//           Voici plus d'informations :\n";
-// }
-
-// echo 'Voici quelques informations de débogage :';
-// // print_r($_FILES);
-
-// echo '</pre>';
+if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadfile)) {
+    $message = "Le fichier est valide, et a été uploadé avec succès.\n";
+} else {
+    $message = "L'upload a échoué\n";
+}
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+	<p><strong><?= $message . ": " . $_FILES['file']['name'] ?></strong></p>
+	<p>Il est de type: <strong><?= $_FILES['file']['type'] ?></strong></p>
+	<p>Et a une taille de: <strong><?= $_FILES['file']['size'] ?></strong></p>	
+</body>
+</html>

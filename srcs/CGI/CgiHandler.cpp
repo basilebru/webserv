@@ -39,11 +39,12 @@ void	CgiHandler::initEnv(void)
 	if (this->_req.config.auth_basic != DEFAULT_AUTH_BASIC)
 		this->_env_map["AUTH_TYPE"]		=	"Basic";	// mode d'authentification, auth_basic ??
 	
+	this->_env_map["REDIRECT_STATUS"]	=	"200";	// content-length de la requete
 	this->_env_map["CONTENT_LENGTH"]	=	iToString(this->_req.body_size);	// content-length de la requete
 	this->_env_map["CONTENT_TYPE"]		=	headers["content-type"];	// content-type de la requete (POST)
 	this->_env_map["GATEWAY_INTERFACE"]	=	"CGI/1.1";	// version du CGI qu'utilise le server
-	this->_env_map["PATH_INFO"]			=	"value";	// derniere partie de l'URI apres le script name
-	this->_env_map["PATH_TRANSLATED"]	=	"value";	// adresse reelle du script (idem PATH_INFO pour nous)
+	this->_env_map["PATH_INFO"]			=	this->_req.target_uri;	// derniere partie de l'URI apres le script name
+	this->_env_map["PATH_TRANSLATED"]	=	this->_req.target_uri;	// adresse reelle du script (idem PATH_INFO pour nous)
 	this->_env_map["QUERY_STRING"]		=	this->_req.req_line.query_string;	// Contient tout ce qui suit le « ? » dans l'URL envoyée par le client.
 	this->_env_map["REMOTE_ADDR"]		=	this->_req.host_uri;	// adress ip du client
 	this->_env_map["REMOTE_IDENT"]		=	headers["authorization"];	// nom d'utilisateur du client
@@ -150,7 +151,7 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 		}
 		++i;
 	}
-	replaceLF();
+	// replaceLF();
 	flagHeaders();
 	++i;
 	// std::cerr << "HEADERS: " << this->_headers << std::endl;
