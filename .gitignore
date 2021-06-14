@@ -4,3 +4,5 @@ parsing
 objs/
 settings.json
 webserv
+html/uploads/*
+!html/uploads/README
