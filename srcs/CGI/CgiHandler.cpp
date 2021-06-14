@@ -29,25 +29,6 @@ CgiHandler& CgiHandler::operator=(CgiHandler const & rhs)
 	return *this;
 }
 
-
-/*std::pair<std::string, std::string> splitHostPort(std::string const& host_uri)
-{
-	std::pair<std::string, std::string> hostNport;
-
-	size_t find;
-	if ((find = host_uri.find(':')) == std::string::npos)
-	{
-		hostNport.first = host_uri;
-	}
-	else
-	{
-		hostNport.first = host_uri.substr(0, find);
-		hostNport.second = host_uri.substr(find + 1);
-	}
-	return (hostNport);
-}*/
-
-
 void	CgiHandler::initEnv(void)
 {
 	/* Les variables d'environnement permettent au script d'accéder à des informations
@@ -185,20 +166,19 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 /**
  * EXEC SCRIPT WITH COMMUNICATION BY PIPE
  *
- * @param       [param1, param2, ...]
- * @return      [type]
+ * @param       [std::string]
+ * @return      [int]
  */
 
 int	CgiHandler::execScript(std::string const& scriptName)
 {
 	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
 	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
-	Dans le cas de POST, les données sont lues depuis STDIN (depuis le body de la requete)
-
+	Dans le cas de POST, les données sont lues depuis STDIN (depuis le body de la requete).
 	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
 	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
-
 	*/
+
 	std::vector<unsigned char>	body;
 	char	buf[CGI_BUF_SIZE];
 	int		ret = CGI_BUF_SIZE;
@@ -242,7 +222,6 @@ int	CgiHandler::execScript(std::string const& scriptName)
 			close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
 			close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
 			_exit(1);
-			// write(STDOUT_FILENO, "Status: 500 Internal Server Error\r\n\r\n", 37);
 		}
 		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
@@ -251,9 +230,9 @@ int	CgiHandler::execScript(std::string const& scriptName)
 	{
 		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
+
 		if (!this->_req.body.empty())
-			write(srvToCgi_fd[1], &this->_req.body[0], this->_req.body.size()); // /!\ _req.body ne devrait pas etre un std::string
-		// std::cerr << "REQ BDY: " << this->_req.body.c_str() << std::endl;
+			write(srvToCgi_fd[1], &this->_req.body[0], this->_req.body.size());
 
 		while (ret == CGI_BUF_SIZE)
 		{
