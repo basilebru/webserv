@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/11 15:50:12 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/11 17:52:29 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ _block_type(NOBLOCK), _line_nb(1)
 
 ConfParser::~ConfParser(void)
 {
-	std::cout << "DESTRUCTOR CALLED" << std::endl;
+	// std::cout << "DESTRUCTOR CALLED" << std::endl;
 	return ;
 }
 

@@ -33,7 +33,7 @@ endif
 
 INCLUDES 		=	./includes/
 SERVER_DIR 		=	$(SRCS_DIR)/Server/
-REQUEST_DIR 	=	$(SRCS_DIR)/Request/
+REQUEST_DIR 	=	$(SRCS_DIR)/Request/binary_body/
 CGI_HAND_DIR 	=	$(SRCS_DIR)/CGI/
 CONF_DIR 		=	$(SRCS_DIR)/Config/
 UTILS_DIR 		=	$(SRCS_DIR)/Utils/

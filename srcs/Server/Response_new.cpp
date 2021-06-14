@@ -13,6 +13,7 @@ Response::Response(const Request &req, std::vector<unsigned char> &buf): req(req
 
 Response::~Response(void)
 {
+    // std::cerr << "RESPONSE DESTRUCTOR" << std::endl;
 }
 
 int Response::process()
