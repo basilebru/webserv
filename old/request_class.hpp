@@ -1,6 +1,8 @@
 #ifndef REQUEST_CLASS_H
 # define REQUEST_CLASS_H
 
+# include "webserv.hpp"
+# include "utils.hpp"
 # include "ConfParser.hpp"
 
 # define BUF_SIZE 10000
@@ -40,15 +42,13 @@ class Request
         // known HTTP methods
         static std::vector<std::string> known_methods;
         static std::vector<std::string> build_known_methods();
-        static std::vector<unsigned char> ctrl_c;
-        static std::vector<unsigned char> build_ctrl_c();
 
         void    initHeaders(void);
 
 
         // reading from connection
         int fd;
-        std::vector<unsigned char> buffer;
+        std::string buffer;
         
         // error
         int error_code;
@@ -60,7 +60,7 @@ class Request
         std::map<std::string, std::string> headers;
         unsigned long body_size;
         unsigned long chunk_size;
-        std::vector<unsigned char> body;
+        std::string body;
         std::string host_uri;
         std::string host_port;
         std::string target_uri; // concatenation of config.root and req_line.target
@@ -103,7 +103,6 @@ class Request
         void parse_body_chunked();
         bool parse_chunked_size();
         bool parse_chunked_data();
-        std::vector<unsigned char>::iterator find_crlf();
         bool read_buf_line(std::string &line);
         void read_from_socket();
 

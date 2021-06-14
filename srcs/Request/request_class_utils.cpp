@@ -41,6 +41,20 @@ void                    Request::initHeaders(void)
 
 std::vector<std::string> Request::known_methods = Request::build_known_methods();
 
+std::vector<unsigned char> Request::ctrl_c = Request::build_ctrl_c();
+
+std::vector<unsigned char> Request::build_ctrl_c()
+{
+    std::vector<unsigned char> vec;
+    vec.push_back('\xFF');
+    vec.push_back('\xF4');
+    vec.push_back('\xFF');
+    vec.push_back('\xFD');
+    vec.push_back('\x06');
+    return vec;
+        // if (ret == 5 && strcmp(buf, "\xFF\xF4\xFF\xFD\x06") == 0)
+}
+
 
 // // reset is called before each request, to "clear" the previous request and init attributes (it is also called for the first request)
 // void Request::reset()
@@ -135,7 +149,9 @@ void Request::print() const
     }
     if (!this->body.empty())
     {
-        std::cout << "body: " << this->body << std::endl;
+        std::string bdy;
+        bdy.assign(this->body.begin(), this->body.end());
+        std::cout << "body: " << bdy << std::endl;
         std::cout << std::endl;
     }
 }
@@ -152,7 +168,9 @@ void    Request::print2(void) const
     std::cout << "VERSION: " << this->req_line.version << std::endl;
     std::cout << "TARGET PATH: " << this->target_uri << std::endl;
     
-    std::cout << "BODY: " << this->body << std::endl;
+    std::string bdy;
+    bdy.assign(this->body.begin(), this->body.end());
+    std::cout << "BODY: " << bdy << std::endl;
     std::cout << "BDY SIZE: " << iToString(this->body_size) << std::endl;
     
     std::cout << "CHUNK SIZE: " << iToString(this->chunk_size) << std::endl;

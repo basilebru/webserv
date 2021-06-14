@@ -123,13 +123,13 @@ void Request::store_host()
 
 void Request::store_body_headers()
 {
-    if (this->headers["transfer-encoding"] != "")
+    if (this->headers.count("transfer-encoding"))
     {
         this->store_encoding();
         this->body_size = 0;
         return ; // priorité au transfer-encoding header sur le body-length header
     }
-    if (this->headers["content-length"] != "")
+    if (this->headers.count("content-length"))
         this->store_body_size();
 }
 
