@@ -25,7 +25,7 @@ int Response::process()
     }
     if (this->req.error_code) // request not well formated, ctrl-c... (like nginx: closes connection)
     {
-        this->error_module(this->req.error_code); // Conf object not necessarly filled -> would not work
+        this->error_module(this->req.error_code);
         return CLOSE;
     }
     if (this->req.request_is_ready())
@@ -40,9 +40,8 @@ int Response::process()
             this->error_module(500);
             return CLOSE;
         }
-        return SEND;
+        return NEW;
     }
-
     return SKIP;
 }
 
@@ -88,8 +87,14 @@ Response::int_map Response::init_code_map()
 {
     int_map mp;
     mp[200] = "OK";
+    mp[201] = "Created";
+    mp[400] = "Bad Request";
     mp[404] = "Not found";
+    mp[405] = "Method not allowed";
+    mp[413] = "Request entity too large";
     mp[500] = "Internal server error";
+    mp[501] = "Not implemented";
+    mp[505] = "HTTP version not supported";
     return mp;
 }
 
@@ -207,6 +212,7 @@ void Response::error_module(int error_code)
 	std::string buf;
 
     this->target = error_pages[error_code];
+    std::cout << "targ: " << this->target << std::endl;
     this->get_target_extension();
     this->response_code = error_code;
 

@@ -37,7 +37,7 @@
 
 // Response return value
 #define CLOSE -1
-#define SEND 1
+#define NEW 1
 #define SKIP 0
 
 // Default server config values
