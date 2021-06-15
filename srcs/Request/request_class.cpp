@@ -281,7 +281,22 @@ void Request::match_server()
 
 void Request::match_location()
 {
+    // try to find * location
+    for (LocMap::const_iterator it = this->matched_serv.getLocations().begin(); it != this->matched_serv.getLocations().end(); it++)
+    {
+        size_t pos;
+        if (it->first.find('*') != std::string::npos)
+        {
+            if ((pos = it->first.find('.')) != std::string::npos && this->req_line.extension == it->first.substr(pos + 1))
+            {
+                this->matched_loc = it->second;
+                return;
+            }
+        }
+    }
+
     std::string target_uri(this->req_line.target);
+    // non * locations
     while (target_uri.find('/') != std::string::npos)
     {
         for (LocMap::const_iterator it = this->matched_serv.getLocations().begin(); it != this->matched_serv.getLocations().end(); it++)
