@@ -8,6 +8,7 @@ Response::Response(const Request &req, std::vector<unsigned char> &buf): req(req
     this->target = this->req.target_uri;
     this->extension = this->req.req_line.extension;
     this->response_code = 0;
+    std::cout << "crea: " << this->req.config.return_dir.first << std::endl;
     // std::cout << "Response created" << std::endl;
 }
 
@@ -92,6 +93,7 @@ Response::int_map Response::init_code_map()
     int_map mp;
     mp[200] = "OK";
     mp[201] = "Created";
+    mp[301] = "Moved permanently";
     mp[400] = "Bad Request";
     mp[403] = "Forbidden";
     mp[404] = "Not found";
@@ -111,24 +113,27 @@ std::string Response::delete_response = "<html>\
 
 void Response::build_headers()
 {
-    // bool empty_headers = this->headers.empty(); // for cgi
-    std::string buf = "Content-Length";
-    std::cout << this->response.size() << std::endl;
-    this->headers += "Content-length: ";
-    this->headers += iToString(this->response.size());
-    this->headers += "\r\n";
-
-    buf = "Content-type";
-    this->headers += "Content-type: ";
-    str_map::iterator it;
-    if ((it = this->extension_map.find(this->extension)) != this->extension_map.end())
-        this->headers += it->second;
-    else
-        this->headers += "application/octet-stream"; // ou text/plain ?
-    this->headers += "\r\n";
-
-    // if (empty_headers)
+    if (this->response.size()) // body in response
+    {    
+        this->headers += "Content-length: ";
+        this->headers += iToString(this->response.size());
         this->headers += "\r\n";
+
+        this->headers += "Content-type: ";
+        str_map::iterator it;
+        if ((it = this->extension_map.find(this->extension)) != this->extension_map.end())
+            this->headers += it->second;
+        else
+            this->headers += "application/octet-stream"; // ou text/plain ?
+        this->headers += "\r\n";
+    }
+    if (!this->req.config.return_dir.second.empty()) // redirection
+    {
+        this->headers += "Location: ";
+        this->headers += this->req.config.return_dir.second;
+        this->headers += "\r\n";
+    }
+    this->headers += "\r\n";
     this->response.insert(this->response.begin(), this->headers.begin(), this->headers.end());
     this->build_response_line();
 }
@@ -140,6 +145,11 @@ void Response::build_response()
     
     if (this->req.req_line.method == "GET")
     {
+        if (!this->req.config.return_dir.second.empty()) // location has return directive
+        {
+            this->response_code = this->req.config.return_dir.first;
+            return this->build_headers();
+        }
         if (this->target[this->target.size() - 1] == '/')
             return this->index_module();
         else
