@@ -149,8 +149,8 @@ void Request::parse_body()
 void Request::parse_body_normal()
 {
     std::cout << "Parsing body normal..." << std::endl;
-    std::cout << "buf size" << this->buffer.size() << std::endl;
-    std::cout << "bdy size" << this->body_size << std::endl;
+    // std::cout << "buf size" << this->buffer.size() << std::endl;
+    // std::cout << "bdy size" << this->body_size << std::endl;
     if (this->buffer.size() >= this->body_size)
     {
         this->body.assign(this->buffer.begin(), this->buffer.begin() + this->body_size);

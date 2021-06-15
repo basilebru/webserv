@@ -132,12 +132,10 @@ int		Server::loop_client_socket()
 	// On parcourt les client_sockets. S'ils sont disponibles en lecture, c'est qu'on peut parser une requete (rq: une meme requete peut etre envoyee en plusieurs fois)
 	for (std::map<int, Request*>::iterator it = this->client_sockets.begin(); it != this->client_sockets.end() && this->rdy_fd > 0;)
 	{
-		int ret;
+		int ret(0);
 		if (FD_ISSET(it->first, &this->ready_read_sockets)) // read() possible
 		{
 			std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
-			
-			// Parse the request
 			it->second->parse();
 			it->second->print();
 			Response res(*it->second, this->response_buffers[it->first]);
@@ -154,15 +152,8 @@ int		Server::loop_client_socket()
 		if (FD_ISSET(it->first, &this->ready_write_sockets) && this->response_buffers[it->first].size()) // write possible
 		{
 			ssize_t ret;
-			ssize_t i = 0;
-			std::vector<unsigned char>::iterator vecIt = this->response_buffers[it->first].begin();
 			ret = send(it->first, &this->response_buffers[it->first][0], this->response_buffers[it->first].size(), MSG_DONTWAIT);
-			
-			while (i++ < ret)
-				++vecIt;
-			this->response_buffers[it->first].erase(this->response_buffers[it->first].begin(), vecIt);
-			// std::cout << "ret: " << ret << std::endl;
-			// std::cout << "size: " << this->response_buffers[it->first].size() << std::endl;
+			this->response_buffers[it->first].erase(this->response_buffers[it->first].begin(), this->response_buffers[it->first].begin() + ret);
 		}
 		if (ret == CLOSE && this->response_buffers[it->first].empty())
 		{

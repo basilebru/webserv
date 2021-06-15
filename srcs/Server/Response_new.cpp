@@ -16,6 +16,9 @@ Response::~Response(void)
     // std::cerr << "RESPONSE DESTRUCTOR" << std::endl;
 }
 
+// returns CLOSE if connection needs to be closed (error during request or EOF received)
+// returns SKIP if request is not ready to be processed (not entirely received)
+// returns NEW if request has been processed, buffer is filled -> request can be deleted
 int Response::process()
 {
     if (this->req.connection_end()) // client has disconected (read received EOF)
@@ -37,6 +40,7 @@ int Response::process()
         }
         catch(const std::exception& e)
         {
+            std::cerr << e.what() << std::endl;
             this->error_module(500);
             return CLOSE;
         }
@@ -89,6 +93,7 @@ Response::int_map Response::init_code_map()
     mp[200] = "OK";
     mp[201] = "Created";
     mp[400] = "Bad Request";
+    mp[403] = "Forbidden";
     mp[404] = "Not found";
     mp[405] = "Method not allowed";
     mp[413] = "Request entity too large";
@@ -106,8 +111,7 @@ std::string Response::delete_response = "<html>\
 
 void Response::build_headers()
 {
-    bool empty_headers = this->headers.empty();
-    
+    // bool empty_headers = this->headers.empty(); // for cgi
     std::string buf = "Content-Length";
     std::cout << this->response.size() << std::endl;
     this->headers += "Content-length: ";
@@ -123,7 +127,7 @@ void Response::build_headers()
         this->headers += "application/octet-stream"; // ou text/plain ?
     this->headers += "\r\n";
 
-    if (empty_headers)
+    // if (empty_headers)
         this->headers += "\r\n";
     this->response.insert(this->response.begin(), this->headers.begin(), this->headers.end());
     this->build_response_line();
@@ -171,7 +175,7 @@ bool Response::is_cgi_extension()
 
 void Response::index_module()
 {
-    // std::cout << "index module" << std::endl;
+    std::cout << "index module" << std::endl;
     // check if dir exists
     struct stat buffer;
     if (stat(this->target.c_str(), &buffer) == -1)
@@ -210,9 +214,8 @@ void Response::error_module(int error_code)
 {
 	std::map<int, std::string> error_pages = this->req.getErrorPages();
 	std::string buf;
-
+    std::cout << "error module" << std::endl;
     this->target = error_pages[error_code];
-    std::cout << "targ: " << this->target << std::endl;
     this->get_target_extension();
     this->response_code = error_code;
 
@@ -256,9 +259,30 @@ void Response::file_module()
 {
     if (this->is_cgi_extension())
         return this->cgi_module();
+    
+    std::cout << "file module" << std::endl;
+    // check if file "exists"
+    struct stat buffer;
+    if (stat(this->target.c_str(), &buffer) == -1)
+        return this->error_module(404);
+    if (!S_ISREG(buffer.st_mode)) // if not a regular file
+    {
+        if (S_ISDIR(buffer.st_mode))
+        {
+            this->target += "/";
+            return index_module(); //could also do a redirection: return 30x and header location
+        }
+        else
+            return this->error_module(404);
+    }
+    
     std::ifstream ifs(this->target.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
     if (ifs.fail())
-        return this->error_module(404); // depend de errno ?
+    {
+        if (errno == EACCES)
+            this->error_module(403);
+        return this->error_module(500);
+    }
     else
     {
         if (this->response_code == 0)
