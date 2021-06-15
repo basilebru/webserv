@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/11 16:12:36 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/15 12:19:49 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ ServerBlock::ServerBlock(ServerBlock const & copy)
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_locations = copy._locations;
 	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
-	this->_returns = copy._returns;
+	this->_return = copy._return;
 
 	return ;
 }
@@ -78,7 +78,7 @@ ServerBlock& ServerBlock::operator=(ServerBlock const & rhs)
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_locations = rhs._locations;
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
-	this->_returns = rhs._returns;
+	this->_return = rhs._return;
 
 	// std::cout << RED << "SERVER ASSIGNATION" << NOCOLOR <<std::endl;
 	return *this;
@@ -174,7 +174,7 @@ std::ostream & 	operator<<(std::ostream & o, ServerBlock const & rhs)
 	putMapToOstream(o, rhs.getErrorPages().begin(), rhs.getErrorPages().end());
 
 	o << pad << "REDIRECTIONS: ";
-	putMapToOstream(o, rhs.getReturns().begin(), rhs.getReturns().end());	
+	o << "code " << rhs.getReturn().first << ", URL: " << rhs.getReturn().second << std::endl;	
 	
 	o << pad << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
 	o << pad << "KEEP. TIMEOUT: " << rhs.getKeepaliveTimeout() << std::endl;

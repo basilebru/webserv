@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/11 16:06:05 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/15 12:20:24 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ HttpBlock::HttpBlock(HttpBlock const & copy)
 	this->_auth_basic = copy._auth_basic;
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
-	this->_returns = copy._returns;
+	this->_return = copy._return;
 
 	return ;
 }
@@ -57,7 +57,7 @@ HttpBlock& HttpBlock::operator=(HttpBlock const & rhs)
 	this->_auth_basic = rhs._auth_basic;
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
-	this->_returns = rhs._returns;
+	this->_return = rhs._return;
 
 	return *this;
 }
@@ -138,9 +138,9 @@ int		HttpBlock::setReturn(std::string const& code, std::string const& url)
 	int key(0);
 
 		key = atoi(code.c_str());
-		if (key < 300 || key > 599)
+		if (key < 300 || key > 309)
 			return (FAILURE);
-		this->_returns.insert(std::make_pair(key, url));
+		this->_return = std::make_pair(key, url);
 
 	return (SUCCESS);
 }
@@ -201,9 +201,9 @@ const stringVec&	HttpBlock::getCgiAllowedExt(void) const
 	return this->_cgi_allowed_ext;
 }
 
-const redirMap&	HttpBlock::getReturns(void) const
+const redirPair&	HttpBlock::getReturn(void) const
 {
-	return this->_returns;
+	return this->_return;
 }
 
 std::ostream & operator<<(std::ostream & o, HttpBlock const & rhs)

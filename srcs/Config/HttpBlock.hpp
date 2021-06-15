@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/11 16:08:40 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/15 12:19:16 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 	typedef std::vector<std::string>	stringVec;
 	typedef stringVec::iterator			strVecIterator;
 	typedef std::map<int, std::string>	errorMap;
-	typedef std::map<int, std::string>	redirMap;
+	typedef std::pair<int, std::string>	redirPair;
 
 class HttpBlock {
 
@@ -36,7 +36,7 @@ protected:
 	int								_chunked_transfer_encoding; // on | off
 	std::string						_auth_basic; // string | off
 	std::string						_auth_basic_user_file; //httpasswd paths
-	std::map<int, std::string>		_returns; //only for serv et loc blocks
+	std::pair<int, std::string>		_return; //only for serv et loc blocks
 
 	/*For CGI*/
 	std::vector<std::string>		_cgi_allowed_ext; //File types that are allowed as CGI scripts
@@ -73,7 +73,7 @@ public:
 	const std::string&		getAuthBasic(void) const;
 	const std::string&		getAuthBasicFile(void) const;
 	const stringVec&		getCgiAllowedExt(void) const;
-	const redirMap&			getReturns(void) const;
+	const redirPair&		getReturn(void) const;
 
 };
 

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/11 15:58:56 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/15 12:19:28 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ LocationBlock::LocationBlock(LocationBlock const & copy)
 	this->_auth_basic = copy._auth_basic;
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
-	this->_returns = copy._returns;
+	this->_return = copy._return;
 
 	return ;
 }
@@ -68,7 +68,7 @@ LocationBlock& LocationBlock::operator=(LocationBlock const & rhs)
 	this->_auth_basic = rhs._auth_basic;
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
-	this->_returns = rhs._returns;
+	this->_return = rhs._return;
 
 	return *this;
 }
@@ -114,7 +114,7 @@ std::ostream & operator<<(std::ostream & o, LocationBlock const & rhs)
 	putMapToOstream(o, rhs.getErrorPages().begin(), rhs.getErrorPages().end());	
 
 	o << pad << "REDIRECTIONS: ";
-	putMapToOstream(o, rhs.getReturns().begin(), rhs.getReturns().end());	
+	o << "code " << rhs.getReturn().first << ", URL: " << rhs.getReturn().second << std::endl;	
 
 	o << pad << "MAX BDY SIZE: " << rhs.getMaxBdySize() << std::endl;
 	o << pad << "KEEP. TIMEOUT: " << rhs.getKeepaliveTimeout() << std::endl;
