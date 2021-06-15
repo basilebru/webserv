@@ -346,6 +346,14 @@ void Request::fill_conf()
         this->config.cgi_allowed_ext = this->matched_serv.getCgiAllowedExt();
     if (this->config.cgi_allowed_ext.empty())
         this->config.cgi_allowed_ext = this->base_config.getCgiAllowedExt();
+    
+    this->config.cgi_path = this->matched_loc.getCgiPath();
+
+    this->config.return_dir = this->matched_loc.getReturn();
+    if (this->config.return_dir.second.empty())
+        this->config.return_dir = this->matched_serv.getReturn();
+    if (this->config.return_dir.second.empty())
+        this->config.return_dir = this->base_config.getReturn();
 }
 
 void Request::init_config()

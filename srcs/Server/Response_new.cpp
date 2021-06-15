@@ -178,7 +178,7 @@ void Response::index_module()
     std::cout << "index module" << std::endl;
     // check if dir exists
     struct stat buffer;
-    if (stat(this->target.c_str(), &buffer) == -1)
+    if (stat(this->target.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode))
         return this->error_module(404);
     
     // try each file in index directive
@@ -261,7 +261,9 @@ void Response::file_module()
         return this->cgi_module();
     
     std::cout << "file module" << std::endl;
-    // check if file "exists"
+    
+    // stat cant do the "access" check. and open doesnt set errno if given a directory -> we use both stat and open to detect erros
+
     struct stat buffer;
     if (stat(this->target.c_str(), &buffer) == -1)
         return this->error_module(404);
@@ -274,8 +276,7 @@ void Response::file_module()
         }
         else
             return this->error_module(404);
-    }
-    
+    }    
     std::ifstream ifs(this->target.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
     if (ifs.fail())
     {
