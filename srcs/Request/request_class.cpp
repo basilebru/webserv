@@ -42,8 +42,11 @@ void Request::parse()
     try
     {
         this->read_from_socket();
-        if (this->error_code)
+        if (this->error_code || this->end_of_connection)
+        {
+            this->config.error_pages = this->base_config.getErrorPages();
             return;
+        }
         std::string buf;
         buf.assign(this->buffer.begin(), this->buffer.end());
         std::cout << "buffer: " << buf << std::endl;
@@ -54,6 +57,8 @@ void Request::parse()
         this->error_code = 500;
 		this->error_message = "internal-error: " + std::string(e.what());
     }
+    if (this->error_code && this->config.error_pages.empty()) // if error code and config not set -> fill error_pages
+        this->config.error_pages = this->base_config.getErrorPages();
 }
 
 void Request::read_from_socket()
@@ -63,20 +68,13 @@ void Request::read_from_socket()
     // - set a limit on buffer size ?
 
     long int ret;
-    // char *buf;
     std::vector<unsigned char> buf(BUF_SIZE + 1);
-    // // buf = (char*)malloc(BUF_SIZE + 1);
-    // if (buf == NULL)
-    // {
-	// 	this->error_message = "internal-error: malloc error";
-	// 	this->error_code = 500;
-    // }
     ret = recv(this->fd, &buf[0], BUF_SIZE, MSG_DONTWAIT);
     if (ret > 0)
     {
         buf.resize(ret);
         if (ret == 5 && buf == Request::ctrl_c)
-            this->error_code = 400;
+            this->end_of_connection = true;
         this->buffer.insert(this->buffer.end(), buf.begin(), buf.begin() + ret);
     }
     if (ret == 0)
@@ -151,8 +149,8 @@ void Request::parse_body()
 void Request::parse_body_normal()
 {
     std::cout << "Parsing body normal..." << std::endl;
-    std::cout << "buf size" << this->buffer.size() << std::endl;
-    std::cout << "bdy size" << this->body_size << std::endl;
+    // std::cout << "buf size" << this->buffer.size() << std::endl;
+    // std::cout << "bdy size" << this->body_size << std::endl;
     if (this->buffer.size() >= this->body_size)
     {
         this->body.assign(this->buffer.begin(), this->buffer.begin() + this->body_size);
