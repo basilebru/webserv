@@ -8,7 +8,6 @@ Response::Response(const Request &req, std::vector<unsigned char> &buf): req(req
     this->target = this->req.target_uri;
     this->extension = this->req.req_line.extension;
     this->response_code = 0;
-    std::cout << "crea: " << this->req.config.return_dir.first << std::endl;
     // std::cout << "Response created" << std::endl;
 }
 
@@ -226,35 +225,40 @@ void Response::error_module(int error_code)
 	std::string buf;
     std::cout << "error module" << std::endl;
     this->target = error_pages[error_code];
-    this->get_target_extension();
-    this->response_code = error_code;
-
-    std::ifstream ifs(this->target.c_str(), std::ios::in);
-    if (ifs.fail())
+    if (!this->target.empty())
     {
-    	this->response_code = 500;
-        buf = "500 Internal Server Error";
+        std::ifstream ifs(this->target.c_str(), std::ios::in);
+        if (ifs.fail())
+        {
+            this->response_code = 500;
+            buf = "500 Internal Server Error";
+            this->extension = "txt";
+            this->response.assign(buf.begin(), buf.end());
+            return this->build_headers();
+        }
+        this->get_target_extension();
+        this->response_code = error_code;
+        this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+        ifs.close();
+        this->build_headers();
+    }
+    else
+    {
+        this->response_code = error_code;
         this->extension = "txt";
+        buf = "default error page";
         this->response.assign(buf.begin(), buf.end());
         return this->build_headers();
     }
-    // this->file_module();
-    else
-    {
-	    this->extension = "html";
-	    this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
-
-    }
-    this->build_headers();
-	std::cout << "Contenu de la reponse:" << std::endl;
-    std::cout << "---------------------------" << std::endl;
-    for (size_t i = 0; i < this->response.size(); ++i)
-    {
-        std::cout << this->response[i];
-    }
-    std::cout << std::endl;
-    std::cout << "---------------------------" << std::endl;
-    ifs.close();
+    
+	// std::cout << "Contenu de la reponse:" << std::endl;
+    // std::cout << "---------------------------" << std::endl;
+    // for (size_t i = 0; i < this->response.size(); ++i)
+    // {
+    //     std::cout << this->response[i];
+    // }
+    // std::cout << std::endl;
+    // std::cout << "---------------------------" << std::endl;
 }
 
 void Response::get_target_extension()

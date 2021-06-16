@@ -296,7 +296,18 @@ void Request::match_location()
     }
 
     std::string target_uri(this->req_line.target);
-    // non * locations
+    // delete consecutive '/' in uri, in order to compare equal (ex: /lol/pl should be "equal" to ////lol////pl)
+    for (unsigned long i = 0; target_uri.size() && i < target_uri.size() -1;)
+    {
+        if (target_uri[i] == '/' && target_uri[i + 1] == '/')
+        {
+            target_uri = target_uri.substr(0, i) + target_uri.substr(i + 1);
+            i = 0;
+        }
+        else
+            i++;
+    }
+    
     while (target_uri.find('/') != std::string::npos)
     {
         for (LocMap::const_iterator it = this->matched_serv.getLocations().begin(); it != this->matched_serv.getLocations().end(); it++)
