@@ -112,8 +112,8 @@ std::string Response::delete_response = "<html>\
 
 void Response::build_headers()
 {
-    if (this->response.size()) // body in response
-    {    
+    // if (this->response.size()) // body in response // ENLEVé CAR LE FICHIER SERVI PEUT ETRE VIDE
+    // {    
         this->headers += "Content-length: ";
         this->headers += iToString(this->response.size());
         this->headers += "\r\n";
@@ -125,7 +125,7 @@ void Response::build_headers()
         else
             this->headers += "application/octet-stream"; // ou text/plain ?
         this->headers += "\r\n";
-    }
+    // }
     if (!this->req.config.return_dir.second.empty()) // redirection
     {
         this->headers += "Location: ";
