@@ -6,7 +6,10 @@
 
 class Response {
 
-enum return_codes{OK=200, NOT_IMPLEMENTED=501};
+enum return_codes{UNSET=0, OK=200, NOT_IMPLEMENTED=501, INTERNAL_ERROR=500};
+#define YES 1
+#define ERROR 2
+#define NO 0
 
 private:
     typedef std::map<std::string, std::string> str_map;
@@ -31,6 +34,9 @@ private:
     void build_headers();
     void get_module();
     int remove_target();
+    int check_if_file_exists();
+    int check_if_file_is_directory();
+    void check_errno_and_send_error(int error_num);
     void delete_module();
     void index_module();
     void file_module();

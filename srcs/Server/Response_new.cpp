@@ -112,20 +112,19 @@ std::string Response::delete_response = "<html>\
 
 void Response::build_headers()
 {
-    // if (this->response.size()) // body in response // ENLEVé CAR LE FICHIER SERVI PEUT ETRE VIDE
-    // {    
-        this->headers += "Content-length: ";
-        this->headers += iToString(this->response.size());
-        this->headers += "\r\n";
+    std::cout << "building headers" << std::endl;
+    
+    this->headers += "Content-length: ";
+    this->headers += iToString(this->response.size());
+    this->headers += "\r\n";
 
-        this->headers += "Content-type: ";
-        str_map::iterator it;
-        if ((it = this->extension_map.find(this->extension)) != this->extension_map.end())
-            this->headers += it->second;
-        else
-            this->headers += "application/octet-stream"; // ou text/plain ?
-        this->headers += "\r\n";
-    // }
+    this->headers += "Content-type: ";
+    str_map::iterator it;
+    if ((it = this->extension_map.find(this->extension)) != this->extension_map.end())
+        this->headers += it->second;
+    else
+        this->headers += "application/octet-stream"; // ou text/plain ?
+    this->headers += "\r\n";
     if (!this->req.config.return_dir.second.empty()) // redirection
     {
         this->headers += "Location: ";
@@ -149,6 +148,9 @@ void Response::get_module()
     bool target_ends_with_slash = this->target[this->target.size() - 1] == '/';
     if (target_ends_with_slash)
         return this->index_module();
+    
+    if (this->is_cgi_extension())
+        return this->cgi_module();
     
     return this->file_module();
 }
@@ -288,43 +290,47 @@ void Response::get_target_extension()
     size_t pos = this->target.find_last_of('.');
     if (pos != std::string::npos)
         this->extension = this->target.substr(pos + 1);
-    std::cout << "ext:" << this->extension << std::endl;
+}
+
+int Response::check_if_file_is_directory()
+{
+    struct stat buffer;
+    if (stat(this->target.c_str(), &buffer) == -1)
+    {
+        this->check_errno_and_send_error(errno);
+        return ERROR;
+    }
+    if (S_ISDIR(buffer.st_mode))
+    {
+        this->target += "/";
+        index_module(); //could also do a redirection: return 30x and header location
+        return YES;
+    }
+    return NO;
+}
+
+void Response::check_errno_and_send_error(int error_num)
+{
+    if (error_num == EACCES)
+        return this->error_module(413);
+    if (error_num == ENOENT)
+        return this->error_module(404);
+    return this->error_module(INTERNAL_ERROR);
 }
 
 void Response::file_module()
 {
-    if (this->is_cgi_extension())
-        return this->cgi_module();
     
     std::cout << "file module:" << this->target << std::endl;
     
-    // stat cant do the "access" check. and open doesnt set errno if given a directory -> we use both stat and open to detect erros
-    struct stat buffer;
-    if (stat(this->target.c_str(), &buffer) == -1)
-        return this->error_module(404);
-    if (!S_ISREG(buffer.st_mode)) // if not a regular file
-    {
-        if (S_ISDIR(buffer.st_mode))
-        {
-            this->target += "/";
-            return index_module(); //could also do a redirection: return 30x and header location
-        }
-        else
-            return this->error_module(404);
-    }
+    if (this->check_if_file_is_directory() != NO)
+        return;
     std::ifstream ifs(this->target.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
     if (ifs.fail())
-    {
-        if (errno == EACCES)
-            this->error_module(403);
-        return this->error_module(500);
-    }
-    else
-    {
-        if (this->response_code == 0)
-            this->response_code = 200;
-        this->response.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
-    }
+        return this->check_errno_and_send_error(errno);
+    if (this->response_code == UNSET)
+        this->response_code = OK;
+    this->response.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
     ifs.close();
     this->build_headers();
 }
