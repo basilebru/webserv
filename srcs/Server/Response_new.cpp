@@ -137,42 +137,59 @@ void Response::build_headers()
     this->build_response_line();
 }
 
-void Response::build_response()
+void Response::get_module()
 {
-    if (this->req.error_code)
-        return this->error_module(this->req.error_code);
+    bool loc_has_return_directive = !this->req.config.return_dir.second.empty();
+    if (loc_has_return_directive == true)
+    {
+        this->response_code = this->req.config.return_dir.first;
+        return this->build_headers();
+    }
+
+    bool target_ends_with_slash = this->target[this->target.size() - 1] == '/';
+    if (target_ends_with_slash)
+        return this->index_module();
     
-    if (this->req.req_line.method == "GET")
+    return this->file_module();
+}
+
+int Response::remove_target()
+{
+    if (remove (this->req.target_uri.c_str()) == 0)
+        return SUCCESS;
+    else
+        return FAILURE;
+}
+
+void Response::delete_module()
+{
+    std::cerr << "DELETE: " << this->req.target_uri << std::endl;
+    
+    if (this->remove_target() == SUCCESS)
     {
-        if (!this->req.config.return_dir.second.empty()) // location has return directive
-        {
-            this->response_code = this->req.config.return_dir.first;
-            return this->build_headers();
-        }
-        if (this->target[this->target.size() - 1] == '/')
-            return this->index_module();
-        else
-            return this->file_module();
-    }
-    else if (this->req.req_line.method == "POST")
-    {
-        this->cgi_module();
-    }
-    else if (this->req.req_line.method == "DELETE")
-    {
-        std::cerr << "DELETE: " << this->req.target_uri << std::endl;
-        if (remove (this->req.target_uri.c_str()) == 0)
-        {
-            this->response_code = 200;
-            this->extension = "html";
-            this->response.assign(Response::delete_response.begin(), Response::delete_response.end());
-            this->build_headers();
-        }
-        else
-            return this->error_module(500);
+        this->response_code = 200;
+        this->extension = "html";
+        this->response.assign(Response::delete_response.begin(), Response::delete_response.end());
+        this->build_headers();
     }
     else
         return this->error_module(500);
+}
+
+void Response::build_response()
+{
+    bool error_parsing_request = this->req.error_code != 0;
+    if (error_parsing_request)
+        return this->error_module(this->req.error_code);
+    
+    std::string method = this->req.req_line.method;
+    if (method == "GET")
+        return this->get_module();
+    if (method == "POST")
+        return this->cgi_module();
+    if (method == "DELETE")
+        return this->delete_module();
+    return this->error_module(NOT_IMPLEMENTED);
 }
 
 bool Response::is_cgi_extension()
@@ -193,7 +210,11 @@ void Response::index_module()
     // try each file in index directive
     for (std::vector<std::string>::const_iterator it = this->req.config.index.begin(); it != this->req.config.index.end(); it++)
     {
-        std::string target =  "./" + this->req.target_uri + *it;
+        std::string target;
+        if ((*it)[0] == '/') // absolute uri
+            target = "./" + this->req.config.root + *it;
+        else // relative uri
+            target =  "./" + this->req.target_uri + *it;
         if (stat(target.c_str(), &buffer) == 0)
         {
             this->target = target;
@@ -223,8 +244,9 @@ void Response::error_module(int error_code)
 {
 	std::map<int, std::string> error_pages = this->req.getErrorPages();
 	std::string buf;
-    std::cout << "error module" << std::endl;
+    std::cout << "error module" << this->target << std::endl;
     this->target = error_pages[error_code];
+
     if (!this->target.empty())
     {
         std::ifstream ifs(this->target.c_str(), std::ios::in);
@@ -274,10 +296,9 @@ void Response::file_module()
     if (this->is_cgi_extension())
         return this->cgi_module();
     
-    std::cout << "file module" << std::endl;
+    std::cout << "file module:" << this->target << std::endl;
     
     // stat cant do the "access" check. and open doesnt set errno if given a directory -> we use both stat and open to detect erros
-
     struct stat buffer;
     if (stat(this->target.c_str(), &buffer) == -1)
         return this->error_module(404);
@@ -290,7 +311,7 @@ void Response::file_module()
         }
         else
             return this->error_module(404);
-    }    
+    }
     std::ifstream ifs(this->target.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
     if (ifs.fail())
     {

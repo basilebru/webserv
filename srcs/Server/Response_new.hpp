@@ -6,6 +6,8 @@
 
 class Response {
 
+enum return_codes{OK=200, NOT_IMPLEMENTED=501};
+
 private:
     typedef std::map<std::string, std::string> str_map;
     typedef std::map<int, std::string> int_map;
@@ -27,6 +29,9 @@ private:
     std::string get_content_type();
     void build_response();
     void build_headers();
+    void get_module();
+    int remove_target();
+    void delete_module();
     void index_module();
     void file_module();
     void error_module(int error_code);
