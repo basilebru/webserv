@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:49:49 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/11 15:24:05 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/18 12:30:33 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ private:
 	int		setCgiAllowedExt(void);
 	int		setCgiPath(void);
 	int		setReturn(void);
+	int		setUploadDir(void);
 	int		parseInclude(void);
 
 	// Utility functions

@@ -128,7 +128,7 @@ void	CgiHandler::flagHeaders(void)
 	if ((pos = upper.find("STATUS")) != std::string::npos)
 	{
 		// std::cerr << "FOUND STATUS" << std::endl;
-		this->_status = upper.substr(pos + 6, upper.find("\n", pos) - pos - 6);
+		this->_status = this->_headers.substr(pos + 6, upper.find("\n", pos) - pos - 6);
 	}
 }
 

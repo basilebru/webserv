@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/15 12:19:49 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/18 12:28:43 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ ServerBlock::ServerBlock(ServerBlock const & copy)
 	this->_locations = copy._locations;
 	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
 	this->_return = copy._return;
+	this->_upload_dir = copy._upload_dir;
 
 	return ;
 }
@@ -79,6 +80,7 @@ ServerBlock& ServerBlock::operator=(ServerBlock const & rhs)
 	this->_locations = rhs._locations;
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
 	this->_return = rhs._return;
+	this->_upload_dir = rhs._upload_dir;
 
 	// std::cout << RED << "SERVER ASSIGNATION" << NOCOLOR <<std::endl;
 	return *this;

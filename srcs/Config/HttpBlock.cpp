@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/15 12:20:24 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/18 12:28:17 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ HttpBlock::HttpBlock(HttpBlock const & copy)
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
 	this->_return = copy._return;
+	this->_upload_dir = copy._upload_dir;
 
 	return ;
 }
@@ -58,6 +59,7 @@ HttpBlock& HttpBlock::operator=(HttpBlock const & rhs)
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
 	this->_return = rhs._return;
+	this->_upload_dir = rhs._upload_dir;
 
 	return *this;
 }
@@ -145,6 +147,11 @@ int		HttpBlock::setReturn(std::string const& code, std::string const& url)
 	return (SUCCESS);
 }
 
+void	HttpBlock::setUploadDir(std::string const& path)
+{
+	this->_upload_dir = path;
+}
+
 // Getters
 const std::string&	HttpBlock::getRoot(void) const
 {
@@ -204,6 +211,11 @@ const stringVec&	HttpBlock::getCgiAllowedExt(void) const
 const redirPair&	HttpBlock::getReturn(void) const
 {
 	return this->_return;
+}
+
+const std::string&	HttpBlock::getUploadDir(void) const
+{
+	return this->_upload_dir;
 }
 
 std::ostream & operator<<(std::ostream & o, HttpBlock const & rhs)

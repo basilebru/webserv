@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/11 17:52:29 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/18 12:31:17 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ dirMap	ConfParser::setHttpMap()
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_allowed_extensions"] = &ConfParser::setCgiAllowedExt;
 	map["include"] = &ConfParser::parseInclude;
+	map["upload_dir"] = &ConfParser::setUploadDir;
 
 	return map;
 }
@@ -83,6 +84,7 @@ dirMap	ConfParser::setSrvMap()
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_allowed_extensions"] = &ConfParser::setCgiAllowedExt;
 	map["return"] = &ConfParser::setReturn;
+	map["upload_dir"] = &ConfParser::setUploadDir;
 
 	return map;
 }
@@ -144,6 +146,7 @@ int ConfParser::setListen(void)
 	// std::cout << "SET LISTEN FUNCTION" << std::endl;
 	return 0;
 }
+
 int ConfParser::setServerName(void)
 {
 	this->checkNbrOfArgs(1, &is_higher<size_t>);
@@ -420,6 +423,23 @@ int ConfParser::setReturn(void)
 	if (ret == FAILURE)
 		throw InvalidValue(this->_dir_line[0], this);
 
+	return 0;
+}
+
+int ConfParser::setUploadDir(void)
+{
+	this->checkNbrOfArgs(2, &same_as<size_t>);
+
+	if (this->_block_type == HTTP)
+	{
+		this->_httpBlock.setUploadDir(this->_dir_line[1]);
+	}
+	else if (this->_block_type == SERVER)
+	{
+		this->_servers.back().setUploadDir(this->_dir_line[1]);
+	}
+
+	// std::cout << "SET UPLOAD FUNCTION" << std::endl;
 	return 0;
 }
 

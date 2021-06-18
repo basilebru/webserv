@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/15 12:19:16 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/18 12:31:27 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ protected:
 	std::string						_auth_basic; // string | off
 	std::string						_auth_basic_user_file; //httpasswd paths
 	std::pair<int, std::string>		_return; //only for serv et loc blocks
+	std::string						_upload_dir;
 
 	/*For CGI*/
 	std::vector<std::string>		_cgi_allowed_ext; //File types that are allowed as CGI scripts
@@ -60,6 +61,7 @@ public:
 	void	setAuthBasicFile(std::string const& path);
 	void	setCgiAllowedExt(strVecIterator first, strVecIterator last);
 	int		setReturn(std::string const& code, std::string const& url);
+	void	setUploadDir(std::string const& path);
 
 	// Getters
 	const std::string&		getRoot(void) const;
@@ -74,6 +76,7 @@ public:
 	const std::string&		getAuthBasicFile(void) const;
 	const stringVec&		getCgiAllowedExt(void) const;
 	const redirPair&		getReturn(void) const;
+	const std::string&		getUploadDir(void) const;
 
 };
 
