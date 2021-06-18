@@ -40,7 +40,7 @@ int Response::process()
         }
         catch(const std::exception& e)
         {
-            std::cerr << e.what() << std::endl;
+            std::cerr << "exception caught: " << e.what() << std::endl;
             this->error_module(500);
             return CLOSE;
         }
@@ -246,6 +246,7 @@ int Response::try_index_directive()
 
 void Response::autoindex_module()
 {
+    std::cout << "autoindex module" << this->target << std::endl;
     Autoindex ind(this->req);
     std::string auto_index;
     if (ind.genAutoindex(this->target) == SUCCESS)
@@ -274,38 +275,31 @@ void Response::index_module()
         return this->autoindex_module();
 }
 
+void Response::store_default_error_message()
+{
+    std::string buf = "Default error page";
+    this->extension = "txt";
+    this->response.assign(buf.begin(), buf.end());
+}
+
 void Response::error_module(int error_code)
 {
-	std::map<int, std::string> error_pages = this->req.getErrorPages();
-	std::string buf;
     std::cout << "error module" << this->target << std::endl;
-    this->target = error_pages[error_code];
+	
+    std::map<int, std::string> error_pages = this->req.getErrorPages();
+    bool error_page_exists = !error_pages[error_code].empty();
 
-    if (!this->target.empty())
+    if (error_page_exists)
     {
-        std::ifstream ifs(this->target.c_str(), std::ios::in);
-        if (ifs.fail())
-        {
-            this->response_code = 500;
-            buf = "500 Internal Server Error";
-            this->extension = "txt";
-            this->response.assign(buf.begin(), buf.end());
-            return this->build_headers();
-        }
+        this->target = error_pages[error_code];
         this->get_target_extension();
-        this->response_code = error_code;
-        this->response.insert(this->response.end(), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
-        ifs.close();
-        this->build_headers();
+        if (this->read_and_store_target_content() == ERROR)
+            this->store_default_error_message();
     }
     else
-    {
-        this->response_code = error_code;
-        this->extension = "txt";
-        buf = "default error page";
-        this->response.assign(buf.begin(), buf.end());
-        return this->build_headers();
-    }
+        this->store_default_error_message();
+    this->response_code = error_code;
+    return this->build_headers();
     
 	// std::cout << "Contenu de la reponse:" << std::endl;
     // std::cout << "---------------------------" << std::endl;
@@ -368,6 +362,23 @@ void Response::check_errno_and_send_error(int error_num)
     return this->error_module(INTERNAL_ERROR);
 }
 
+int Response::read_and_store_target_content()
+{
+    std::ifstream ifs(this->target.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
+    if (ifs.fail())
+        return ERROR;
+    try
+    {
+        this->response.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+    }
+    catch(const std::exception& e) // exception thrown here if target is directory
+    {
+        return ERROR;
+    }
+    ifs.close();
+    return SUCCESS;
+}
+
 void Response::file_module()
 {
     
@@ -375,13 +386,13 @@ void Response::file_module()
     
     if (this->handle_directory_target_with_no_trailing_slash() == DONE)
         return;
-    std::ifstream ifs(this->target.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
-    if (ifs.fail())
-        return this->check_errno_and_send_error(errno);
+    if (this->read_and_store_target_content() == ERROR)
+    {
+        this->check_errno_and_send_error(errno);
+        return;
+    }
     if (this->response_code == UNSET)
         this->response_code = OK;
-    this->response.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
-    ifs.close();
     this->build_headers();
 }
 

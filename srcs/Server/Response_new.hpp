@@ -38,6 +38,8 @@ private:
     std::string build_index_uri(std::string index);
     int remove_target();
     int target_exists();
+    int read_and_store_target_content();
+    void store_default_error_message();
     int try_index_directive();
     int check_target_is_directory();
     int handle_directory_target_with_no_trailing_slash();
