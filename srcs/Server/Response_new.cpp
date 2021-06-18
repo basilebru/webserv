@@ -201,45 +201,77 @@ bool Response::is_cgi_extension()
     return false;
 }
 
-void Response::index_module()
+int Response::check_target_is_directory()
 {
-    std::cout << "index module" << std::endl;
-    // check if dir exists
-    struct stat buffer;
-    if (stat(this->target.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode))
-        return this->error_module(404);
-    
-    // try each file in index directive
+    int ret = uri_is_directory(this->target);
+    if (ret == ERROR)
+    {
+        this->check_errno_and_send_error(errno);
+        return FAILURE;
+    }
+    if (ret == NO)
+    {
+        this->error_module(NOT_FOUND);
+        return FAILURE;
+    }
+    return SUCCESS;
+}
+
+std::string Response::build_index_uri(std::string index_string)
+{
+    std::string index_uri;
+    bool index_uri_absolute = index_string[0] == '/';
+    if (index_uri_absolute)
+        index_uri = "./" + this->req.config.root + index_string;
+    else
+        index_uri =  "./" + this->req.target_uri + index_string;
+    return index_uri;
+}
+
+int Response::try_index_directive()
+{
     for (std::vector<std::string>::const_iterator it = this->req.config.index.begin(); it != this->req.config.index.end(); it++)
     {
-        std::string target;
-        if ((*it)[0] == '/') // absolute uri
-            target = "./" + this->req.config.root + *it;
-        else // relative uri
-            target =  "./" + this->req.target_uri + *it;
-        if (stat(target.c_str(), &buffer) == 0)
+        std::string index_target = this->build_index_uri(*it);
+        if (uri_exists(index_target) == YES)
         {
-            this->target = target;
+            this->target = index_target;
             this->get_target_extension();
-            return this->file_module();
+            this->file_module();
+            return SUCCESS;
         }
     }
-    // std::cout << "autoindex module" << std::endl;
-    if (this->req.config.autoindex == 0)
-        return this->error_module(404);
+    return FAILURE;
+}
 
-    // build autoindex
-    std::cout << "auto" << std::endl;
+void Response::autoindex_module()
+{
     Autoindex ind(this->req);
     std::string auto_index;
     if (ind.genAutoindex(this->target) == SUCCESS)
         auto_index = ind.getAutoindex();
     else
-        return error_module(500);
+        return error_module(INTERNAL_ERROR);
     this->response.assign(auto_index.begin(), auto_index.end()); 
-    this->response_code = 200;
+    this->response_code = OK;
     this->extension = "html";
     this->build_headers();
+}
+
+void Response::index_module()
+{
+    std::cout << "index module" << this->target << std::endl;
+    if (this->check_target_is_directory() == FAILURE)
+        return;
+    
+    if (this->try_index_directive() == SUCCESS)
+        return;
+    
+    bool auto_index_is_off = this->req.config.autoindex == 0;
+    if (auto_index_is_off)
+        return this->error_module(NOT_FOUND);
+    else
+        return this->autoindex_module();
 }
 
 void Response::error_module(int error_code)
@@ -292,21 +324,39 @@ void Response::get_target_extension()
         this->extension = this->target.substr(pos + 1);
 }
 
-int Response::check_if_file_is_directory()
+int uri_is_directory(std::string uri)
 {
     struct stat buffer;
-    if (stat(this->target.c_str(), &buffer) == -1)
+    if (stat(uri.c_str(), &buffer) == -1)
+        return ERROR;
+    if (S_ISDIR(buffer.st_mode))
+        return YES;
+    return NO;
+}
+
+int uri_exists(std::string uri)
+{
+    struct stat buffer;
+    if (stat(uri.c_str(), &buffer) == -1)
+        return NO;
+    return YES;
+}
+
+int Response::handle_directory_target_with_no_trailing_slash()
+{
+    int ret = uri_is_directory(this->target);
+    if (ret == ERROR)
     {
         this->check_errno_and_send_error(errno);
-        return ERROR;
+        return DONE;
     }
-    if (S_ISDIR(buffer.st_mode))
+    if (ret == YES)
     {
         this->target += "/";
         index_module(); //could also do a redirection: return 30x and header location
-        return YES;
+        return DONE;
     }
-    return NO;
+    return CONTINUE;
 }
 
 void Response::check_errno_and_send_error(int error_num)
@@ -323,7 +373,7 @@ void Response::file_module()
     
     std::cout << "file module:" << this->target << std::endl;
     
-    if (this->check_if_file_is_directory() != NO)
+    if (this->handle_directory_target_with_no_trailing_slash() == DONE)
         return;
     std::ifstream ifs(this->target.c_str(), std::ios::in | std::ios::binary); // OK to open everything in binary mode ?
     if (ifs.fail())
