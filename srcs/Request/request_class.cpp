@@ -47,9 +47,6 @@ void Request::parse()
             this->config.error_pages = this->base_config.getErrorPages();
             return;
         }
-        std::string buf;
-        buf.assign(this->buffer.begin(), this->buffer.end());
-        std::cout << "buffer: " << buf << std::endl;
         this->parse_buffer();
     }
     catch(const std::exception& e)

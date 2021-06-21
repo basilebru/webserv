@@ -129,6 +129,8 @@ class Request
         // void reset();
         // utils
         void print(void) const;
+        void print_buffer() const;
+        void print_config() const;
         void print2(void) const;
         // getters & setters
         int get_error_code() const;

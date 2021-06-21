@@ -177,3 +177,28 @@ void    Request::print2(void) const
 
     std::cout << "--------------------------------" << std::endl;
 }
+
+void Request::print_buffer() const
+{
+    std::string buf;
+    buf.assign(this->buffer.begin(), this->buffer.end());
+    std::cout << "buffer: " << buf << std::endl;
+}
+
+void Request::print_config() const
+{
+    std::cout << "CONFIG DETAILS:" << std::endl;
+    std::cout << "--------------------------------" << std::endl;
+    std::cout << "MAX_BDY_SIZE: " << this->config.max_body_size << std::endl;
+    std::cout << "ALLOW METHODS: " ;
+    putVecToOstream(std::cout, this->config.allow_methods.begin(), this->config.allow_methods.end());
+    std::cout << "ROOT: " << this->config.root << std::endl;
+    std::cout << "INDEX: " ;
+    putVecToOstream(std::cout, this->config.index.begin(), this->config.index.end());
+    std::cout << "AUTOINDEX: " << this->config.autoindex << std::endl;
+    std::cout << "ERROR_PAGES: " ;
+    putMapToOstream(std::cout, this->config.error_pages.begin(), this->config.error_pages.end());
+    std::cout << "RETURN DIR: " << this->config.return_dir.first << " -- " << this->config.return_dir.second << std::endl;
+    std::cout << "CGI PATH: " << this->config.cgi_path << std::endl;
+    std::cout << "--------------------------------" << std::endl;
+}
