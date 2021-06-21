@@ -34,6 +34,9 @@ private:
     std::string get_content_type();
     void build_response();
     void build_headers();
+    void build_content_length();
+    void build_content_type();
+    void build_location_if_redirection();
     void get_module();
     std::string build_index_uri(std::string index);
     int remove_target();

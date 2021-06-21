@@ -56,7 +56,7 @@ void Response::build_response_line()
     ret += iToString(this->response_code);
     ret += " ";
     ret += code_map[this->response_code];
-    ret += "\r\n"; // look into a map to get signigication of response_code
+    ret += "\r\n";
     this->response.insert(this->response.begin(), ret.begin(), ret.end());
 }
 
@@ -110,29 +110,53 @@ std::string Response::delete_response = "<html>\
 </body>\
 </html>";
 
-void Response::build_headers()
+
+void Response::build_content_length()
 {
-    std::cout << "building headers" << std::endl;
-    
     this->headers += "Content-length: ";
     this->headers += iToString(this->response.size());
     this->headers += "\r\n";
+}
 
+void Response::build_content_type()
+{
     this->headers += "Content-type: ";
+    
+    bool has_known_extension;
     str_map::iterator it;
-    if ((it = this->extension_map.find(this->extension)) != this->extension_map.end())
+    it = this->extension_map.find(this->extension); 
+    has_known_extension = it != this->extension_map.end();
+    if (has_known_extension)
         this->headers += it->second;
     else
         this->headers += "application/octet-stream"; // ou text/plain ?
+    
     this->headers += "\r\n";
-    if (!this->req.config.return_dir.second.empty()) // redirection
+
+}
+void Response::build_location_if_redirection()
+{
+    bool redirection_activated = !this->req.config.return_dir.second.empty();
+    if (redirection_activated)
     {
         this->headers += "Location: ";
         this->headers += this->req.config.return_dir.second;
         this->headers += "\r\n";
     }
+}
+
+void Response::build_headers()
+{
+    std::cout << "building headers" << std::endl;
+    
+    this->build_content_length();
+    this->build_content_type();
+    this->build_location_if_redirection();
+
     this->headers += "\r\n";
+    
     this->response.insert(this->response.begin(), this->headers.begin(), this->headers.end());
+    
     this->build_response_line();
 }
 
