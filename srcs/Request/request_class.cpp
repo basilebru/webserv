@@ -47,6 +47,7 @@ void Request::parse()
             this->config.error_pages = this->base_config.getErrorPages();
             return;
         }
+        this->print_buffer();
         this->parse_buffer();
     }
     catch(const std::exception& e)
@@ -404,9 +405,8 @@ void Request::init_config()
     }
 
     // "root": build target_uri
-    if (this->config.root[this->config.root.size() - 1] == '/') // delete '/' at the end of root (if present)
-        this->config.root.erase(this->config.root.end() - 1);
+    // if (this->config.root[this->config.root.size() - 1] == '/') // delete '/' at the end of root (if present)
+    //     this->config.root.erase(this->config.root.end() - 1);
     this->target_uri = "./" + this->config.root + this->req_line.target;
-    std::cout << "[target uri:] " << this->target_uri << std::endl;
     std::cout << "----" << std::endl;
 }

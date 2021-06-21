@@ -5,7 +5,7 @@
 
 Response::Response(const Request &req, std::vector<unsigned char> &buf): req(req), response(buf)
 {
-    this->target = this->req.target_uri;
+    this->target = "./" + this->req.config.root + this->req.req_line.target;
     this->extension = this->req.req_line.extension;
     this->response_code = 0;
     // std::cout << "Response created" << std::endl;
@@ -159,6 +159,15 @@ void Response::build_headers()
     this->response.insert(this->response.begin(), this->headers.begin(), this->headers.end());
     
     this->build_response_line();
+	
+    // std::cout << "Contenu de la reponse:" << std::endl;
+    // std::cout << "---------------------------" << std::endl;
+    // for (size_t i = 0; i < this->response.size(); ++i)
+    // {
+    //     std::cout << this->response[i];
+    // }
+    // std::cout << std::endl;
+    // std::cout << "---------------------------" << std::endl;
 }
 
 void Response::get_module()
@@ -182,7 +191,7 @@ void Response::get_module()
 
 int Response::remove_target()
 {
-    if (remove (this->req.target_uri.c_str()) == 0)
+    if (remove (this->target.c_str()) == 0)
         return SUCCESS;
     else
         return FAILURE;
@@ -190,7 +199,7 @@ int Response::remove_target()
 
 void Response::delete_module()
 {
-    std::cerr << "DELETE: " << this->req.target_uri << std::endl;
+    std::cerr << "DELETE: " << this->target << std::endl;
     
     if (this->remove_target() == SUCCESS)
     {
@@ -249,7 +258,7 @@ std::string Response::build_index_uri(std::string index_string)
     if (index_uri_absolute)
         index_uri = "./" + this->req.config.root + index_string;
     else
-        index_uri =  "./" + this->req.target_uri + index_string;
+        index_uri =  this->target + index_string;
     return index_uri;
 }
 
@@ -326,14 +335,6 @@ void Response::error_module(int error_code)
     this->response_code = error_code;
     return this->build_headers();
     
-	// std::cout << "Contenu de la reponse:" << std::endl;
-    // std::cout << "---------------------------" << std::endl;
-    // for (size_t i = 0; i < this->response.size(); ++i)
-    // {
-    //     std::cout << this->response[i];
-    // }
-    // std::cout << std::endl;
-    // std::cout << "---------------------------" << std::endl;
 }
 
 void Response::get_target_extension()
