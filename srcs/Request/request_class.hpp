@@ -116,6 +116,7 @@ class Request
         void fill_conf();
         void match_server();
         void match_location();
+        int match_wildcard_locations();
 
     
     public:
@@ -149,6 +150,7 @@ class Request
 bool content_length_present(std::pair<std::string, std::string> header);
 bool transfer_encoding_present(std::pair<std::string, std::string> header);
 bool host_present(std::pair<std::string, std::string> header);
+void delete_consecutive_slashes_in_uri(std::string &uri);
 
 std::ostream & operator<<(std::ostream & o, Request const & rhs);
 

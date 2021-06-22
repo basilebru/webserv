@@ -277,46 +277,61 @@ void Request::match_server()
 
 }
 
-void Request::match_location()
+int Request::match_wildcard_locations()
 {
-    // try to find * location
     for (LocMap::const_iterator it = this->matched_serv.getLocations().begin(); it != this->matched_serv.getLocations().end(); it++)
     {
-        size_t pos;
+        size_t begining_of_extension;
         if (it->first.find('*') != std::string::npos)
         {
-            if ((pos = it->first.find('.')) != std::string::npos && this->req_line.extension == it->first.substr(pos + 1))
+            bool location_has_extension = (begining_of_extension = it->first.find('.')) != std::string::npos;
+            if (location_has_extension == false)
+                continue;
+            std::string location_extension = it->first.substr(begining_of_extension + 1);
+            if (this->req_line.extension == location_extension)
             {
                 this->matched_loc = it->second;
-                return;
+                return SUCCESS;
             }
         }
     }
+    return FAILURE;
 
-    std::string target_uri(this->req_line.target);
-    // delete consecutive '/' in uri, in order to compare equal (ex: /lol/pl should be "equal" to ////lol////pl)
-    for (unsigned long i = 0; target_uri.size() && i < target_uri.size() -1;)
+}
+
+void delete_consecutive_slashes_in_uri(std::string &uri)
+{
+    for (unsigned long i = 0; uri.size() && i < uri.size() -1;)
     {
-        if (target_uri[i] == '/' && target_uri[i + 1] == '/')
+        if (uri[i] == '/' && uri[i + 1] == '/')
         {
-            target_uri = target_uri.substr(0, i) + target_uri.substr(i + 1);
+            uri = uri.substr(0, i) + uri.substr(i + 1);
             i = 0;
         }
         else
             i++;
     }
-    
-    while (target_uri.find('/') != std::string::npos)
+}
+
+void Request::match_location()
+{
+    if (this->match_wildcard_locations() == SUCCESS)
+        return ;
+
+    std::string uri(this->req_line.target);
+    delete_consecutive_slashes_in_uri(uri);
+
+    while (uri.find('/') != std::string::npos)
     {
         for (LocMap::const_iterator it = this->matched_serv.getLocations().begin(); it != this->matched_serv.getLocations().end(); it++)
         {
-            if (target_uri.compare(it->first) == 0) // compare target uri and location "path"
+            if (uri.compare(it->first) == 0) // compare target uri and location "path"
             {
                 this->matched_loc = it->second;
                 return ;
             }
         }
-        target_uri = target_uri.substr(0, target_uri.find_last_of('/')); // cut target_uri at last '/'
+        uri = uri.substr(0, uri.find_last_of('/')); // cut uri at last '/'
     }
 }
 
@@ -401,9 +416,7 @@ void Request::init_config()
     
     // retrieve config
     this->fill_conf();
-    // std::cout << "maxbody size: " << this->config.max_body_size << std::endl;
 
-    // "max_body_size": check the "content-length" and "transfer-encoding headers" --> in store_body_headers()
     this->store_body_headers(); 
     if (this->error_code)
         return ;
@@ -416,9 +429,6 @@ void Request::init_config()
         return ;
     }
 
-    // "root": build target_uri
-    // if (this->config.root[this->config.root.size() - 1] == '/') // delete '/' at the end of root (if present)
-    //     this->config.root.erase(this->config.root.end() - 1);
     this->target_uri = "./" + this->config.root + this->req_line.target;
     std::cout << "----" << std::endl;
 }
