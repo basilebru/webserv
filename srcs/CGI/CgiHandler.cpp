@@ -56,6 +56,7 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["SERVER_PORT"]		=	this->_req.host_port;	// port ayant reçu la requête
 	this->_env_map["SERVER_PROTOCOL"]	=	this->_req.req_line.version;;	// protocol HTTP (toujours HTTP/1.1 ?)
 	this->_env_map["SERVER_SOFTWARE"]	=	"webserv";
+	this->_env_map["UPLOAD_DIR"]		=	this->_req.config.upload_dir;
 
 }
 
@@ -171,7 +172,7 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
  * @return      [int]
  */
 
-int	CgiHandler::execScript(std::string const& scriptName)
+int	CgiHandler::execScript(std::string const& cgi_path)
 {
 	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
 	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
@@ -179,6 +180,8 @@ int	CgiHandler::execScript(std::string const& scriptName)
 	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
 	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
 	*/
+
+	(void)cgi_path; //enlever cgi_path des arguments de la fonction
 
 	std::vector<unsigned char>	body;
 	char	buf[CGI_BUF_SIZE];
@@ -215,10 +218,10 @@ int	CgiHandler::execScript(std::string const& scriptName)
 		dup2(cgiToSrv_fd[1], STDOUT_FILENO);
 		dup2(srvToCgi_fd[0], STDIN_FILENO);
 
-		char * argv[2] = { const_cast<char*>(scriptName.c_str()), NULL };
-		if (execve(scriptName.c_str(), &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
+		char * argv[2] = { const_cast<char*>(this->_req.config.cgi_path.c_str()), NULL };
+		if (execve(this->_req.config.cgi_path.c_str(), &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
 		{
-			std::cerr << scriptName.c_str() << std::endl;
+			std::cerr << this->_req.config.cgi_path.c_str() << std::endl;
 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
 			close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
 			close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
@@ -302,7 +305,7 @@ std::string&				CgiHandler::getStatus(void)
  * @return      [type]
  */
 
-// std::vector<unsigned char>	CgiHandler::execScript(std::string const& scriptName)
+// std::vector<unsigned char>	CgiHandler::execScript(std::string const& cgi_path)
 // {
 
 // 	std::vector<unsigned char> body;
@@ -338,8 +341,8 @@ std::string&				CgiHandler::getStatus(void)
 
 
 // 		dup2(newSocket, STDOUT_FILENO);
-// 		char * argv[2] = { const_cast<char*>(scriptName.c_str()), NULL };
-// 		if (execve(scriptName.c_str(), argv, this->_envp) < 0)
+// 		char * argv[2] = { const_cast<char*>(cgi_path.c_str()), NULL };
+// 		if (execve(cgi_path.c_str(), argv, this->_envp) < 0)
 // 		{
 // 			std::cerr << "execve() failed, errno: " << errno << std::endl;
 // 			return body;

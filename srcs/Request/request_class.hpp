@@ -28,6 +28,7 @@ struct conf
         std::string                 auth_basic_user_file;
         std::pair<int, std::string> return_dir;
         std::string                 cgi_path;
+        std::string                 upload_dir;
 };
 
 class Request

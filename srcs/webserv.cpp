@@ -55,7 +55,7 @@ int main(int ac, char **av)
 			HttpBlock baseConfig = parser.getHttpBlock();
 			std::vector<ServerBlock> servers = parser.getServers();
 
-			// displayConfig(baseConfig, servers);
+			displayConfig(baseConfig, servers);
 		
 			/*Create and aunch server*/
 			Server *server =  new Server(baseConfig, servers);

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/18 12:28:43 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/22 11:42:02 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,6 +188,8 @@ std::ostream & 	operator<<(std::ostream & o, ServerBlock const & rhs)
 
 	o << pad << "CGI ALLOWED EXT: ";
 	putVecToOstream(o, rhs.getCgiAllowedExt().begin(), rhs.getCgiAllowedExt().end());
+
+	o << pad << "UPLOAD DIR: " << rhs.getUploadDir() << std::endl;
 
 	// Locations
 	putLocToOstream(o, rhs.getLocations().begin(), rhs.getLocations().end());

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/18 12:28:17 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/22 12:17:42 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,8 +147,10 @@ int		HttpBlock::setReturn(std::string const& code, std::string const& url)
 	return (SUCCESS);
 }
 
-void	HttpBlock::setUploadDir(std::string const& path)
+void	HttpBlock::setUploadDir(std::string& path)
 {
+	if (path[path.size() - 1] != '/')
+		path += '/';
 	this->_upload_dir = path;
 }
 
@@ -245,6 +247,8 @@ std::ostream & operator<<(std::ostream & o, HttpBlock const & rhs)
 	o << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;
 	o << "CGI ALLOWED EXT: ";
 	putVecToOstream(o, rhs.getCgiAllowedExt().begin(), rhs.getCgiAllowedExt().end());
+
+	o << "UPLOAD DIR: " << rhs.getUploadDir() << std::endl;
 
 	return o;
 }

@@ -1,11 +1,9 @@
-#!/usr/bin/php
 <?php
 	$env = getenv();
-	echo("Status 200 OK\n");
-	echo("Content-Type: text/html\n");
-	// echo("Content-Length: 723\n");
-	echo("Connection: keep-alive\n\n");
-	// phpinfo();
+	header("Status 200 OK\n");
+	header("Content-Type: text/html\n");
+	// header("Content-Length: 723\n");
+	header("Connection: keep-alive\n\n");
 ?>
 <html lang="en">
 <head>

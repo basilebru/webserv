@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/18 12:31:27 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/22 12:11:27 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ public:
 	void	setAuthBasicFile(std::string const& path);
 	void	setCgiAllowedExt(strVecIterator first, strVecIterator last);
 	int		setReturn(std::string const& code, std::string const& url);
-	void	setUploadDir(std::string const& path);
+	void	setUploadDir(std::string& path);
 
 	// Getters
 	const std::string&		getRoot(void) const;

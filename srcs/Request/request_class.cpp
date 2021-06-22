@@ -384,6 +384,12 @@ void Request::fill_conf()
         this->config.keep_alive_timeout = this->matched_serv.getKeepaliveTimeout();
     if (this->config.keep_alive_timeout == NOT_SET)
         this->config.keep_alive_timeout = this->base_config.getKeepaliveTimeout();
+
+    this->config.upload_dir = this->matched_loc.getUploadDir();
+    if (this->config.upload_dir.empty())
+        this->config.upload_dir = this->matched_serv.getUploadDir();
+    if (this->config.upload_dir.empty())
+        this->config.upload_dir = this->base_config.getUploadDir();
 }
 
 void Request::init_config()
