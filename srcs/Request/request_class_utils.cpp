@@ -190,6 +190,7 @@ void Request::print_config() const
     std::cout << "CONFIG DETAILS:" << std::endl;
     std::cout << "--------------------------------" << std::endl;
     std::cout << "MAX_BDY_SIZE: " << this->config.max_body_size << std::endl;
+    std::cout << "KA TIMEOUT: " << this->config.keep_alive_timeout << std::endl;
     std::cout << "ALLOW METHODS: " ;
     putVecToOstream(std::cout, this->config.allow_methods.begin(), this->config.allow_methods.end());
     std::cout << "ROOT: " << this->config.root << std::endl;

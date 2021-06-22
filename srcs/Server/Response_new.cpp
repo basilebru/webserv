@@ -146,12 +146,31 @@ void Response::build_location_if_redirection()
     }
 }
 
+void Response::build_keep_alive()
+{
+    bool keep_alive_timeout_set = this->req.config.keep_alive_timeout != NOT_SET;
+    if (keep_alive_timeout_set)
+    {
+        this->headers += "Connection: ";
+        this->headers += "Keep-alive";
+        this->headers += "\r\n";
+        this->headers += "Keep-alive: ";
+        this->headers += iToString(this->req.config.keep_alive_timeout);
+        this->headers += "\r\n";
+    }
+    // OR
+    // this->headers += "Connection: ";
+    // this->headers += "Close";
+    // this->headers += "\r\n";
+}
+
 void Response::build_headers()
 {
     std::cout << "building headers" << std::endl;
     
     this->build_content_length();
     this->build_content_type();
+    this->build_keep_alive();
     this->build_location_if_redirection();
 
     this->headers += "\r\n";

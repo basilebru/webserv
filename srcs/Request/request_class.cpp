@@ -378,6 +378,12 @@ void Request::fill_conf()
         this->config.return_dir = this->matched_serv.getReturn();
     if (this->config.return_dir.second.empty())
         this->config.return_dir = this->base_config.getReturn();
+
+    this->config.keep_alive_timeout = this->matched_loc.getKeepaliveTimeout();
+    if (this->config.keep_alive_timeout == NOT_SET)
+        this->config.keep_alive_timeout = this->matched_serv.getKeepaliveTimeout();
+    if (this->config.keep_alive_timeout == NOT_SET)
+        this->config.keep_alive_timeout = this->base_config.getKeepaliveTimeout();
 }
 
 void Request::init_config()

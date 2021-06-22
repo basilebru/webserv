@@ -35,6 +35,7 @@ private:
     void build_response();
     void build_headers();
     void build_content_length();
+    void build_keep_alive();
     void build_content_type();
     void build_location_if_redirection();
     void get_module();
