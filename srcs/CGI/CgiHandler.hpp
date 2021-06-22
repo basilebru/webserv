@@ -43,7 +43,7 @@ public:
 	~CgiHandler(void);
 	CgiHandler& operator=(CgiHandler const & rhs);
 
-	int	execScript(std::string const& scriptName);
+	int	execScript(void);
 	
 	/* Getters */
 	std::string&				getHeaders(void);

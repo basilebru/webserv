@@ -172,7 +172,7 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
  * @return      [int]
  */
 
-int	CgiHandler::execScript(std::string const& cgi_path)
+int	CgiHandler::execScript(void)
 {
 	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
 	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
@@ -180,8 +180,6 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
 	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
 	*/
-
-	(void)cgi_path; //enlever cgi_path des arguments de la fonction
 
 	std::vector<unsigned char>	body;
 	char	buf[CGI_BUF_SIZE];
@@ -217,9 +215,15 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'ecriture inutilisée */
 		dup2(cgiToSrv_fd[1], STDOUT_FILENO);
 		dup2(srvToCgi_fd[0], STDIN_FILENO);
+		std::string option("-f");
+		std::string file("/home/julien/Cursus42/webserv/html/cgi-bin/post.php");
 
-		char * argv[2] = { const_cast<char*>(this->_req.config.cgi_path.c_str()), NULL };
-		if (execve(this->_req.config.cgi_path.c_str(), &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
+		char * argv[3] = {
+			const_cast<char*>(this->_req.config.cgi_path.c_str()),
+			const_cast<char*>(file.c_str()),
+			(char *)0
+		};
+		if (execve(argv[0], argv, this->_envp) < 0) /* Le script écrit dans STDOUT */
 		{
 			std::cerr << this->_req.config.cgi_path.c_str() << std::endl;
 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;

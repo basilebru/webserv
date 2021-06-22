@@ -12,24 +12,6 @@ void signal_handler(int signum)
 	}
 }
 
-
-/*// here just for testing purpose
-LocationBlock match_loc(std::string target_uri, LocMap locations)
-{
-    while (target_uri.find('/') != std::string::npos)
-    {
-        target_uri = target_uri.substr(0, target_uri.find_last_of('/')); // cut target_uri at last '/'
-        for (LocMap::const_iterator it = locations.begin(); it != locations.end(); it++)
-        {
-            if (target_uri.compare(it->first) == 0)
-                return it->second;
-        }
-    }
-    // if no match, return "empty" location block
-    LocationBlock loc;
-    return loc;
-}*/
-
 void displayConfig(HttpBlock const& baseConfig, std::vector<ServerBlock> const& servers)
 {
 	std::cout << std::endl << "WEBSERV CONFIGURATION: " << std::endl;
@@ -55,7 +37,7 @@ int main(int ac, char **av)
 			HttpBlock baseConfig = parser.getHttpBlock();
 			std::vector<ServerBlock> servers = parser.getServers();
 
-			displayConfig(baseConfig, servers);
+			// displayConfig(baseConfig, servers);
 		
 			/*Create and aunch server*/
 			Server *server =  new Server(baseConfig, servers);
