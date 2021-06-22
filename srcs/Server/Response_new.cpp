@@ -153,7 +153,7 @@ void Response::build_keep_alive()
         this->headers += "Connection: ";
         this->headers += "Keep-alive";
         this->headers += "\r\n";
-        this->headers += "Keep-alive: ";
+        this->headers += "Keep-alive: timeout=";
         this->headers += iToString(this->req.config.keep_alive_timeout);
         this->headers += "\r\n";
     }
