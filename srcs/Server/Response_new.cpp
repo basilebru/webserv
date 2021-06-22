@@ -5,7 +5,6 @@
 
 Response::Response(const Request &req, std::vector<unsigned char> &buf): req(req), response(buf)
 {
-    this->target = "./" + this->req.config.root + this->req.req_line.target;
     this->extension = this->req.req_line.extension;
     this->response_code = 0;
     // std::cout << "Response created" << std::endl;
@@ -231,12 +230,33 @@ void Response::delete_module()
         return this->error_module(500);
 }
 
+void Response::build_target()
+{
+    bool root_uri_is_absolute = this->req.config.root[0] == '/';
+    if (root_uri_is_absolute == false)
+        this->target = "./";
+    
+    this->target += this->req.config.root;
+    
+    bool root_uri_with_trailing_slash = this->req.config.root[this->req.config.root.size() -1] == '/';
+    if (root_uri_with_trailing_slash == false)
+        this->target += "/";
+    
+    size_t position_of_location = this->req.req_line.target.find(this->req.matched_loc.getPath());
+    size_t size_of_location = this->req.matched_loc.getPath().size();
+    std::string target_uri_without_location_part = this->req.req_line.target.substr(position_of_location + size_of_location);
+    this->target += target_uri_without_location_part;
+    
+    std::cout << "target is: " << this->target << std::endl;
+}
+
 void Response::build_response()
 {
     bool error_parsing_request = this->req.error_code != 0;
     if (error_parsing_request)
         return this->error_module(this->req.error_code);
-    
+
+    this->build_target();
     std::string method = this->req.req_line.method;
     if (method == "GET")
         return this->get_module();
@@ -273,11 +293,11 @@ int Response::check_target_is_directory()
 std::string Response::build_index_uri(std::string index_string)
 {
     std::string index_uri;
-    bool index_uri_absolute = index_string[0] == '/';
-    if (index_uri_absolute)
-        index_uri = "./" + this->req.config.root + index_string;
-    else
-        index_uri =  this->target + index_string;
+    // bool index_uri_absolute = index_string[0] == '/';
+    // if (index_uri_absolute)
+    //     index_uri = "./" + this->req.config.root + index_string;
+    // else
+    index_uri =  this->target + index_string;
     return index_uri;
 }
 

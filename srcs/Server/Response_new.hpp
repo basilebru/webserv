@@ -31,6 +31,7 @@ private:
 
     void build_response_line();
     void get_target_extension();
+    void build_target();
     std::string get_content_type();
     void build_response();
     void build_headers();
