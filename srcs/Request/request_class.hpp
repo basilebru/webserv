@@ -23,12 +23,13 @@ struct conf
         std::vector<std::string>    index;
         int                         autoindex;
         errorMap                    error_pages;
-        std::vector<std::string>    cgi_allowed_ext;
-        std::string                 auth_basic;
-        std::string                 auth_basic_user_file;
+        // std::vector<std::string>    cgi_allowed_ext;
+        // std::string                 auth_basic;
+        // std::string                 auth_basic_user_file;
         std::pair<int, std::string> return_dir;
         std::string                 cgi_path;
         std::string                 upload_dir;
+        stringMap                   cgi_extensions;
 };
 
 class Request

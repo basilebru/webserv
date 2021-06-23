@@ -36,8 +36,8 @@ void	CgiHandler::initEnv(void)
 
 	std::map<std::string, std::string> headers = this->_req.get_headers();
 
-	if (this->_req.config.auth_basic != DEFAULT_AUTH_BASIC)
-		this->_env_map["AUTH_TYPE"]		=	"Basic";	// mode d'authentification, auth_basic ??
+	// if (this->_req.config.auth_basic != DEFAULT_AUTH_BASIC)
+	this->_env_map["AUTH_TYPE"]		=	"Basic";	// mode d'authentification, auth_basic ??
 	
 	this->_env_map["REDIRECT_STATUS"]	=	"200";	// content-length de la requete
 	this->_env_map["CONTENT_LENGTH"]	=	iToString(this->_req.body_size);	// content-length de la requete

@@ -200,6 +200,8 @@ void Request::print_config() const
     std::cout << "ERROR_PAGES: " ;
     putMapToOstream(std::cout, this->config.error_pages.begin(), this->config.error_pages.end());
     std::cout << "RETURN DIR: " << this->config.return_dir.first << " -- " << this->config.return_dir.second << std::endl;
-    std::cout << "CGI PATH: " << this->config.cgi_path << std::endl;
+    std::cout << "CGI_EXTENSIONS: " ;
+    putMapToOstream(std::cout, this->config.cgi_extensions.begin(), this->config.cgi_extensions.end());
+    // std::cout << "CGI PATH: " << this->config.cgi_path << std::endl;
     std::cout << "--------------------------------" << std::endl;
 }

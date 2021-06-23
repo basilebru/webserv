@@ -269,7 +269,7 @@ void Response::build_response()
 
 bool Response::is_cgi_extension()
 {
-    if (std::find(this->req.config.cgi_allowed_ext.begin(), this->req.config.cgi_allowed_ext.end(), this->extension) != this->req.config.cgi_allowed_ext.end())
+    if (this->req.config.cgi_extensions.count(this->extension))
         return true;
     return false;
 }
@@ -486,6 +486,7 @@ void Response::file_module()
 
 void Response::cgi_module()
 {
+    std::cout << "cgi module: " << std::endl;
     CgiHandler                  cgi(this->req);
     std::vector<unsigned char>  cgi_body;
     std::string                 cgi_headers;
