@@ -2,7 +2,7 @@
 # define CGI_HANDLER_HPP
 
 # include "webserv.hpp"
-# include "request_class.hpp"
+# include "Response_new.hpp"
 # include <sys/types.h>
 # include <sys/wait.h>
 # include <sys/socket.h>
@@ -20,6 +20,7 @@ private:
 	char						**_envp;
 	stringMap					_env_map;
 	const Request&				_req;
+	const Response&				_res;
 	std::string					_headers;
 	std::vector<unsigned char>	_body;
 	bool						_hasCL;
@@ -38,7 +39,7 @@ private:
 
 
 public:
-	CgiHandler(Request const& req);
+	CgiHandler(Request const& req, Response const& res);
 	CgiHandler(CgiHandler const & copy);
 	~CgiHandler(void);
 	CgiHandler& operator=(CgiHandler const & rhs);

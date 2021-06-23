@@ -1,16 +1,17 @@
 #include "CgiHandler.hpp"
 
-CgiHandler::CgiHandler(Request const& req) :
-_envp(NULL), _req(req), _hasCL(false), _hasCT(false), _hasRedir(false)
+CgiHandler::CgiHandler(Request const& req, Response const& res) :
+_envp(NULL), _req(req), _res(res), _hasCL(false), _hasCT(false), _hasRedir(false)
 {
 	// std::cout << "CGI CONSTRUCTOR" << std::endl;
 	this->initEnv();
 }
 
 CgiHandler::CgiHandler(CgiHandler const & copy) :
-_envp(copy._envp), _req(copy._req), _hasCL(copy._hasCL)
+_envp(copy._envp), _req(copy._req), _res(copy._res),
+_headers(copy._headers), _body(copy._body), _hasCL(copy._hasCL),
+_hasCT(copy._hasCT), _hasRedir(copy._hasRedir), _status(copy._status)
 {}
-
 
 CgiHandler::~CgiHandler(void)
 {
@@ -24,7 +25,13 @@ CgiHandler& CgiHandler::operator=(CgiHandler const & rhs)
 {
 	this->_envp = rhs._envp;
 	// this->_req = rhs._req;
+	// this->_res = rhs._res;
+	this->_headers = rhs._headers;
+	this->_body = rhs._body;
 	this->_hasCL = rhs._hasCL;
+	this->_hasCT = rhs._hasCT;
+	this->_hasRedir = rhs._hasRedir;
+	this->_status = rhs._status;
 
 	return *this;
 }
@@ -43,8 +50,8 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["CONTENT_LENGTH"]	=	iToString(this->_req.body_size);	// content-length de la requete
 	this->_env_map["CONTENT_TYPE"]		=	headers["content-type"];	// content-type de la requete (POST)
 	this->_env_map["GATEWAY_INTERFACE"]	=	"CGI/1.1";	// version du CGI qu'utilise le server
-	this->_env_map["PATH_INFO"]			=	this->_req.target_uri;	// derniere partie de l'URI apres le script name
-	this->_env_map["PATH_TRANSLATED"]	=	this->_req.target_uri;	// adresse reelle du script (idem PATH_INFO pour nous)
+	this->_env_map["PATH_INFO"]			=	this->_res.getTarget();	// derniere partie de l'URI apres le script name
+	this->_env_map["PATH_TRANSLATED"]	=	this->_res.getTarget();	// adresse reelle du script (idem PATH_INFO pour nous)
 	this->_env_map["QUERY_STRING"]		=	this->_req.req_line.query_string;	// Contient tout ce qui suit le « ? » dans l'URL envoyée par le client.
 	this->_env_map["REMOTE_ADDR"]		=	this->_req.host_uri;	// adress ip du client
 	this->_env_map["REMOTE_IDENT"]		=	headers["authorization"];	// nom d'utilisateur du client

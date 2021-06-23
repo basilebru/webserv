@@ -57,6 +57,7 @@ private:
     void cgi_module();
     void send_img(std::string const& path);
     bool is_cgi_extension();
+
     
     Response(void);
 
@@ -67,6 +68,9 @@ public:
     Response& operator=(Response const & rhs);
 
     int process();
+
+    /* getters */
+    const std::string& getTarget(void) const;
 };
 
 int uri_is_directory(std::string uri);

@@ -487,7 +487,8 @@ void Response::file_module()
 void Response::cgi_module()
 {
     std::cout << "cgi module: " << std::endl;
-    CgiHandler                  cgi(this->req);
+
+    CgiHandler                  cgi(this->req, *this);
     std::vector<unsigned char>  cgi_body;
     std::string                 cgi_headers;
 
@@ -531,4 +532,11 @@ void Response::cgi_module()
     }
     else
         this->error_module(500);
+}
+
+/* getters */
+
+const std::string& Response::getTarget(void) const
+{
+    return this->target;
 }
