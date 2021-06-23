@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/18 12:31:17 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/23 15:31:28 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ dirMap	ConfParser::setHttpMap()
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_allowed_extensions"] = &ConfParser::setCgiAllowedExt;
+	map["cgi_extension"] = &ConfParser::setCgiExtensions;
 	map["include"] = &ConfParser::parseInclude;
 	map["upload_dir"] = &ConfParser::setUploadDir;
 
@@ -83,6 +84,7 @@ dirMap	ConfParser::setSrvMap()
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_allowed_extensions"] = &ConfParser::setCgiAllowedExt;
+	map["cgi_extension"] = &ConfParser::setCgiExtensions;
 	map["return"] = &ConfParser::setReturn;
 	map["upload_dir"] = &ConfParser::setUploadDir;
 
@@ -104,6 +106,7 @@ dirMap	ConfParser::setLocMap()
 	map["auth_basic"] = &ConfParser::setAuthBasic;
 	map["auth_basic_user_file"] = &ConfParser::setAuthBasicFile;
 	map["cgi_allowed_extensions"] = &ConfParser::setCgiAllowedExt;
+	map["cgi_extension"] = &ConfParser::setCgiExtensions;
 	map["cgi_path"] = &ConfParser::setCgiPath;
 	map["return"] = &ConfParser::setReturn;
 
@@ -405,6 +408,27 @@ int ConfParser::setCgiPath(void)
 		this->_curr_location->setCgiPath(this->_dir_line[1]);
 
 	return 0;
+}
+
+int ConfParser::setCgiExtensions(void)
+{
+	int ret = SUCCESS;
+	this->checkNbrOfArgs(3, &same_as<size_t>);
+
+	if (this->_block_type == HTTP)
+		ret  = this->_httpBlock.setCgiExtensions(this->_dir_line[1], this->_dir_line[2]);
+	else if (this->_block_type == SERVER)
+	{
+		ret = this->_servers.back().setCgiExtensions(this->_dir_line[1], this->_dir_line[2]);
+	}
+	if (this->_block_type == LOCATION)
+	{
+		ret = this->_curr_location->setCgiExtensions(this->_dir_line[1], this->_dir_line[2]);
+	}
+	if (ret == FAILURE)
+		throw DuplicateDirective(this->_dir_line[0], this);
+
+	return ret;
 }
 
 int ConfParser::setReturn(void)

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/22 12:17:42 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/23 15:30:41 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ HttpBlock::HttpBlock(HttpBlock const & copy)
 	this->_auth_basic = copy._auth_basic;
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
+	this->_cgi_extensions = copy._cgi_extensions;
 	this->_return = copy._return;
 	this->_upload_dir = copy._upload_dir;
 
@@ -58,6 +59,7 @@ HttpBlock& HttpBlock::operator=(HttpBlock const & rhs)
 	this->_auth_basic = rhs._auth_basic;
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
+	this->_cgi_extensions = rhs._cgi_extensions;
 	this->_return = rhs._return;
 	this->_upload_dir = rhs._upload_dir;
 
@@ -135,6 +137,13 @@ void	HttpBlock::setCgiAllowedExt(strVecIterator first, strVecIterator last)
 	this->_cgi_allowed_ext.assign(first, last);
 }
 
+int		HttpBlock::setCgiExtensions(std::string const& ext, std::string const& cgi_path)
+{
+	if (this->_cgi_extensions.insert(std::make_pair(ext, cgi_path)).second)
+		return SUCCESS;
+	return FAILURE;
+}
+
 int		HttpBlock::setReturn(std::string const& code, std::string const& url)
 {
 	int key(0);
@@ -210,6 +219,11 @@ const stringVec&	HttpBlock::getCgiAllowedExt(void) const
 	return this->_cgi_allowed_ext;
 }
 
+const stringMap&	HttpBlock::getCgiExtensions(void) const
+{
+	return this->_cgi_extensions;
+}
+
 const redirPair&	HttpBlock::getReturn(void) const
 {
 	return this->_return;
@@ -247,6 +261,9 @@ std::ostream & operator<<(std::ostream & o, HttpBlock const & rhs)
 	o << "AUTH BASIC FILE: " << rhs.getAuthBasicFile() << std::endl;
 	o << "CGI ALLOWED EXT: ";
 	putVecToOstream(o, rhs.getCgiAllowedExt().begin(), rhs.getCgiAllowedExt().end());
+
+	o << "CGI_EXTENSIONS: ";
+	putMapToOstream(o, rhs.getCgiExtensions().begin(), rhs.getCgiExtensions().end());
 
 	o << "UPLOAD DIR: " << rhs.getUploadDir() << std::endl;
 

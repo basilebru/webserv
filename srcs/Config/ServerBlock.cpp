@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/22 11:42:02 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/23 15:29:09 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ ServerBlock::ServerBlock(ServerBlock const & copy)
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_locations = copy._locations;
 	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
+	this->_cgi_extensions = copy._cgi_extensions;
 	this->_return = copy._return;
 	this->_upload_dir = copy._upload_dir;
 
@@ -79,6 +80,7 @@ ServerBlock& ServerBlock::operator=(ServerBlock const & rhs)
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_locations = rhs._locations;
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
+	this->_cgi_extensions = rhs._cgi_extensions;
 	this->_return = rhs._return;
 	this->_upload_dir = rhs._upload_dir;
 
@@ -188,6 +190,9 @@ std::ostream & 	operator<<(std::ostream & o, ServerBlock const & rhs)
 
 	o << pad << "CGI ALLOWED EXT: ";
 	putVecToOstream(o, rhs.getCgiAllowedExt().begin(), rhs.getCgiAllowedExt().end());
+
+	o << pad << "CGI_EXTENSIONS: ";
+	putMapToOstream(o, rhs.getCgiExtensions().begin(), rhs.getCgiExtensions().end());
 
 	o << pad << "UPLOAD DIR: " << rhs.getUploadDir() << std::endl;
 
