@@ -223,7 +223,7 @@ int Server::setup_sockets(void)
 		}
 		
 		// 5. Start listening. Hold at most 10 connections in the queue
-		if (listen(newSocket, 10) < 0)
+		if (listen(newSocket, 30) < 0)
 		{
 			std::cout << "Failed to listen on socket. errno: " << errno << std::endl;
 			close(newSocket);

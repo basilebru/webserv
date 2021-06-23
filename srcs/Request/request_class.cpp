@@ -215,7 +215,10 @@ std::vector<unsigned char>::iterator Request::find_crlf()
     {
         if (*it == '\r')
         {
-            if (*++it == '\n')
+            it++;
+            if (it == this->buffer.end())
+                return this->buffer.end();
+            if (*it == '\n')
                 return --it;
         }
         else
@@ -315,8 +318,8 @@ void delete_consecutive_slashes_in_uri(std::string &uri)
 
 void Request::match_location()
 {
-    if (this->match_wildcard_locations() == SUCCESS)
-        return ;
+    // if (this->match_wildcard_locations() == SUCCESS)
+    //     return ;
 
     std::string uri(this->req_line.target);
     delete_consecutive_slashes_in_uri(uri);
