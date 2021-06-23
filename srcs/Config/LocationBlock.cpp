@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/15 12:19:28 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/23 15:29:37 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ LocationBlock::LocationBlock(LocationBlock const & copy)
 	this->_auth_basic = copy._auth_basic;
 	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
+	this->_cgi_extensions = copy._cgi_extensions;
 	this->_return = copy._return;
 
 	return ;
@@ -68,6 +69,7 @@ LocationBlock& LocationBlock::operator=(LocationBlock const & rhs)
 	this->_auth_basic = rhs._auth_basic;
 	this->_auth_basic_user_file = rhs._auth_basic_user_file;
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
+	this->_cgi_extensions = rhs._cgi_extensions;
 	this->_return = rhs._return;
 
 	return *this;
@@ -127,6 +129,9 @@ std::ostream & operator<<(std::ostream & o, LocationBlock const & rhs)
 	o << pad << "CGI PATH: " << rhs.getCgiPath() << std::endl;
 	o << pad << "CGI ALLOWED EXT: ";
 	putVecToOstream(o, rhs.getCgiAllowedExt().begin(), rhs.getCgiAllowedExt().end());
+
+	o << pad << "CGI_EXTENSIONS: ";
+	putMapToOstream(o, rhs.getCgiExtensions().begin(), rhs.getCgiExtensions().end());
 
 	return o;
 }

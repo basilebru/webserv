@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/22 12:11:27 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/23 15:24:46 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,12 @@
 # include "webserv.hpp"
 # include "utils.hpp"
 
-	typedef size_t						size_type;
-	typedef std::vector<std::string>	stringVec;
-	typedef stringVec::iterator			strVecIterator;
-	typedef std::map<int, std::string>	errorMap;
-	typedef std::pair<int, std::string>	redirPair;
+	typedef size_t								size_type;
+	typedef std::vector<std::string>			stringVec;
+	typedef stringVec::iterator					strVecIterator;
+	typedef std::map<int, std::string>			errorMap;
+	typedef std::map<std::string, std::string>	stringMap;
+	typedef std::pair<int, std::string>			redirPair;
 
 class HttpBlock {
 
@@ -36,6 +37,7 @@ protected:
 	int								_chunked_transfer_encoding; // on | off
 	std::string						_auth_basic; // string | off
 	std::string						_auth_basic_user_file; //httpasswd paths
+	stringMap						_cgi_extensions;
 	std::pair<int, std::string>		_return; //only for serv et loc blocks
 	std::string						_upload_dir;
 
@@ -60,6 +62,7 @@ public:
 	void	setAuthBasic(std::string const& path);
 	void	setAuthBasicFile(std::string const& path);
 	void	setCgiAllowedExt(strVecIterator first, strVecIterator last);
+	int		setCgiExtensions(std::string const& ext, std::string const& cgi_path);
 	int		setReturn(std::string const& code, std::string const& url);
 	void	setUploadDir(std::string& path);
 
@@ -76,6 +79,7 @@ public:
 	const std::string&		getAuthBasicFile(void) const;
 	const stringVec&		getCgiAllowedExt(void) const;
 	const redirPair&		getReturn(void) const;
+	const stringMap&		getCgiExtensions(void) const;
 	const std::string&		getUploadDir(void) const;
 
 };

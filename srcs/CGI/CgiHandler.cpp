@@ -3,7 +3,7 @@
 CgiHandler::CgiHandler(Request const& req) :
 _envp(NULL), _req(req), _hasCL(false), _hasCT(false), _hasRedir(false)
 {
-	// std::cout << "CGI CTOR" << std::endl;
+	// std::cout << "CGI CONSTRUCTOR" << std::endl;
 	this->initEnv();
 }
 
