@@ -50,15 +50,15 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["CONTENT_LENGTH"]	=	iToString(this->_req.body_size);	// content-length de la requete
 	this->_env_map["CONTENT_TYPE"]		=	headers["content-type"];	// content-type de la requete (POST)
 	this->_env_map["GATEWAY_INTERFACE"]	=	"CGI/1.1";	// version du CGI qu'utilise le server
-	this->_env_map["PATH_INFO"]			=	this->_res.getTarget();	// derniere partie de l'URI apres le script name
+	this->_env_map["PATH_INFO"]			=	this->_req.req_line.target;	// derniere partie de l'URI apres le host
 	this->_env_map["PATH_TRANSLATED"]	=	this->_res.getTarget();	// adresse reelle du script (idem PATH_INFO pour nous)
 	this->_env_map["QUERY_STRING"]		=	this->_req.req_line.query_string;	// Contient tout ce qui suit le « ? » dans l'URL envoyée par le client.
 	this->_env_map["REMOTE_ADDR"]		=	this->_req.host_uri;	// adress ip du client
 	this->_env_map["REMOTE_IDENT"]		=	headers["authorization"];	// nom d'utilisateur du client
 	this->_env_map["REMOTE_USER"]		=	headers["authorization"];	// nom d'utilisateur (distant) du client
 	this->_env_map["REQUEST_METHOD"]	=	this->_req.req_line.method;	// GET ou POST ou ...
-	// this->_env_map["REQUEST_URI"]		=	this->_req.host_uri + ":" + this->_req.host_port + "?" + this->_req.req_line.query_string;	// URI
-	this->_env_map["SCRIPT_NAME"]		=	"value";	// full path du fichier de script
+	this->_env_map["REQUEST_URI"]		=	this->_req.req_line.target; // --> For the 42 tester
+	this->_env_map["SCRIPT_NAME"]		=	this->_req.req_line.target;	// full path du fichier de script
 	this->_env_map["SERVER_NAME"]		=	this->_req.host_uri;	// DNS ou IP du server (hostname)
 	this->_env_map["SERVER_PORT"]		=	this->_req.host_port;	// port ayant reçu la requête
 	this->_env_map["SERVER_PROTOCOL"]	=	this->_req.req_line.version;;	// protocol HTTP (toujours HTTP/1.1 ?)
@@ -227,7 +227,6 @@ int	CgiHandler::execScript(std::string const& extension)
 
 		stringMap cgi_extensions = this->_req.getCgi_extensions();
 
-		std::cerr << "CGI PATH EXEC" << cgi_extensions[extension] << std::endl;
 		char * argv[3] = {
 			const_cast<char*>(cgi_extensions[extension].c_str()),
 			const_cast<char*>(file.c_str()),
@@ -235,7 +234,6 @@ int	CgiHandler::execScript(std::string const& extension)
 		};
 		if (execve(argv[0], argv, this->_envp) < 0) /* Le script écrit dans STDOUT */
 		{
-			std::cerr << cgi_extensions[extension] << std::endl;
 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
 			close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
 			close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
