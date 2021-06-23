@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/23 15:29:09 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/23 15:55:16 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,27 +33,13 @@ _server_names(1, DEFAULT_SRV_NAME)
 	return ;
 }
 
-ServerBlock::ServerBlock(ServerBlock const & copy)
+ServerBlock::ServerBlock(ServerBlock const & copy) : HttpBlock(copy)
 {
 	// std::cout << YELLOW << "SERVER CPY CONSTRUCTOR" << NOCOLOR <<std::endl;
 	this->_listenIP = copy._listenIP;
 	this->_listenPort = copy._listenPort;
 	this->_server_names = copy._server_names;
-	this->_root = copy._root;
-	this->_autoindex = copy._autoindex;
-	this->_indexes = copy._indexes;
-	this->_limit_except = copy._limit_except;
-	this->_error_pages = copy._error_pages;
-	this->_client_max_body_size = copy._client_max_body_size;
-	this->_keepalive_timeout = copy._keepalive_timeout;
-	this->_chunked_transfer_encoding = copy._chunked_transfer_encoding;
-	this->_auth_basic = copy._auth_basic;
-	this->_auth_basic_user_file = copy._auth_basic_user_file;
 	this->_locations = copy._locations;
-	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
-	this->_cgi_extensions = copy._cgi_extensions;
-	this->_return = copy._return;
-	this->_upload_dir = copy._upload_dir;
 
 	return ;
 }

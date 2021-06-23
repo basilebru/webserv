@@ -172,7 +172,7 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
  * @return      [int]
  */
 
-int	CgiHandler::execScript(void)
+int	CgiHandler::execScript(std::string const& extension)
 {
 	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
 	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
@@ -218,14 +218,17 @@ int	CgiHandler::execScript(void)
 		std::string option("-f");
 		std::string file("/home/julien/Cursus42/webserv/html/cgi-bin/post.php");
 
+		stringMap cgi_extensions = this->_req.getCgi_extensions();
+
+		std::cerr << "CGI PATH EXEC" << cgi_extensions[extension] << std::endl;
 		char * argv[3] = {
-			const_cast<char*>(this->_req.config.cgi_path.c_str()),
+			const_cast<char*>(cgi_extensions[extension].c_str()),
 			const_cast<char*>(file.c_str()),
 			(char *)0
 		};
 		if (execve(argv[0], argv, this->_envp) < 0) /* Le script écrit dans STDOUT */
 		{
-			std::cerr << this->_req.config.cgi_path.c_str() << std::endl;
+			std::cerr << cgi_extensions[extension] << std::endl;
 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
 			close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
 			close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */

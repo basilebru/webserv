@@ -111,7 +111,7 @@ bool Request::request_is_ready() const
     return this->request_ready;
 }
 
-std::map<std::string, std::string> const& Request::get_headers() const
+std::map<std::string, std::string> const& Request::get_headers(void) const
 {
     return this->headers;
 } 
@@ -121,6 +121,10 @@ std::map<int, std::string> const&     Request::getErrorPages(void) const
     return this->config.error_pages;
 }
 
+std::map<std::string, std::string> const& Request::getCgi_extensions(void) const
+{
+    return this->config.cgi_extensions;
+} 
 
 // void Request::set_error_code(int code)
 // {

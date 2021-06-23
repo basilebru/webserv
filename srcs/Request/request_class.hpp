@@ -141,8 +141,9 @@ class Request
         int get_fd() const;
         sockaddr_in get_addr() const;
         bool request_is_ready() const;
-        std::map<std::string, std::string> const& get_headers() const;
+        std::map<std::string, std::string> const& get_headers(void) const;
         std::map<int, std::string> const&     getErrorPages(void) const;
+        std::map<std::string, std::string> const& getCgi_extensions(void) const;
         bool connection_end() const;
         // void set_error_code(int code);
 

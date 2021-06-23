@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/23 15:30:41 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/23 16:00:14 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ HttpBlock::HttpBlock(HttpBlock const & copy)
 	this->_root = copy._root;
 	this->_autoindex = copy._autoindex;
 	this->_indexes = copy._indexes;
+	this->_limit_except = copy._limit_except;
 	this->_error_pages = copy._error_pages;
 	this->_client_max_body_size = copy._client_max_body_size;
 	this->_keepalive_timeout = copy._keepalive_timeout;
@@ -52,6 +53,7 @@ HttpBlock& HttpBlock::operator=(HttpBlock const & rhs)
 	this->_root = rhs._root;
 	this->_autoindex = rhs._autoindex;
 	this->_indexes = rhs._indexes;
+	this->_limit_except = rhs._limit_except;
 	this->_error_pages = rhs._error_pages;
 	this->_client_max_body_size = rhs._client_max_body_size;
 	this->_keepalive_timeout = rhs._keepalive_timeout;
@@ -109,6 +111,7 @@ void HttpBlock::setMaxBdySize(size_type const& size)
 {
 	this->_client_max_body_size = size;
 }
+
 void HttpBlock::setKeepaliveTimeout(size_type const& timeout)
 {
 	this->_keepalive_timeout = timeout;

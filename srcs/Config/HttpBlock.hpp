@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/23 15:24:46 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/23 15:56:25 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ protected:
 	std::string						_upload_dir;
 
 	/*For CGI*/
-	std::vector<std::string>		_cgi_allowed_ext; //File types that are allowed as CGI scripts
+	std::vector<std::string>		_cgi_allowed_ext; // no need anymore
 
 public:
 	HttpBlock(void);

@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:40:40 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/23 15:29:37 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/23 15:53:32 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,24 +27,24 @@ LocationBlock::LocationBlock(void)
 	return;
 }
 
-LocationBlock::LocationBlock(LocationBlock const & copy)
+LocationBlock::LocationBlock(LocationBlock const & copy) : HttpBlock(copy)
 {
 	// std::cout << YELLOW << "CPY LOC CTOR" << NOCOLOR <<std::endl;
-	this->_path = copy._path;
+	// this->_path = copy._path;
+	// this->_cgi_path = copy._cgi_path;
+	// this->_root = copy._root;
+	// this->_autoindex = copy._autoindex;
+	// this->_indexes = copy._indexes;
+	// this->_limit_except = copy._limit_except;
+	// this->_error_pages = copy._error_pages;
+	// this->_client_max_body_size = copy._client_max_body_size;
+	// this->_keepalive_timeout = copy._keepalive_timeout;
+	// this->_chunked_transfer_encoding = copy._chunked_transfer_encoding;
+	// this->_auth_basic = copy._auth_basic;
+	// this->_auth_basic_user_file = copy._auth_basic_user_file;
+	// this->_cgi_allowed_ext = copy._cgi_allowed_ext;
+	// this->_cgi_extensions = copy._cgi_extensions;
 	this->_cgi_path = copy._cgi_path;
-	this->_root = copy._root;
-	this->_autoindex = copy._autoindex;
-	this->_indexes = copy._indexes;
-	this->_limit_except = copy._limit_except;
-	this->_error_pages = copy._error_pages;
-	this->_client_max_body_size = copy._client_max_body_size;
-	this->_keepalive_timeout = copy._keepalive_timeout;
-	this->_chunked_transfer_encoding = copy._chunked_transfer_encoding;
-	this->_auth_basic = copy._auth_basic;
-	this->_auth_basic_user_file = copy._auth_basic_user_file;
-	this->_cgi_allowed_ext = copy._cgi_allowed_ext;
-	this->_cgi_extensions = copy._cgi_extensions;
-	this->_return = copy._return;
 
 	return ;
 }
@@ -71,6 +71,7 @@ LocationBlock& LocationBlock::operator=(LocationBlock const & rhs)
 	this->_cgi_allowed_ext = rhs._cgi_allowed_ext;
 	this->_cgi_extensions = rhs._cgi_extensions;
 	this->_return = rhs._return;
+	this->_cgi_path = rhs._cgi_path;
 
 	return *this;
 }

@@ -491,7 +491,7 @@ void Response::cgi_module()
     std::vector<unsigned char>  cgi_body;
     std::string                 cgi_headers;
 
-    if (cgi.execScript() == SUCCESS)
+    if (cgi.execScript(this->extension) == SUCCESS)
     {
         cgi_headers = cgi.getHeaders();
         cgi_body = cgi.getBody();

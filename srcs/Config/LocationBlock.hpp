@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 15:59:09 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/11 11:58:43 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/23 15:55:58 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ class LocationBlock : public HttpBlock {
 
 private:
 	std::string		_path; //Optional since locations are stored in map
-	std::string		_cgi_path;
+	std::string		_cgi_path; // No need anymore
 
 
 public:
