@@ -2,7 +2,7 @@
 # define CGI_HANDLER_HPP
 
 # include "webserv.hpp"
-# include "Response_new.hpp"
+# include "Response.hpp"
 # include <sys/types.h>
 # include <sys/wait.h>
 # include <sys/socket.h>

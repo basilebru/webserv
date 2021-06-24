@@ -34,6 +34,7 @@ endif
 INCLUDES 		=	./includes/
 SERVER_DIR 		=	$(SRCS_DIR)/Server/
 REQUEST_DIR 	=	$(SRCS_DIR)/Request/
+RESPONSE_DIR 	=	$(SRCS_DIR)/Response/
 CGI_HAND_DIR 	=	$(SRCS_DIR)/CGI/
 CONF_DIR 		=	$(SRCS_DIR)/Config/
 UTILS_DIR 		=	$(SRCS_DIR)/Utils/
@@ -45,6 +46,7 @@ ALL_INC			+= 	-I$(REQUEST_DIR)
 ALL_INC			+= 	-I$(CGI_HAND_DIR)
 ALL_INC			+= 	-I$(CONF_DIR)
 ALL_INC			+= 	-I$(UTILS_DIR)
+ALL_INC			+= 	-I$(RESPONSE_DIR)
 ALL_INC			+= 	-I$(AUTO_DIR)
 # ALL_INC			+= 	-I$(LIBFT_DIR)includes/
 
@@ -59,8 +61,9 @@ SRCS += webserv.cpp
 
 # core sources
 SRCS += Server.cpp
-SRCS += Response_new.cpp
-# SRCS += Response.cpp
+SRCS += Response.cpp
+SRCS += Response_utils.cpp
+SRCS += Response_headers.cpp
 SRCS += request_class.cpp
 SRCS += request_class_store.cpp
 SRCS += request_class_utils.cpp
@@ -89,6 +92,7 @@ vpath %.cpp $(CGI_HAND_DIR)
 vpath %.cpp $(UTILS_DIR)
 vpath %.cpp $(CONF_DIR)
 vpath %.cpp $(AUTO_DIR)
+vpath %.cpp $(RESPONSE_DIR)
 
 
 # ---------------- OBJ --------------- #

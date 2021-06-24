@@ -32,7 +32,7 @@ private:
     static std::string delete_response;
 
     void build_response_line();
-    void get_target_extension();
+    void set_extension_from_target();
     void build_target();
     std::string get_content_type();
     void build_response();
