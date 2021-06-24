@@ -47,7 +47,7 @@ void Request::parse()
             this->config.error_pages = this->base_config.getErrorPages();
             return;
         }
-        this->print_buffer();
+        // this->print_buffer(); --> commenté pour faciliter le testeur
         this->parse_buffer();
     }
     catch(const std::exception& e)

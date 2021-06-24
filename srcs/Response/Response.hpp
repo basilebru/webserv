@@ -77,6 +77,7 @@ public:
 };
 
 int uri_is_directory(std::string uri);
+int uri_is_file(std::string uri);
 int uri_exists(std::string uri);
 std::ostream & operator<<(std::ostream & o, Response const & rhs);
 

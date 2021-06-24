@@ -64,6 +64,16 @@ int uri_is_directory(std::string uri)
     return NO;
 }
 
+int uri_is_file(std::string uri)
+{
+    struct stat buffer;
+    if (stat(uri.c_str(), &buffer) == -1)
+        return ERROR;
+    if (S_ISREG(buffer.st_mode))
+        return YES;
+    return NO;
+}
+
 int uri_exists(std::string uri)
 {
     struct stat buffer;

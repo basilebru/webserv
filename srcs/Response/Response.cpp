@@ -64,6 +64,42 @@ void Response::build_response()
         return this->cgi_module();
     if (method == "DELETE")
         return this->delete_module();
+    if (method == "PUT")
+    {
+        std::ofstream file;
+
+        if (uri_is_file(this->target) == YES)
+        {
+            file.open(this->target.c_str());
+            file.write((char*)&this->req.body[0], this->req.body.size());
+            file.close();
+            this->headers += "HTTP/1.1 204 No Content\r\n";
+        }
+        else
+        {
+            file.open(this->target.c_str(), std::ofstream::out | std::ofstream::trunc);
+            if (file.is_open() == false)
+                return this->error_module(403);;
+
+            file.write((char*)&this->req.body[0], this->req.body.size());
+            file.close();
+            this->headers += "HTTP/1.1 201 Created\r\n";
+        }
+
+        this->headers += "Content-Location: /file_should_exist_after\r\n";
+        this->build_keep_alive();
+        this->headers += CRLF;
+        this->response.assign(this->headers.begin(), this->headers.end());
+
+        std::cout << "Contenu de la reponse:" << std::endl;
+        std::cout << "---------------------------" << std::endl;
+        for (size_t i = 0; i < this->response.size(); ++i)
+        {
+            std::cout << this->response[i];
+        }
+        std::cout << "---------------------------" << std::endl;
+        return ;
+    }
     return this->error_module(NOT_IMPLEMENTED);
 }
 
