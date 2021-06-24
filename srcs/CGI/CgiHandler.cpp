@@ -51,7 +51,6 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["CONTENT_TYPE"]		=	headers["content-type"];	// content-type de la requete (POST)
 	this->_env_map["GATEWAY_INTERFACE"]	=	"CGI/1.1";	// version du CGI qu'utilise le server
 	this->_env_map["PATH_INFO"]			=	this->_req.req_line.target;	// derniere partie de l'URI apres le host
-	std::cerr << "PATH_INFO" << this->_req.req_line.target << std::endl;
 	this->_env_map["PATH_TRANSLATED"]	=	this->_res.getTarget();	// adresse reelle du script (idem PATH_INFO pour nous)
 	this->_env_map["QUERY_STRING"]		=	this->_req.req_line.query_string;	// Contient tout ce qui suit le « ? » dans l'URL envoyée par le client.
 	this->_env_map["REMOTE_ADDR"]		=	this->_req.host_uri;	// adress ip du client
@@ -231,7 +230,7 @@ int	CgiHandler::execScript(std::string const& extension)
 			const_cast<char*>(this->_res.getTarget().c_str()),
 			(char *)0
 		};
-		if (execve(argv[0], argv, this->_envp) < 0) /* Le script écrit dans STDOUT */
+		if (execve(argv[0], &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
 		{
 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
 			close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
