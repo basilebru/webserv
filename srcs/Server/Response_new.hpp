@@ -6,7 +6,7 @@
 
 class Response {
 
-enum return_codes{UNSET=0, OK=200, NOT_IMPLEMENTED=501, INTERNAL_ERROR=500, NOT_FOUND=404};
+enum return_codes{UNSET=0, OK=200, NOT_IMPLEMENTED=501, INTERNAL_ERROR=500, NOT_FOUND=404, REDIR=301};
 #define YES 1
 #define ERROR 2
 #define NO 0
@@ -23,6 +23,8 @@ private:
     int                         response_code; 
     std::string                 extension; // copy from request, in order to be able to modify value (request is const)
     std::string                 target; // // copy from request, in order to be able to modify value (request is const)
+    bool                        redir_activated;
+    std::string                 redir_target;
     static str_map extension_map;
     static str_map init_ext_map();
     static int_map code_map;
@@ -57,6 +59,7 @@ private:
     void cgi_module();
     void send_img(std::string const& path);
     bool is_cgi_extension();
+    void redir_module(int redir_code, std::string redir_target);
 
     
     Response(void);

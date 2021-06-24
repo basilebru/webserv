@@ -7,6 +7,7 @@ Response::Response(const Request &req, std::vector<unsigned char> &buf): req(req
 {
     this->extension = this->req.req_line.extension;
     this->response_code = 0;
+    this->redir_activated = false;
     // std::cout << "Response created" << std::endl;
 }
 
@@ -136,11 +137,11 @@ void Response::build_content_type()
 }
 void Response::build_location_if_redirection()
 {
-    bool redirection_activated = !this->req.config.return_dir.second.empty();
-    if (redirection_activated)
+    if (this->redir_activated)
     {
+        std::cout << "Redirection activated" << std::endl;
         this->headers += "Location: ";
-        this->headers += this->req.config.return_dir.second;
+        this->headers += this->redir_target;
         this->headers += "\r\n";
     }
 }
@@ -188,14 +189,20 @@ void Response::build_headers()
     // std::cout << "---------------------------" << std::endl;
 }
 
+void Response::redir_module(int redir_code, std::string redir_target)
+{
+    this->redir_activated = true;
+    this->response_code = redir_code;
+    this->redir_target = redir_target;
+    this->build_headers();
+}
+
 void Response::get_module()
 {
-    bool loc_has_return_directive = !this->req.config.return_dir.second.empty();
+    const std::pair<int, std::string> return_dir = this->req.config.return_dir;
+    bool loc_has_return_directive = !return_dir.second.empty();
     if (loc_has_return_directive == true)
-    {
-        this->response_code = this->req.config.return_dir.first;
-        return this->build_headers();
-    }
+        return this->redir_module(return_dir.first, return_dir.second);
 
     bool target_ends_with_slash = this->target[this->target.size() - 1] == '/';
     if (target_ends_with_slash)
@@ -403,6 +410,7 @@ int uri_exists(std::string uri)
 
 int Response::handle_directory_target_with_no_trailing_slash()
 {
+    std::cout << "directory target with no trailing slash" << std::endl;
     int ret = uri_is_directory(this->target);
     if (ret == ERROR)
     {
@@ -411,8 +419,7 @@ int Response::handle_directory_target_with_no_trailing_slash()
     }
     if (ret == YES)
     {
-        this->target += "/";
-        index_module(); //could also do a redirection: return 30x and header location
+        this->redir_module(REDIR, this->req.req_line.target + "/");
         return DONE;
     }
     return CONTINUE;
