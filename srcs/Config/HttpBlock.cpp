@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/23 16:00:14 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/24 20:26:12 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,12 +192,12 @@ const errorMap&		HttpBlock::getErrorPages(void) const
 	return this->_error_pages;
 }
 
-const long int&		HttpBlock::getMaxBdySize(void) const
+const unsigned long&	HttpBlock::getMaxBdySize(void) const
 {
 	return this->_client_max_body_size;
 }
 
-const long int&		HttpBlock::getKeepaliveTimeout(void) const
+const  int&			HttpBlock::getKeepaliveTimeout(void) const
 {
 	return this->_keepalive_timeout;
 }

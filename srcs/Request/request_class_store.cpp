@@ -148,7 +148,7 @@ void Request::store_chunk_size(std::string line)
     this->chunk_size = strtol(line.c_str(), NULL, 16);
     this->body_size += this->chunk_size;
     std::cout << "body size: " << this->body_size << std::endl;
-    if (this->config.max_body_size != NOT_SET && this->body_size > (unsigned long)this->config.max_body_size)
+    if (this->config.max_body_size != (unsigned long)NOT_SET && this->body_size > this->config.max_body_size)
     {
         this->error_message = "body size > max_body_size";
         this->error_code = 413;
@@ -178,12 +178,12 @@ void Request::store_body_size()
         this->error_code = 400;
         return ;
     }
-    if (body_size.length() > 7) // > 9.9999 MB
-    {
-        this->error_message = "parsing error: Content-length header value is too big: " + body_size;
-        this->error_code = 400;
-        return ;
-    }
+    // if (body_size.length() > 7) // > 9.9999 MB
+    // {
+    //     this->error_message = "parsing error: Content-length header value is too big: " + body_size;
+    //     this->error_code = 400;
+    //     return ;
+    // }
     // int ret(0);
     // int i(0);
 	// while (body_size[i])
@@ -193,7 +193,7 @@ void Request::store_body_size()
 	// }
     // this->body_size = ret;
     this->body_size = strtol(body_size.c_str(), NULL, 10);
-    if (this->config.max_body_size != NOT_SET && this->body_size > (unsigned long)this->config.max_body_size)
+    if (this->config.max_body_size != (unsigned long)NOT_SET && this->body_size > this->config.max_body_size)
     {
         this->error_message = "body size > max_body_size";
         this->error_code = 413;

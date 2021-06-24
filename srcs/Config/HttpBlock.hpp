@@ -6,7 +6,7 @@
 /*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 16:29:31 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/23 15:56:25 by julnolle         ###   ########.fr       */
+/*   Updated: 2021/06/24 20:26:43 by julnolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,8 @@ protected:
 	std::vector<std::string>		_indexes;
 	std::vector<std::string>		_limit_except; //ou allow_methods ?
 	std::map<int, std::string>		_error_pages; /* num error, error file path */
-	long int						_client_max_body_size;
-	long int						_keepalive_timeout;
+	unsigned long					_client_max_body_size;
+	int								_keepalive_timeout;
 	int								_chunked_transfer_encoding; // on | off
 	std::string						_auth_basic; // string | off
 	std::string						_auth_basic_user_file; //httpasswd paths
@@ -72,8 +72,8 @@ public:
 	const stringVec&		getIndexes(void) const;
 	const stringVec&		getLimitExcept(void) const;
 	const errorMap&			getErrorPages(void) const;
-	const long int&			getMaxBdySize(void) const;
-	const long int&			getKeepaliveTimeout(void) const;
+	const unsigned long&	getMaxBdySize(void) const;
+	const int&				getKeepaliveTimeout(void) const;
 	const int&				getChunkedEncoding(void) const;
 	const std::string&		getAuthBasic(void) const;
 	const std::string&		getAuthBasicFile(void) const;

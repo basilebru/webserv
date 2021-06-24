@@ -372,9 +372,9 @@ void Request::fill_conf()
         this->config.index = this->base_config.getIndexes();
     
     this->config.max_body_size = this->matched_loc.getMaxBdySize();
-    if (this->config.max_body_size == NOT_SET)
+    if (this->config.max_body_size == (unsigned long)NOT_SET)
         this->config.max_body_size = this->matched_serv.getMaxBdySize();
-    if (this->config.max_body_size == NOT_SET)
+    if (this->config.max_body_size == (unsigned long)NOT_SET)
         this->config.max_body_size = this->base_config.getMaxBdySize();
 
     this->config.root = this->matched_loc.getRoot();

@@ -16,8 +16,8 @@ struct request_line
 
 struct conf
 {
-        long                        max_body_size;
-        long                        keep_alive_timeout;
+        unsigned long               max_body_size;
+        int                         keep_alive_timeout;
         std::vector<std::string>    allow_methods;
         std::string                 root;
         std::vector<std::string>    index;
