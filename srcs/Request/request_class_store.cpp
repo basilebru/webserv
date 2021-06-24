@@ -50,7 +50,8 @@ void Request::store_req_line(std::string line)
         this->error_message = "version not supported: " + this->req_line.version;
         this->error_code = 505;
     }
-        return;
+    delete_consecutive_slashes_in_uri(this->req_line.target);
+    return;
 }
 
 void Request::store_header(std::string line)
