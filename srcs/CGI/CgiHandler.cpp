@@ -192,18 +192,12 @@ int	CgiHandler::execScript(std::string const& extension)
 	char	buf[CGI_BUF_SIZE];
 	int		ret = CGI_BUF_SIZE;
 	int		status;
-
+	int		cgi_fd;
 
 	this->fillEnvp();
 
-	int cgiToSrv_fd[2]; // Pipe Server <-- CGI
 	int srvToCgi_fd[2]; // Pipe Server --> CGI
 
-	if (pipe(cgiToSrv_fd) == -1)
-	{
-		std::cerr << "pipe() cgiToSrv failed, errno: " << errno << std::endl;
-		return FAILURE;
-	}
 	if (pipe(srvToCgi_fd) == -1)
 	{
 		std::cerr << "pipe() srvToCgi failed, errno: " << errno << std::endl;
@@ -218,9 +212,10 @@ int	CgiHandler::execScript(std::string const& extension)
 	}
 	else if (pid == 0)
 	{
-		close(cgiToSrv_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
+		cgi_fd = open("/tmp/cgi_file", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'ecriture inutilisée */
-		dup2(cgiToSrv_fd[1], STDOUT_FILENO);
+		dup2(cgi_fd, STDOUT_FILENO);
+		dup2(cgi_fd, STDERR_FILENO);
 		dup2(srvToCgi_fd[0], STDIN_FILENO);
 
 		stringMap cgi_extensions = this->_req.getCgi_extensions();
@@ -233,34 +228,33 @@ int	CgiHandler::execScript(std::string const& extension)
 		if (execve(argv[0], &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
 		{
 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
-			close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
 			close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
 			_exit(1);
 		}
-		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
+		close(cgi_fd);
 	}
 	else
 	{
-		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
 
 		if (!this->_req.body.empty())
 			write(srvToCgi_fd[1], &this->_req.body[0], this->_req.body.size());
 
+		cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
 		while (ret == CGI_BUF_SIZE)
 		{
 			memset(buf, 0, CGI_BUF_SIZE);
-			if ((ret = read(cgiToSrv_fd[0], buf, CGI_BUF_SIZE)) < 0)
+			if ((ret = read(cgi_fd, buf, CGI_BUF_SIZE)) < 0)
 				return FAILURE;
 			this->storeBuffer(body, buf, ret);
 		}
-
 		if (!body.empty())
 			fillOutputs(body);
 
-		close(cgiToSrv_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
+		close(cgi_fd);
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
+
 		if (waitpid(pid, &status, 0) == -1)
 			return FAILURE;
 

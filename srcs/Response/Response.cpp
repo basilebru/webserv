@@ -408,7 +408,6 @@ void Response::cgi_module()
         {
             std::cout << this->response[i];
         }
-        std::cout << std::endl;
         std::cout << "---------------------------" << std::endl;
     }
     else
