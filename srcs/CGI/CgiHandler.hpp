@@ -8,7 +8,7 @@
 # include <sys/socket.h>
 # include <sys/un.h>
 
-# define CGI_BUF_SIZE 65535
+# define CGI_BUF_SIZE 4096
 
 
 class CgiHandler {

@@ -70,24 +70,26 @@ void Response::build_response()
 
         if (uri_is_file(this->target) == YES)
         {
-            file.open(this->target.c_str());
+            file.open(this->target.c_str(), std::ofstream::binary | std::ofstream::out | std::ofstream::trunc);
             file.write((char*)&this->req.body[0], this->req.body.size());
+            if (file.is_open() == false)
+                return this->error_module(500);
             file.close();
             this->headers += "HTTP/1.1 204 No Content\r\n";
         }
         else
         {
-            file.open(this->target.c_str(), std::ofstream::out | std::ofstream::trunc);
+            file.open(this->target.c_str(), std::ofstream::binary | std::ofstream::out);
             if (file.is_open() == false)
-                return this->error_module(403);;
+                return this->error_module(403);
 
             file.write((char*)&this->req.body[0], this->req.body.size());
             file.close();
-            this->headers += "HTTP/1.1 201 Created\r\n";
+            this->headers += "HTTP/1.1 204 No Content\r\n";
         }
 
         this->headers += "Content-Location: /file_should_exist_after\r\n";
-        this->build_keep_alive();
+        // this->build_keep_alive();
         this->headers += CRLF;
         this->response.assign(this->headers.begin(), this->headers.end());
 
@@ -402,13 +404,13 @@ void Response::cgi_module()
         this->response.assign(this->headers.begin(), this->headers.end());
         this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());
 
-        std::cout << "Contenu de la reponse:" << std::endl;
-        std::cout << "---------------------------" << std::endl;
-        for (size_t i = 0; i < this->response.size(); ++i)
-        {
-            std::cout << this->response[i];
-        }
-        std::cout << "---------------------------" << std::endl;
+        // std::cout << "Contenu de la reponse:" << std::endl;
+        // std::cout << "---------------------------" << std::endl;
+        // for (size_t i = 0; i < this->response.size(); ++i)
+        // {
+        //     std::cout << this->response[i];
+        // }
+        // std::cout << "---------------------------" << std::endl;
     }
     else
         this->error_module(500);

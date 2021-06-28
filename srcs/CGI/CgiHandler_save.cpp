@@ -58,7 +58,10 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["REMOTE_USER"]		=	headers["authorization"];	// nom d'utilisateur (distant) du client
 	this->_env_map["REQUEST_METHOD"]	=	this->_req.req_line.method;	// GET ou POST ou ...
 	this->_env_map["REQUEST_URI"]		=	this->_req.req_line.target; // --> For the 42 tester
+	this->_env_map["SCRIPT_FILENAME"]	=	"./YoupiBanane/youpi.bla";	// full path du fichier de script
+	std::cerr << "SCRIPT_FILENAME: " << this->_env_map["SCRIPT_FILENAME"] << std::endl;
 	this->_env_map["SCRIPT_NAME"]		=	this->_req.req_line.target;	// full path du fichier de script
+	std::cerr << "SCRIPT_NAME: " << this->_env_map["SCRIPT_NAME"] << std::endl;
 	this->_env_map["SERVER_NAME"]		=	this->_req.host_uri;	// DNS ou IP du server (hostname)
 	this->_env_map["SERVER_PORT"]		=	this->_req.host_port;	// port ayant reçu la requête
 	this->_env_map["SERVER_PROTOCOL"]	=	this->_req.req_line.version;;	// protocol HTTP (toujours HTTP/1.1 ?)
@@ -136,7 +139,7 @@ void	CgiHandler::flagHeaders(void)
 	if ((pos = upper.find("STATUS")) != std::string::npos)
 	{
 		// std::cerr << "FOUND STATUS" << std::endl;
-		this->_status = this->_headers.substr(pos + 6, upper.find("\n", pos) - pos - 6);
+		this->_status = this->_headers.substr(pos + 7, upper.find("\n", pos) - pos - 7);
 	}
 }
 
