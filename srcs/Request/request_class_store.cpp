@@ -147,7 +147,7 @@ void Request::store_chunk_size(std::string line)
     }
     this->chunk_size = strtol(line.c_str(), NULL, 16);
     this->body_size += this->chunk_size;
-    std::cout << "body size: " << this->body_size << std::endl;
+    // std::cout << "body size: " << this->body_size << std::endl;
     if (this->config.max_body_size != (unsigned long)NOT_SET && this->body_size > this->config.max_body_size)
     {
         this->error_message = "body size > max_body_size";

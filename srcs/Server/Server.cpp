@@ -137,7 +137,6 @@ int		Server::loop_client_socket()
 		{
 			std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
 			it->second->parse();
-			// it->second->print();
 			Response res(*it->second, this->response_buffers[it->first]);
 			ret = res.process();
 			if (ret == NEW)

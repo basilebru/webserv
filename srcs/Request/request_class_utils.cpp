@@ -133,23 +133,23 @@ std::map<std::string, std::string> const& Request::getCgi_extensions(void) const
 
 void Request::print() const
 {
+    std::cout << "REQUEST DETAILS: " << std::endl;
+    std::cout << "--------------------------------" << std::endl;
     if (this->error_code)
     {
         std::cout << "Error:" << error_code << std::endl;
         std::cout << error_message << std::endl;
         return ;
     }
-    std::cout << "Request line:" << std::endl;
-    std::cout << " . Method: " << this->req_line.method << std::endl;
-    std::cout << " . Target: " << this->req_line.target << std::endl;
-    std::cout << " . Version: " << this->req_line.version << std::endl;
-    std::cout << std::endl;
+    std::cout << "REQUEST LINE:";
+    std::cout << " " << this->req_line.method;
+    std::cout << " " << this->req_line.target;
+    std::cout << " " << this->req_line.version << std::endl;
+    std::cout << "HEADERS:" << std::endl;
     for (std::map<std::string, std::string>::const_iterator it = this->headers.begin(); it != this->headers.end(); it++)
     {
-        std::cout << "Header line:" << std::endl;
-        std::cout << " . field_name: " << "[" << it->first << "]" << std::endl;
-        std::cout << " . field_value: " << "[" << it->second << "]" << std::endl;
-        std::cout << std::endl;
+        std::cout << " . " << "[" << it->first << "]";
+        std::cout << " " << "[" << it->second << "]" << std::endl;
     }
     // if (!this->body.empty())
     // {
@@ -158,6 +158,7 @@ void Request::print() const
     //     std::cout << "body: " << bdy << std::endl;
     //     std::cout << std::endl;
     // }
+    std::cout << "--------------------------------" << std::endl;
 }
 
 void    Request::print2(void) const
@@ -194,6 +195,8 @@ void Request::print_config() const
 {
     std::cout << "CONFIG DETAILS:" << std::endl;
     std::cout << "--------------------------------" << std::endl;
+    std::cout <<"MATCHED_SERVER_NAME: " << this->matched_serv.getServerNames()[0] << std::endl;
+    std::cout << "MATCHED LOC PATH: " << this->matched_loc.getPath() << std::endl;
     std::cout << "MAX_BDY_SIZE: " << this->config.max_body_size << std::endl;
     std::cout << "KA TIMEOUT: " << this->config.keep_alive_timeout << std::endl;
     std::cout << "ALLOW METHODS: " ;

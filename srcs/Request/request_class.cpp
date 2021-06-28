@@ -83,7 +83,7 @@ void Request::read_from_socket()
 
 void Request::parse_buffer()
 {
-    std::cout << "Parsing buffer..." << std::endl;
+    // std::cout << "Parsing buffer..." << std::endl;
     if (this->chunked_encoding || this->body_size)
         this->parse_body();
     else if (this->req_line_read)
@@ -94,7 +94,7 @@ void Request::parse_buffer()
 
 void Request::parse_req_line()
 {
-    std::cout << "Parsing req_line..." << std::endl;
+    // std::cout << "Parsing req_line..." << std::endl;
     std::string line;
     bool line_read;
     line_read = this->read_buf_line(line);
@@ -112,7 +112,7 @@ void Request::parse_req_line()
 
 void Request::parse_headers()
 {
-    std::cout << "Parsing header..." << std::endl;
+    // std::cout << "Parsing header..." << std::endl;
     std::string line;
     bool line_read;
 
@@ -137,7 +137,7 @@ void Request::parse_headers()
 
 void Request::parse_body()
 {
-    std::cout << "Parsing body..." << std::endl;
+    // std::cout << "Parsing body..." << std::endl;
 
     if (!this->chunked_encoding)
         this->parse_body_normal();
@@ -147,9 +147,7 @@ void Request::parse_body()
 
 void Request::parse_body_normal()
 {
-    std::cout << "Parsing body normal..." << std::endl;
-    // std::cout << "buf size" << this->buffer.size() << std::endl;
-    // std::cout << "bdy size" << this->body_size << std::endl;
+    // std::cout << "Parsing body normal..." << std::endl;
     if (this->buffer.size() >= this->body_size)
     {
         this->body.assign(this->buffer.begin(), this->buffer.begin() + this->body_size);
@@ -160,16 +158,16 @@ void Request::parse_body_normal()
 
 void Request::parse_body_chunked()
 {
-    std::cout << "Parsing body chunked..." << std::endl;
+    // std::cout << "Parsing body chunked..." << std::endl;
     std::string line;
     while (1)
     {
         if (this->chunked_size_read)
         {
-            std::cout << "Parsing chunked data..." << std::endl;
+            // std::cout << "Parsing chunked data..." << std::endl;
             if (this->parse_chunked_data() == false)
             {
-                std::cout << "waiting for more data" << std::endl;
+                // std::cout << "waiting for more data" << std::endl;
                 return ;
             }
             if (this->chunk_size == 0) // end of request, stop reading
@@ -179,10 +177,10 @@ void Request::parse_body_chunked()
             }
             this->chunked_size_read = false; // go on reading new chunk size
         }
-        std::cout << "Parsing chunked size..." << std::endl;
+        // std::cout << "Parsing chunked size..." << std::endl;
         if (this->parse_chunked_size() == false) // not enough data in buffer
         {
-            std::cout << "waiting for more data" << std::endl;
+            // std::cout << "waiting for more data" << std::endl;
             return ;
         }
     }
@@ -348,10 +346,7 @@ void Request::match_location()
 void Request::fill_conf()
 {
     this->match_server(); // this->matched_serv is filled
-    std::cout << "----" << std::endl;
-    std::cout <<"matched serv: " << this->matched_serv.getServerNames()[0] << std::endl;
     this->match_location(); // this->matched_loc is filled -- if no match is found, this->matched_loc is left as it is (object default constructor: attributes "unset"
-    std::cout << "matched loc: " << this->matched_loc.getPath() << std::endl;
     // for each attribute: try fill it with location block. if directive not set in location block, use Server bloc. if directive not set in server block, use http bloc (default value for directive)
 
     this->config.allow_methods = this->matched_loc.getLimitExcept();
@@ -447,5 +442,4 @@ void Request::init_config()
     }
 
     this->target_uri = "./" + this->config.root + this->req_line.target;
-    std::cout << "----" << std::endl;
 }
