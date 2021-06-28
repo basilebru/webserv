@@ -294,7 +294,6 @@ void Response::file_module()
 
 int Response::handle_directory_target_with_no_trailing_slash()
 {
-    std::cout << "directory target with no trailing slash" << std::endl;
     int ret = uri_is_directory(this->target);
     if (ret == ERROR)
     {
@@ -303,6 +302,7 @@ int Response::handle_directory_target_with_no_trailing_slash()
     }
     if (ret == YES)
     {
+        std::cout << "directory target with no trailing slash" << std::endl;
         this->redir_module(REDIR, this->req.req_line.target + "/");
         return DONE;
     }

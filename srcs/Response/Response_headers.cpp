@@ -15,14 +15,14 @@ void Response::build_headers()
     
     this->build_response_line();
 	
-    // std::cout << "Contenu de la reponse:" << std::endl;
-    // std::cout << "---------------------------" << std::endl;
-    // for (size_t i = 0; i < this->response.size(); ++i)
-    // {
-    //     std::cout << this->response[i];
-    // }
-    // std::cout << std::endl;
-    // std::cout << "---------------------------" << std::endl;
+    std::cout << "Contenu de la reponse:" << std::endl;
+    std::cout << "---------------------------" << std::endl;
+    for (size_t i = 0; i < this->response.size(); ++i)
+    {
+        std::cout << this->response[i];
+    }
+    std::cout << std::endl;
+    std::cout << "---------------------------" << std::endl;
 }
 
 void Response::build_content_length()

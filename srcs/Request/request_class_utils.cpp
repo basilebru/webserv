@@ -187,6 +187,7 @@ void Request::print_buffer() const
     std::string buf;
     buf.assign(this->buffer.begin(), this->buffer.end());
     std::cout << "buffer: " << buf << std::endl;
+    std::cout << "buffer-size:" << buf.size() << std::endl;
 }
 
 void Request::print_config() const

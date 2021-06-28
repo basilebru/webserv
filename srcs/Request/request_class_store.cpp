@@ -184,14 +184,6 @@ void Request::store_body_size()
     //     this->error_code = 400;
     //     return ;
     // }
-    // int ret(0);
-    // int i(0);
-	// while (body_size[i])
-	// {
-	// 	ret = ret * 10 + body_size[i] - 48;
-	// 	i++;
-	// }
-    // this->body_size = ret;
     this->body_size = strtol(body_size.c_str(), NULL, 10);
     if (this->config.max_body_size != (unsigned long)NOT_SET && this->body_size > this->config.max_body_size)
     {

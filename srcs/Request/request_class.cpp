@@ -47,7 +47,7 @@ void Request::parse()
             this->config.error_pages = this->base_config.getErrorPages();
             return;
         }
-        // this->print_buffer(); --> commenté pour faciliter le testeur
+        // this->print_buffer(); //--> commenté pour faciliter le testeur
         this->parse_buffer();
     }
     catch(const std::exception& e)
@@ -167,7 +167,10 @@ void Request::parse_body_chunked()
         {
             std::cout << "Parsing chunked data..." << std::endl;
             if (this->parse_chunked_data() == false)
+            {
+                std::cout << "waiting for more data" << std::endl;
                 return ;
+            }
             if (this->chunk_size == 0) // end of request, stop reading
             {
                 this->request_ready = true;
@@ -177,7 +180,10 @@ void Request::parse_body_chunked()
         }
         std::cout << "Parsing chunked size..." << std::endl;
         if (this->parse_chunked_size() == false) // not enough data in buffer
+        {
+            std::cout << "waiting for more data" << std::endl;
             return ;
+        }
     }
 }
 
