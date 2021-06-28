@@ -151,13 +151,13 @@ void Request::print() const
         std::cout << " . field_value: " << "[" << it->second << "]" << std::endl;
         std::cout << std::endl;
     }
-    if (!this->body.empty())
-    {
-        std::string bdy;
-        bdy.assign(this->body.begin(), this->body.end());
-        std::cout << "body: " << bdy << std::endl;
-        std::cout << std::endl;
-    }
+    // if (!this->body.empty())
+    // {
+    //     std::string bdy;
+    //     bdy.assign(this->body.begin(), this->body.end());
+    //     std::cout << "body: " << bdy << std::endl;
+    //     std::cout << std::endl;
+    // }
 }
 
 void    Request::print2(void) const

@@ -48,6 +48,7 @@ void Request::parse()
             return;
         }
         // this->print_buffer(); //--> commenté pour faciliter le testeur
+        // this->print(); //--> commenté pour faciliter le testeur
         this->parse_buffer();
     }
     catch(const std::exception& e)

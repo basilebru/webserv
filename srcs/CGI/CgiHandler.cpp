@@ -147,6 +147,7 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 {
 	size_t		i = 0;
 	int			count = 0;
+	std::vector<unsigned char>::iterator it = buffer.begin();
 
 	while(i < buffer.size())
 	{
@@ -161,16 +162,18 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 			--count;
 		}
 		++i;
+		++it;
 	}
 	// replaceLF();
 	flagHeaders();
-	++i;
+	++it;
+	this->_body.assign(++it, buffer.end()); // ++it ne marche pas avec php-cgi, à voir
 	// std::cerr << "HEADERS: " << this->_headers << std::endl;
-	while(i < buffer.size() - 1)
-	{
-		this->_body.push_back(buffer[i]);
-		i++;
-	}
+	// while(i < buffer.size() - 1)
+	// {
+	// 	this->_body.push_back(buffer[i]);
+	// 	i++;
+	// }
 	std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
 
 }
@@ -313,12 +316,12 @@ std::string&				CgiHandler::getStatus(void)
  * @return      [type]
  */
 
-// std::vector<unsigned char>	CgiHandler::execScript(std::string const& cgi_path)
+// int	CgiHandler::execScript(std::string const& extension)
 // {
 
-// 	std::vector<unsigned char> body;
-// 	char buf;
-// 	int ret = 1;
+// 	std::vector<unsigned char>	body;
+// 	char						buf[CGI_BUF_SIZE];;
+// 	int							ret = 1;
 
 
 // 	this->fillEnvp();
@@ -333,27 +336,33 @@ std::string&				CgiHandler::getStatus(void)
 // 	if (pid == -1)
 // 	{
 // 		std::cerr << "fork process failed" << std::endl;
-// 		return body;
+// 		return FAILURE;
 // 	}
 // 	else if (pid == 0)
 // 	{
 // 		usleep(300000); // mainly for debug
+// 		stringMap cgi_extensions = this->_req.getCgi_extensions();
+
 // 		int newSocket = socket(AF_LOCAL, SOCK_STREAM, 0);
 
 // 		if (connect(newSocket, (struct sockaddr *)&sockaddr, sizeof(sockaddr_un)) < 0)
 // 		{
 // 			std::cout << "Failed to connect socket. errno: " << errno << std::endl;
 // 			close(newSocket);
-// 			return body;
+// 			return FAILURE;
 // 		}
 
 
 // 		dup2(newSocket, STDOUT_FILENO);
-// 		char * argv[2] = { const_cast<char*>(cgi_path.c_str()), NULL };
-// 		if (execve(cgi_path.c_str(), argv, this->_envp) < 0)
+// 		char * argv[3] = {
+// 			const_cast<char*>(cgi_extensions[extension].c_str()),
+// 			const_cast<char*>(this->_res.getTarget().c_str()),
+// 			(char *)0
+// 		};
+// 		if (execve(argv[0], &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
 // 		{
 // 			std::cerr << "execve() failed, errno: " << errno << std::endl;
-// 			return body;
+// 			return FAILURE;
 // 		}
 // 		close(newSocket);
 // 	}
@@ -369,7 +378,7 @@ std::string&				CgiHandler::getStatus(void)
 // 			if (errno != EADDRINUSE)
 // 			{
 // 				std::cout << "Failed to bind" << ". errno: " << errno << std::endl;
-// 				return body;
+// 				return FAILURE;
 // 			}
 // 		}
 // 		if (listen(newSocket, 10) < 0)
@@ -377,12 +386,12 @@ std::string&				CgiHandler::getStatus(void)
 // 			std::cout << "Failed to listen on socket. errno: " << errno << std::endl;
 // 			close(newSocket);
 // 			unlink("socket");
-// 			return body;
+// 			return FAILURE;
 // 		}
 // 		int connection;
 // 		if((connection = accept(newSocket, (struct sockaddr*)NULL, NULL)) < 0) {
 // 			std::cerr << "Server: Connection cannot be accepted" << std::endl;
-// 			return body;
+// 			return FAILURE;
 // 		}
 
 // 		// write(connection, "JE SUIS LA LIGNE DE TEST D'ENVOI D'UN BODY EN CAS DE POST", 57);
@@ -399,5 +408,5 @@ std::string&				CgiHandler::getStatus(void)
 // 		unlink("socket");
 // 		waitpid(pid, NULL, 0);
 // 	}
-// 	return body;
+// 	return SUCCESS;
 // }
