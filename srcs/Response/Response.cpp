@@ -405,13 +405,13 @@ void Response::cgi_module()
         this->response.assign(this->headers.begin(), this->headers.end());
         this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());
 
-        // std::cout << "Contenu de la reponse:" << std::endl;
-        // std::cout << "---------------------------" << std::endl;
-        // for (size_t i = 0; i < this->response.size(); ++i)
-        // {
-        //     std::cout << this->response[i];
-        // }
-        // std::cout << "---------------------------" << std::endl;
+        std::cout << "Contenu de la reponse:" << std::endl;
+        std::cout << "---------------------------" << std::endl;
+        for (size_t i = 0; i < this->response.size(); ++i)
+        {
+            std::cout << this->response[i];
+        }
+        std::cout << "---------------------------" << std::endl;
     }
     else
         this->error_module(500);

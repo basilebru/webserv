@@ -24,7 +24,8 @@
 </head>
 <body>
     <h2>Vous avez rentré:</h2>
-	<p><strong>Name: <?= $name ?></strong></p>
+	<p><strong>METHOD: <?= getenv('REQUEST_METHOD') ?></strong></p>
+    <p><strong>Name: <?= $name ?></strong></p>
     <p><strong>Surname: <?= $surname ?></strong></p>
 </body>
 </html>
