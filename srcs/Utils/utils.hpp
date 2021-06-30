@@ -33,7 +33,7 @@ std::string base64_encode(BYTE const* buf, unsigned int bufLen);
 std::vector<BYTE> base64_decode(std::string const&);
 
 template<typename T>
-void displayVec(std::vector<T> const& v, const char* separator = NULL)
+void displayVec(std::vector<T> const& v, const char* separator = "")
 {
 	typename std::vector<T>::const_iterator it = v.begin();
 	while (it != v.end())

@@ -58,7 +58,7 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["REMOTE_USER"]		=	headers["authorization"];	// nom d'utilisateur (distant) du client
 	this->_env_map["REQUEST_METHOD"]	=	this->_req.req_line.method;	// GET ou POST ou ...
 	this->_env_map["REQUEST_URI"]		=	this->_req.req_line.target; // --> For the 42 tester
-	this->_env_map["SCRIPT_FILENAME"]	=	"./YoupiBanane/youpi.bla";	// full path du fichier de script
+	// this->_env_map["SCRIPT_FILENAME"]	=	"./YoupiBanane/youpi.bla";	// full path du fichier de script
 	this->_env_map["SCRIPT_NAME"]		=	this->_req.req_line.target;	// full path du fichier de script
 	this->_env_map["SERVER_NAME"]		=	this->_req.host_uri;	// DNS ou IP du server (hostname)
 	this->_env_map["SERVER_PORT"]		=	this->_req.host_port;	// port ayant reçu la requête
@@ -192,7 +192,7 @@ int	CgiHandler::execScript(std::string const& extension)
 
 	std::vector<unsigned char>	body;
 	char	buf[CGI_BUF_SIZE];
-	int		ret = 0;
+	int		ret = CGI_BUF_SIZE;
 	int		status;
 
 
@@ -246,23 +246,9 @@ int	CgiHandler::execScript(std::string const& extension)
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
 
 		if (!this->_req.body.empty())
-		{
-			size_t size_left = this->_req.body.size();
-			size_t tot_ret = 0;
-			std::cerr << "size_left = " << size_left << std::endl;
-			while (size_left > CGI_BUF_SIZE)
-			{
-				ret = write(srvToCgi_fd[1], &this->_req.body[tot_ret], CGI_BUF_SIZE);
-				tot_ret += ret;
-				size_left -= ret;
-				std::cerr << "ret: " << ret << std::endl;
-				std::cerr << "size_left: " << size_left << std::endl;
-			}
-		}
-		else
-			write(srvToCgi_fd[1], "for youpi.bla", 13);
+			write(srvToCgi_fd[1], &this->_req.body[0], this->_req.body.size());
+		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
 
-		ret = CGI_BUF_SIZE;
 		while (ret == CGI_BUF_SIZE)
 		{
 			memset(buf, 0, CGI_BUF_SIZE);
@@ -275,7 +261,6 @@ int	CgiHandler::execScript(std::string const& extension)
 			fillOutputs(body);
 
 		close(cgiToSrv_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
-		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
 		if (waitpid(pid, &status, 0) == -1)
 			return FAILURE;
 

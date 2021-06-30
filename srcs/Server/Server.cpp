@@ -135,7 +135,7 @@ int		Server::loop_client_socket()
 		int ret(0);
 		if (FD_ISSET(it->first, &this->ready_read_sockets)) // read() possible
 		{
-			std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
+			// std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
 			it->second->parse();
 			Response res(*it->second, this->response_buffers[it->first]);
 			ret = res.process();
