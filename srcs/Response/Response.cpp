@@ -34,8 +34,8 @@ int Response::process()
     if (this->req.request_is_ready())
     {
         std::cout << "<<<<<<Request ready to be treated>>>>>" << std::endl;
-        this->req.print_config();
         this->req.print();
+        this->req.print_config();
         try
         {
             this->build_response();

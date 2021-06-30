@@ -151,6 +151,7 @@ void Request::print() const
         std::cout << " . " << "[" << it->first << "]";
         std::cout << " " << "[" << it->second << "]" << std::endl;
     }
+    std::cout << "BDY SIZE: " << iToString(this->body_size) << std::endl;
     // if (!this->body.empty())
     // {
     //     std::string bdy;
