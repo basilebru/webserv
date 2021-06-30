@@ -59,9 +59,7 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["REQUEST_METHOD"]	=	this->_req.req_line.method;	// GET ou POST ou ...
 	this->_env_map["REQUEST_URI"]		=	this->_req.req_line.target; // --> For the 42 tester
 	this->_env_map["SCRIPT_FILENAME"]	=	"./YoupiBanane/youpi.bla";	// full path du fichier de script
-	std::cerr << "SCRIPT_FILENAME: " << this->_env_map["SCRIPT_FILENAME"] << std::endl;
 	this->_env_map["SCRIPT_NAME"]		=	this->_req.req_line.target;	// full path du fichier de script
-	std::cerr << "SCRIPT_NAME: " << this->_env_map["SCRIPT_NAME"] << std::endl;
 	this->_env_map["SERVER_NAME"]		=	this->_req.host_uri;	// DNS ou IP du server (hostname)
 	this->_env_map["SERVER_PORT"]		=	this->_req.host_port;	// port ayant reçu la requête
 	this->_env_map["SERVER_PROTOCOL"]	=	this->_req.req_line.version;;	// protocol HTTP (toujours HTTP/1.1 ?)
@@ -178,6 +176,7 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 /**
  * EXEC SCRIPT WITH COMMUNICATION BY PIPE
  *
+		fcntl(cgiToSrv_fd[1], F_SETFL, O_NONBLOCK);
  * @param       [std::string]
  * @return      [int]
  */
@@ -193,7 +192,7 @@ int	CgiHandler::execScript(std::string const& extension)
 
 	std::vector<unsigned char>	body;
 	char	buf[CGI_BUF_SIZE];
-	int		ret = CGI_BUF_SIZE;
+	int		ret = 0;
 	int		status;
 
 
@@ -225,6 +224,8 @@ int	CgiHandler::execScript(std::string const& extension)
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'ecriture inutilisée */
 		dup2(cgiToSrv_fd[1], STDOUT_FILENO);
 		dup2(srvToCgi_fd[0], STDIN_FILENO);
+		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
+		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
 
 		stringMap cgi_extensions = this->_req.getCgi_extensions();
 
@@ -236,12 +237,8 @@ int	CgiHandler::execScript(std::string const& extension)
 		if (execve(argv[0], &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
 		{
 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
-			close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
-			close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
 			_exit(1);
 		}
-		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
-		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
 	}
 	else
 	{
@@ -249,8 +246,23 @@ int	CgiHandler::execScript(std::string const& extension)
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
 
 		if (!this->_req.body.empty())
-			write(srvToCgi_fd[1], &this->_req.body[0], this->_req.body.size());
+		{
+			size_t size_left = this->_req.body.size();
+			size_t tot_ret = 0;
+			std::cerr << "size_left = " << size_left << std::endl;
+			while (size_left > CGI_BUF_SIZE)
+			{
+				ret = write(srvToCgi_fd[1], &this->_req.body[tot_ret], CGI_BUF_SIZE);
+				tot_ret += ret;
+				size_left -= ret;
+				std::cerr << "ret: " << ret << std::endl;
+				std::cerr << "size_left: " << size_left << std::endl;
+			}
+		}
+		else
+			write(srvToCgi_fd[1], "for youpi.bla", 13);
 
+		ret = CGI_BUF_SIZE;
 		while (ret == CGI_BUF_SIZE)
 		{
 			memset(buf, 0, CGI_BUF_SIZE);
