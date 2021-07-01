@@ -3,7 +3,7 @@
 
 # include "ConfParser.hpp"
 
-# define BUF_SIZE 10000
+# define BUF_SIZE 32768
 
 struct request_line
 {

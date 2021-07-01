@@ -151,7 +151,9 @@ int		Server::loop_client_socket()
 		if (FD_ISSET(it->first, &this->ready_write_sockets) && this->response_buffers[it->first].size()) // write possible
 		{
 			ssize_t ret;
+			std::cout << "response_buffer size: " << this->response_buffers[it->first].size() << std::endl;
 			ret = send(it->first, &this->response_buffers[it->first][0], this->response_buffers[it->first].size(), MSG_DONTWAIT);
+			std::cout << "AFTER SEND" << std::endl;
 			this->response_buffers[it->first].erase(this->response_buffers[it->first].begin(), this->response_buffers[it->first].begin() + ret);
 		}
 		if (ret == CLOSE && this->response_buffers[it->first].empty())

@@ -65,6 +65,7 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["SERVER_PROTOCOL"]	=	this->_req.req_line.version;;	// protocol HTTP (toujours HTTP/1.1 ?)
 	this->_env_map["SERVER_SOFTWARE"]	=	"webserv";
 	this->_env_map["UPLOAD_DIR"]		=	this->_req.config.upload_dir;
+	this->_env_map["HTTP_X_SECRET_HEADER_FOR_TEST"]		=	'1';
 }
 
 void	CgiHandler::fillEnvp(void)

@@ -36,6 +36,17 @@ CgiHandler& CgiHandler::operator=(CgiHandler const & rhs)
 	return *this;
 }
 
+void displayMap(std::map<std::string, std::string> const& map, char const separator = '\n')
+{
+	std::map<std::string, std::string>::const_iterator it = map.begin();
+	while (it != map.end())
+	{
+		std::cout << it->first << " = " << it->second << separator;
+		++it;
+	}
+	std::cout << std::endl;
+}
+
 void	CgiHandler::initEnv(void)
 {
 	/* Les variables d'environnement permettent au script d'accéder à des informations
@@ -44,47 +55,35 @@ void	CgiHandler::initEnv(void)
 	std::map<std::string, std::string> headers = this->_req.get_headers();
 
 	// if (this->_req.config.auth_basic != DEFAULT_AUTH_BASIC)
-	this->_env_map["AUTH_TYPE"]		=	"Basic";	// mode d'authentification, auth_basic ??
+	// this->_env_map["AUTH_TYPE"]		=	"Basic";	// mode d'authentification, auth_basic ??
 	
 	this->_env_map["REDIRECT_STATUS"]	=	"200";	// content-length de la requete
 	this->_env_map["CONTENT_LENGTH"]	=	iToString(this->_req.body_size);	// content-length de la requete
 	this->_env_map["CONTENT_TYPE"]		=	headers["content-type"];	// content-type de la requete (POST)
 	this->_env_map["GATEWAY_INTERFACE"]	=	"CGI/1.1";	// version du CGI qu'utilise le server
 	this->_env_map["PATH_INFO"]			=	this->_req.req_line.target;	// derniere partie de l'URI apres le host
-	this->_env_map["PATH_TRANSLATED"]	=	this->_res.getTarget();	// adresse reelle du script (idem PATH_INFO pour nous)
+	this->_env_map["PATH_TRANSLATED"]	=	this->_req.req_line.target;	// adresse reelle du script (idem PATH_INFO pour nous)
 	this->_env_map["QUERY_STRING"]		=	this->_req.req_line.query_string;	// Contient tout ce qui suit le « ? » dans l'URL envoyée par le client.
-	this->_env_map["REMOTE_ADDR"]		=	this->_req.host_uri;	// adress ip du client
+	this->_env_map["REMOTEaddr"]		=	"0";	// adress ip du client
 	this->_env_map["REMOTE_IDENT"]		=	headers["authorization"];	// nom d'utilisateur du client
 	this->_env_map["REMOTE_USER"]		=	headers["authorization"];	// nom d'utilisateur (distant) du client
 	this->_env_map["REQUEST_METHOD"]	=	this->_req.req_line.method;	// GET ou POST ou ...
 	this->_env_map["REQUEST_URI"]		=	this->_req.req_line.target; // --> For the 42 tester
-	this->_env_map["SCRIPT_FILENAME"]	=	this->_res.getTarget();	// full path du fichier de script
-	this->_env_map["SCRIPT_NAME"]		=	this->_req.req_line.target;	// full path du fichier de script
-	this->_env_map["SERVER_NAME"]		=	this->_req.host_uri;	// DNS ou IP du server (hostname)
+	this->_env_map["SCRIPT_FILENAME"]	=	"YoupiBanane/directory/youpi.bla";	// full path du fichier de script
+	this->_env_map["SCRIPT_NAME"]		=	"YoupiBanane/directory/youpi.bla";	// full path du fichier de script
+	this->_env_map["SERVER_NAME"]		=	"0";	// DNS ou IP du server (hostname)
 	this->_env_map["SERVER_PORT"]		=	this->_req.host_port;	// port ayant reçu la requête
 	this->_env_map["SERVER_PROTOCOL"]	=	this->_req.req_line.version;;	// protocol HTTP (toujours HTTP/1.1 ?)
 	this->_env_map["SERVER_SOFTWARE"]	=	"webserv";
-	this->_env_map["UPLOAD_DIR"]		=	this->_req.config.upload_dir;
+	// this->_env_map["UPLOAD_DIR"]		=	this->_req.config.upload_dir;
+ // 	this->_env_map["HTTP_CONTENT_TYPE"] =  "test/file";
+	// this->_env_map["HTTP_ACCEPT_ENCODING"] =  "gzip";
+ // 	this->_env_map["HTTP_HOST"] =  "127.0.0.1:9999";
+ // 	this->_env_map["HTTP_TRANSFER_ENCODING"] =  "chunked";
+ // 	this->_env_map["HTTP_USER_AGENT"] =  "Go-http-client/1.1";
+ 	this->_env_map["HTTP_X_SECRET_HEADER_FOR_TEST"] =  "1";
 
-	// std::cout << "REDIRECT_STATUS: " << this->_env_map["REDIRECT_STATUS"] << std::endl;
-	// std::cout << "CONTENT_LENGTH: " << this->_env_map["CONTENT_LENGTH"] << std::endl;
-	// std::cout << "CONTENT_TYPE: " << this->_env_map["CONTENT_TYPE"] << std::endl;
-	// std::cout << "GATEWAY_INTERFACE: " << this->_env_map["GATEWAY_INTERFACE"] << std::endl;
-	// std::cout << "PATH_INFO: " << this->_env_map["PATH_INFO"] << std::endl;
-	// std::cout << "PATH_TRANSLATED: " << this->_env_map["PATH_TRANSLATED"] << std::endl;
-	// std::cout << "QUERY_STRING: " << this->_env_map["QUERY_STRING"] << std::endl;
-	// std::cout << "REMOTE_ADDR: " << this->_env_map["REMOTE_ADDR"] << std::endl;
-	// std::cout << "REMOTE_IDENT: " << this->_env_map["REMOTE_IDENT"] << std::endl;
-	// std::cout << "REMOTE_USER: " << this->_env_map["REMOTE_USER"] << std::endl;
-	// std::cout << "REQUEST_METHOD: " << this->_env_map["REQUEST_METHOD"] << std::endl;
-	// std::cout << "REQUEST_URI: " << this->_env_map["REQUEST_URI"] << std::endl;
-	// std::cout << "SCRIPT_FILENAME: " << this->_env_map["SCRIPT_FILENAME"] << std::endl;
-	// std::cout << "SCRIPT_NAME: " << this->_env_map["SCRIPT_NAME"] << std::endl;
-	// std::cout << "SERVER_NAME: " << this->_env_map["SERVER_NAME"] << std::endl;
-	// std::cout << "SERVER_PORT: " << this->_env_map["SERVER_PORT"] << std::endl;
-	// std::cout << "SERVER_PROTOCOL: " << this->_env_map["SERVER_PROTOCOL"] << std::endl;
-	// std::cout << "SERVER_SOFTWARE: " << this->_env_map["SERVER_SOFTWARE"] << std::endl;
-	// std::cout << "UPLOAD_DIR: " << this->_env_map["UPLOAD_DIR"] << std::endl;
+	displayMap(this->_env_map);
 
 }
 
@@ -110,14 +109,17 @@ void	CgiHandler::fillEnvp(void)
 
 void	CgiHandler::storeBuffer(std::vector<unsigned char> &body, const char *buf, int len)
 {
+	std::cout << "ENTER in STORE: " << std::endl;
 	int i = 0;
 
 	if (len < CGI_BUF_SIZE && len != 0)
 		len++;
+	std::cout << "len: " << len << std::endl;
 	while(i < len)
 	{
 		body.push_back(buf[i++]);
 	}
+	std::cout << "OUT OFF STORE: " << std::endl;
 }
 
 void	CgiHandler::replaceLF(void)
@@ -163,6 +165,7 @@ void	CgiHandler::flagHeaders(void)
 
 void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 {
+	std::cout << "ENTER IN FILL OUTPUT" << std::endl;
 	size_t		i = 0;
 	int			count = 0;
 	std::vector<unsigned char>::iterator it = buffer.begin();
@@ -192,6 +195,9 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 	// 	i++;
 	// }
 	std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
+	std::cout << "this->headers: " << this->_headers << std::endl;
+	if (this->_body.size() < 1000000)
+		displayVec(this->_body);
 
 }
 
@@ -202,98 +208,106 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
  * @return      [int]
  */
 
-// int	CgiHandler::execScript(std::string const& extension)
-// {
-// 	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
-// 	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
-// 	Dans le cas de POST, les données sont lues depuis STDIN (depuis le body de la requete).
-// 	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
-// 	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
-// 	*/
+int	CgiHandler::execScript(std::string const& extension)
+{
+	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
+	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
+	Dans le cas de POST, les données sont lues depuis STDIN (depuis le body de la requete).
+	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
+	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
+	*/
 
-// 	std::vector<unsigned char>	body;
-// 	char	buf[CGI_BUF_SIZE];
-// 	int		ret = CGI_BUF_SIZE;
-// 	int		status;
-// 	int		cgi_fd;
+	std::cout << "ENTER IN CGI HANDLER" << std::endl;
 
-// 	this->fillEnvp();
+	std::vector<unsigned char>	body;
+	char	buf[CGI_BUF_SIZE];
+	int		ret = CGI_BUF_SIZE;
+	int		status;
+	int		cgi_fd;
 
-// 	int srvToCgi_fd[2]; // Pipe Server --> CGI
-// 	cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
+	this->fillEnvp();
 
-// 	if (pipe(srvToCgi_fd) == -1)
-// 	{
-// 		std::cerr << "pipe() srvToCgi failed, errno: " << errno << std::endl;
-// 		return FAILURE;
-// 	}
+	int srvToCgi_fd[2]; // Pipe Server --> CGI
+	cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
 
-// 	int pid = fork();
-// 	if (pid == -1)
-// 	{
-// 		std::cerr << "fork process failed" << std::endl;
-// 		return FAILURE;
-// 	}
-// 	else if (pid == 0)
-// 	{
-// 		close(cgi_fd);
-// 		cgi_fd = open("/tmp/cgi_file", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-// 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'ecriture inutilisée */
-// 		dup2(cgi_fd, STDOUT_FILENO);
-// 		dup2(cgi_fd, STDERR_FILENO);
-// 		dup2(srvToCgi_fd[0], STDIN_FILENO);
-// 		close(cgi_fd);
-// 		close(srvToCgi_fd[0]);   Ferme l'extrémité de lecture après utilisation par le fils 
+	if (pipe(srvToCgi_fd) == -1)
+	{
+		std::cerr << "pipe() srvToCgi failed, errno: " << errno << std::endl;
+		return FAILURE;
+	}
 
-// 		stringMap cgi_extensions = this->_req.getCgi_extensions();
+	int pid = fork();
+	if (pid == -1)
+	{
+		std::cerr << "fork process failed" << std::endl;
+		return FAILURE;
+	}
+	else if (pid == 0)
+	{
+		close(cgi_fd);
+		cgi_fd = open("/tmp/cgi_file", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'ecriture inutilisée */
+		dup2(cgi_fd, STDOUT_FILENO);
+		dup2(cgi_fd, STDERR_FILENO);
+		dup2(srvToCgi_fd[0], STDIN_FILENO);
+		close(cgi_fd);
+		close(srvToCgi_fd[0]);   //Ferme l'extrémité de lecture après utilisation par le fils 
 
-// 		char * argv[3] = {
-// 			const_cast<char*>(cgi_extensions[extension].c_str()),
-// 			const_cast<char*>(this->_res.getTarget().c_str()),
-// 			(char *)0
-// 		};
-// 		if (execve(argv[0], &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
-// 		{
-// 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
-// 			close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
-// 			_exit(1);
-// 		}
-// 	}
-// 	else
-// 	{
-// 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
+		stringMap cgi_extensions = this->_req.getCgi_extensions();
 
-// 		if (!this->_req.body.empty())
-// 			write(srvToCgi_fd[1], &this->_req.body[0], this->_req.body.size());
-// 		else
-// 			write(srvToCgi_fd[1], "for youpi.bla", 13);
+		char * argv[3] = {
+			const_cast<char*>(cgi_extensions[extension].c_str()),
+			const_cast<char*>(this->_res.getTarget().c_str()),
+			(char *)0
+		};
+		if (execve(argv[0], &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
+		{
+			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
+			close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le fils */
+			_exit(1);
+		}
+	}
+	else
+	{
+		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
+		cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
 
-// 		// cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
-// 		while (ret == CGI_BUF_SIZE)
-// 		{
-// 			memset(buf, 0, CGI_BUF_SIZE);
-// 			if ((ret = read(cgi_fd, buf, CGI_BUF_SIZE)) < 0)
-// 				return FAILURE;
-// 			this->storeBuffer(body, buf, ret);
-// 		}
-// 		if (!body.empty())
-// 			fillOutputs(body);
+		if (!this->_req.body.empty())
+		{
+			std::cout << "WRITE....." << std::endl;
+			write(srvToCgi_fd[1], &this->_req.body[0], this->_req.body.size());
+			std::cout << "WRITE AFTER....." << std::endl;
+		}
 
-// 		close(cgi_fd);
-// 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
+		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
 
-// 		if (waitpid(pid, &status, 0) == -1)
-// 			return FAILURE;
+		// cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
+		while (ret == CGI_BUF_SIZE)
+		{
+			std::cout << "READ..." << std::endl;
+			memset(buf, 0, CGI_BUF_SIZE);
+			if ((ret = read(cgi_fd, buf, CGI_BUF_SIZE)) < 0)
+				return FAILURE;
+			this->storeBuffer(body, buf, ret);
+		}
+		if (!body.empty())
+			fillOutputs(body);
 
-// 		if (WIFEXITED(status))
-// 		{
-// 			if (WEXITSTATUS(status) == 1)
-// 				return FAILURE;
-// 		}
+		close(cgi_fd);
 
-// 	}
-// 	return SUCCESS;
-// }
+		if (waitpid(pid, &status, 0) == -1)
+			return FAILURE;
+
+		if (WIFEXITED(status))
+		{
+			if (WEXITSTATUS(status) == 1)
+				return FAILURE;
+		}
+
+	}
+	std::cout << "OUT OF CGI HANDLER" << std::endl;
+	return SUCCESS;
+}
 
 
 /**
@@ -400,119 +414,119 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
  * @return      [type]
  */
 
-int	CgiHandler::execScript(std::string const& extension)
-{
+// int	CgiHandler::execScript(std::string const& extension)
+// {
 
-	std::vector<unsigned char>	body;
-	char						buf[CGI_BUF_SIZE];;
-	int							ret = CGI_BUF_SIZE;
-	int							status;
-
-
-	this->fillEnvp();
+// 	std::vector<unsigned char>	body;
+// 	char						buf[CGI_BUF_SIZE];;
+// 	int							ret = CGI_BUF_SIZE;
+// 	int							status;
 
 
-	sockaddr_un sockaddr;
-	memset((char *)&sockaddr, 0, sizeof(sockaddr)); 
-	sockaddr.sun_family = AF_LOCAL;
-	strncpy(sockaddr.sun_path, "socket", sizeof(sockaddr.sun_path)-1);
-
-	int pid = fork();
-	if (pid == -1)
-	{
-		std::cerr << "fork process failed" << std::endl;
-		return FAILURE;
-	}
-	else if (pid == 0)
-	{
-		stringMap cgi_extensions = this->_req.getCgi_extensions();
-
-		int newSocket = socket(AF_LOCAL, SOCK_STREAM, 0);
-		// usleep(5000000); // mainly for debug
-
-		if (connect(newSocket, (struct sockaddr *)&sockaddr, sizeof(sockaddr_un)) < 0)
-		{
-			std::cout << RED << "Failed to connect socket. errno: " << errno << NOCOLOR << std::endl;
-			close(newSocket);
-			_exit(1);
-		}
+// 	this->fillEnvp();
 
 
-		dup2(newSocket, STDOUT_FILENO);
-		dup2(newSocket, STDIN_FILENO);
-		char * argv[3] = {
-			const_cast<char*>(cgi_extensions[extension].c_str()),
-			const_cast<char*>(this->_res.getTarget().c_str()),
-			(char *)0
-		};
-		if (execve(argv[0], &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
-		{
-			std::cerr << RED << "execve() failed, errno: " << errno << NOCOLOR << std::endl;
-			_exit(1);
-		}
-		close(newSocket);
-	}
-	else
-	{
+// 	sockaddr_un sockaddr;
+// 	memset((char *)&sockaddr, 0, sizeof(sockaddr)); 
+// 	sockaddr.sun_family = AF_LOCAL;
+// 	strncpy(sockaddr.sun_path, "socket", sizeof(sockaddr.sun_path)-1);
 
-		unlink("socket");
-		int newSocket = socket(AF_LOCAL, SOCK_STREAM, 0);
-		if (bind(newSocket, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0)
-		{
-			close(newSocket);
-			unlink("socket");
-			if (errno != EADDRINUSE)
-			{
-				std::cout << RED << "Failed to bind" << ". errno: " << errno << NOCOLOR << std::endl;
-				return FAILURE;
-			}
-		}
-		if (listen(newSocket, 10) < 0)
-		{
-			std::cout << RED << "Failed to listen on socket. errno: " << errno << NOCOLOR << std::endl;
-			close(newSocket);
-			unlink("socket");
-			return FAILURE;
-		}
-		int connection;
-		if((connection = accept(newSocket, (struct sockaddr*)NULL, NULL)) < 0) {
-			std::cerr << "CGI: Accept connection failed." << std::endl;
-			return FAILURE;
-		}
+// 	int pid = fork();
+// 	if (pid == -1)
+// 	{
+// 		std::cerr << "fork process failed" << std::endl;
+// 		return FAILURE;
+// 	}
+// 	else if (pid == 0)
+// 	{
+// 		stringMap cgi_extensions = this->_req.getCgi_extensions();
 
-		if (!this->_req.body.empty())
-		{
-			std::cerr << "BODY NOT EMPTY: "; displayVec(this->_req.body);
-			write(connection, &this->_req.body[0], this->_req.body.size());
-		}
-		else
-			write(connection, "\0", 1); // Trouver un autre moyen pour gérer le EOF
+// 		int newSocket = socket(AF_LOCAL, SOCK_STREAM, 0);
+// 		// usleep(5000000); // mainly for debug
 
-		while (ret == CGI_BUF_SIZE)
-		{
-			memset(buf, 0, CGI_BUF_SIZE);
-			if ((ret = read(connection, &buf, CGI_BUF_SIZE)) < 0)
-				return FAILURE;
-			this->storeBuffer(body, buf, ret);
-		}
-		if (!body.empty())
-			fillOutputs(body);
+// 		if (connect(newSocket, (struct sockaddr *)&sockaddr, sizeof(sockaddr_un)) < 0)
+// 		{
+// 			std::cout << RED << "Failed to connect socket. errno: " << errno << NOCOLOR << std::endl;
+// 			close(newSocket);
+// 			_exit(1);
+// 		}
 
-		close(newSocket);
-		close(connection);
-		unlink("socket");
 
-		if (waitpid(pid, &status, 0) == -1)
-			return FAILURE;
+// 		dup2(newSocket, STDOUT_FILENO);
+// 		dup2(newSocket, STDIN_FILENO);
+// 		char * argv[3] = {
+// 			const_cast<char*>(cgi_extensions[extension].c_str()),
+// 			const_cast<char*>(this->_res.getTarget().c_str()),
+// 			(char *)0
+// 		};
+// 		if (execve(argv[0], &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
+// 		{
+// 			std::cerr << RED << "execve() failed, errno: " << errno << NOCOLOR << std::endl;
+// 			_exit(1);
+// 		}
+// 		close(newSocket);
+// 	}
+// 	else
+// 	{
 
-		if (WIFEXITED(status))
-		{
-			if (WEXITSTATUS(status) == 1)
-				return FAILURE;
-		}
-	}
-	return SUCCESS;
-}
+// 		unlink("socket");
+// 		int newSocket = socket(AF_LOCAL, SOCK_STREAM, 0);
+// 		if (bind(newSocket, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0)
+// 		{
+// 			close(newSocket);
+// 			unlink("socket");
+// 			if (errno != EADDRINUSE)
+// 			{
+// 				std::cout << RED << "Failed to bind" << ". errno: " << errno << NOCOLOR << std::endl;
+// 				return FAILURE;
+// 			}
+// 		}
+// 		if (listen(newSocket, 10) < 0)
+// 		{
+// 			std::cout << RED << "Failed to listen on socket. errno: " << errno << NOCOLOR << std::endl;
+// 			close(newSocket);
+// 			unlink("socket");
+// 			return FAILURE;
+// 		}
+// 		int connection;
+// 		if((connection = accept(newSocket, (struct sockaddr*)NULL, NULL)) < 0) {
+// 			std::cerr << "CGI: Accept connection failed." << std::endl;
+// 			return FAILURE;
+// 		}
+
+// 		if (!this->_req.body.empty())
+// 		{
+// 			std::cerr << "BODY NOT EMPTY: "; displayVec(this->_req.body);
+// 			write(connection, &this->_req.body[0], this->_req.body.size());
+// 		}
+// 		else
+// 			write(connection, "\0", 1); // Trouver un autre moyen pour gérer le EOF
+
+// 		while (ret == CGI_BUF_SIZE)
+// 		{
+// 			memset(buf, 0, CGI_BUF_SIZE);
+// 			if ((ret = read(connection, &buf, CGI_BUF_SIZE)) < 0)
+// 				return FAILURE;
+// 			this->storeBuffer(body, buf, ret);
+// 		}
+// 		if (!body.empty())
+// 			fillOutputs(body);
+
+// 		close(newSocket);
+// 		close(connection);
+// 		unlink("socket");
+
+// 		if (waitpid(pid, &status, 0) == -1)
+// 			return FAILURE;
+
+// 		if (WIFEXITED(status))
+// 		{
+// 			if (WEXITSTATUS(status) == 1)
+// 				return FAILURE;
+// 		}
+// 	}
+// 	return SUCCESS;
+// }
 
 
 /* Getters */

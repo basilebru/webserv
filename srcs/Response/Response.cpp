@@ -155,7 +155,7 @@ void Response::redir_module(int redir_code, std::string redir_target)
 void Response::error_module(int error_code)
 {
     std::cout << "error module" << this->target << std::endl;
-	
+
     std::map<int, std::string> error_pages = this->req.getErrorPages();
     bool error_page_exists = !error_pages[error_code].empty();
 
@@ -405,16 +405,20 @@ void Response::cgi_module()
         this->response.assign(this->headers.begin(), this->headers.end());
         this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());
 
-        std::cout << "Contenu de la reponse:" << std::endl;
-        std::cout << "---------------------------" << std::endl;
-        for (size_t i = 0; i < this->response.size(); ++i)
-        {
-            std::cout << this->response[i];
-        }
-        std::cout << "---------------------------" << std::endl;
+        // if (this->response.size() < 1000000)
+        // {
+        //     std::cout << "Contenu de la reponse:" << std::endl;
+        //     std::cout << "---------------------------" << std::endl;
+        //     for (size_t i = 0; i < this->response.size(); ++i)
+        //     {
+        //         std::cout << this->response[i];
+        //     }
+        //     std::cout << "---------------------------" << std::endl;
+        // }
     }
     else
         this->error_module(500);
+    std::cout << "OUT OF CGI MODULE" << std::endl;
 }
 
 void Response::set_extension_from_target()
