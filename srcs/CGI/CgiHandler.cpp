@@ -197,7 +197,7 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
  * @return      [int]
  */
 
-int	CgiHandler::execScript(std::string const& extension)
+int	CgiHandler::execScript(std::string const& cgi_path)
 {
 	/* Le script prend des données en entrée et écrit son resultat dans STDOUT.
 	Dans le cas de GET, les données d'entrées sont dans la var d'env QUERY_STRING,
@@ -213,10 +213,10 @@ int	CgiHandler::execScript(std::string const& extension)
 	int		ret = CGI_BUF_SIZE;
 	int		status;
 	int		cgi_fd;
+	int		srvToCgi_fd[2]; // Pipe Server --> CGI
 
 	this->fillEnvp();
 
-	int srvToCgi_fd[2]; // Pipe Server --> CGI
 	cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
 
 	if (pipe(srvToCgi_fd) == -1)
@@ -237,14 +237,13 @@ int	CgiHandler::execScript(std::string const& extension)
 		cgi_fd = open("/tmp/cgi_file", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'ecriture inutilisée */
 		dup2(cgi_fd, STDOUT_FILENO);
-		// dup2(cgi_fd, STDERR_FILENO); --> Not necessary
 		dup2(srvToCgi_fd[0], STDIN_FILENO);
+		// dup2(cgi_fd, STDERR_FILENO); --> Not necessary
 		close(cgi_fd);
 		close(srvToCgi_fd[0]);   //Ferme l'extrémité de lecture après utilisation par le fils 
 
-		stringMap cgi_extensions = this->_req.getCgi_extensions();
 		char * argv[3] = {
-			const_cast<char*>(cgi_extensions[extension].c_str()),
+			const_cast<char*>(cgi_path.c_str()),
 			const_cast<char*>(this->_res.getTarget().c_str()),
 			(char *)0
 		};
@@ -295,7 +294,6 @@ int	CgiHandler::execScript(std::string const& extension)
 	std::cout << "OUT OF CGI HANDLER" << std::endl;
 	return SUCCESS;
 }
-
 
 /* Getters */
 

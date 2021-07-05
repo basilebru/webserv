@@ -366,55 +366,60 @@ bool Response::is_cgi_extension()
 
 void Response::cgi_module()
 {
-    std::cout << "cgi module: " << std::endl;
-
-    CgiHandler                  cgi(this->req, *this);
     std::vector<unsigned char>  cgi_body;
     std::string                 cgi_headers;
 
-    if (cgi.execScript(this->extension) == SUCCESS)
-    {
-        cgi_headers = cgi.getHeaders();
-        cgi_body = cgi.getBody();
-        if (!cgi.getStatus().empty())
-        {
-            this->headers = "HTTP/1.1"; // devrait etre le protocole de la requete ?
-            this->headers += cgi.getStatus();
-            this->headers += CRLF;
-        }
-        else if (cgi.getHasRedir() == true)
-            this->headers = "HTTP/1.1 302 FOUND\r\n";
-        else
-            this->headers = "HTTP/1.1 200 OK\r\n";
-        if (cgi.getHasContentLength() == false)
-        {
-            this->headers += "Content-Length: ";
-            this->headers += iToString(cgi_body.size());
-            this->headers += CRLF;
-        }
-        if (cgi.getHasContentType() == false && cgi.getHasRedir() == false)
-        {
-            this->headers += "Content-Type: application/octet-stream";
-            this->headers += CRLF;
-        }
-        this->headers += cgi_headers;
-        this->response.assign(this->headers.begin(), this->headers.end());
-        this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());
+    stringMap cgi_extensions = this->req.getCgi_extensions();
+    std::string cgi_path = cgi_extensions[extension];
 
-        // if (this->response.size() < 1000000)
-        // {
-        //     std::cout << "Contenu de la reponse:" << std::endl;
-        //     std::cout << "---------------------------" << std::endl;
-        //     for (size_t i = 0; i < this->response.size(); ++i)
-        //     {
-        //         std::cout << this->response[i];
-        //     }
-        //     std::cout << "---------------------------" << std::endl;
-        // }
+    if (!cgi_path.empty())
+    {
+        CgiHandler cgi(this->req, *this);
+        if (cgi.execScript(cgi_path) == SUCCESS)
+        {
+            cgi_headers = cgi.getHeaders();
+            cgi_body = cgi.getBody();
+            if (!cgi.getStatus().empty())
+            {
+                this->headers = "HTTP/1.1"; // devrait etre le protocole de la requete ?
+                this->headers += cgi.getStatus();
+                this->headers += CRLF;
+            }
+            else if (cgi.getHasRedir() == true)
+                this->headers = "HTTP/1.1 302 FOUND\r\n";
+            else
+                this->headers = "HTTP/1.1 200 OK\r\n";
+            if (cgi.getHasContentLength() == false)
+            {
+                this->headers += "Content-Length: ";
+                this->headers += iToString(cgi_body.size());
+                this->headers += CRLF;
+            }
+            if (cgi.getHasContentType() == false && cgi.getHasRedir() == false)
+            {
+                this->headers += "Content-Type: application/octet-stream";
+                this->headers += CRLF;
+            }
+            this->headers += cgi_headers;
+            this->response.assign(this->headers.begin(), this->headers.end());
+            this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());
+
+            // if (this->response.size() < 1000000)
+            // {
+            //     std::cout << "Contenu de la reponse:" << std::endl;
+            //     std::cout << "---------------------------" << std::endl;
+            //     for (size_t i = 0; i < this->response.size(); ++i)
+            //     {
+            //         std::cout << this->response[i];
+            //     }
+            //     std::cout << "---------------------------" << std::endl;
+            // }
+        }
+        else
+            this->error_module(500);
     }
     else
-        this->error_module(500);
-    std::cout << "OUT OF CGI MODULE" << std::endl;
+        this->error_module(204); // dans le cas où l'extension demandée n'est pas gérée et/ou que la map des ext est vide
 }
 
 void Response::set_extension_from_target()
