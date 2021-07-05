@@ -228,8 +228,12 @@ int	CgiHandler::execScript(std::string const& extension)
 	this->fillEnvp();
 
 	int srvToCgi_fd[2]; // Pipe Server --> CGI
-	cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
-
+	cgi_fd = open("/tmp/cgi_file", O_RDWR | O_CREAT | O_APPEND, 0666);
+	if (cgi_fd == -1)
+	{
+		std::cout << "open error" << std::endl;
+		return FAILURE;
+	}
 	if (pipe(srvToCgi_fd) == -1)
 	{
 		std::cerr << "pipe() srvToCgi failed, errno: " << errno << std::endl;
@@ -244,8 +248,6 @@ int	CgiHandler::execScript(std::string const& extension)
 	}
 	else if (pid == 0)
 	{
-		close(cgi_fd);
-		cgi_fd = open("/tmp/cgi_file", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'ecriture inutilisée */
 		dup2(cgi_fd, STDOUT_FILENO);
 		dup2(cgi_fd, STDERR_FILENO);
@@ -282,8 +284,7 @@ int	CgiHandler::execScript(std::string const& extension)
 
 		if (waitpid(pid, &status, 0) == -1)
 			return FAILURE;
-		cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
-		// cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
+		lseek(cgi_fd, 0, SEEK_SET); // reposition file offset at begining
 		while (ret == CGI_BUF_SIZE)
 		{
 			std::cout << "READ..." << std::endl;
