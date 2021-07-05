@@ -169,7 +169,6 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 	size_t		i = 0;
 	int			count = 0;
 	std::vector<unsigned char>::iterator it = buffer.begin();
-
 	while(i < buffer.size())
 	{
 		this->_headers.push_back(buffer[i]);
@@ -187,7 +186,8 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 	}
 	// replaceLF();
 	flagHeaders();
-	this->_body.assign(++it, --buffer.end());
+	if (it != buffer.end())
+		this->_body.assign(++it, --buffer.end());
 	// std::cerr << "HEADERS: " << this->_headers << std::endl;
 	// while(i < buffer.size() - 1)
 	// {
