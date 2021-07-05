@@ -270,7 +270,6 @@ int	CgiHandler::execScript(std::string const& extension)
 	else
 	{
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
-		cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
 
 		if (!this->_req.body.empty())
 		{
@@ -281,6 +280,9 @@ int	CgiHandler::execScript(std::string const& extension)
 
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
 
+		if (waitpid(pid, &status, 0) == -1)
+			return FAILURE;
+		cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
 		// cgi_fd = open("/tmp/cgi_file", O_RDONLY | S_IRUSR);
 		while (ret == CGI_BUF_SIZE)
 		{
@@ -288,6 +290,7 @@ int	CgiHandler::execScript(std::string const& extension)
 			memset(buf, 0, CGI_BUF_SIZE);
 			if ((ret = read(cgi_fd, buf, CGI_BUF_SIZE)) < 0)
 				return FAILURE;
+			std::cout << "ret: " << ret << std::endl;
 			this->storeBuffer(body, buf, ret);
 		}
 		if (!body.empty())
@@ -295,8 +298,6 @@ int	CgiHandler::execScript(std::string const& extension)
 
 		close(cgi_fd);
 
-		if (waitpid(pid, &status, 0) == -1)
-			return FAILURE;
 
 		if (WIFEXITED(status))
 		{
