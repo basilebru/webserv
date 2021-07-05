@@ -317,6 +317,102 @@ int	CgiHandler::execScript(std::string const& extension)
 	return SUCCESS;
 }
 
+/**
+ * EXEC SCRIPT WITH COMMUNICATION BY UNIX SOCKET
+ *
+ * @param       [param1, param2, ...]
+ * @return      [type]
+ */
+
+// int	CgiHandler::execScript(std::string const& extension)
+// {
+
+// 	std::vector<unsigned char>	body;
+// 	char	buf[CGI_BUF_SIZE];
+// 	int		ret = CGI_BUF_SIZE;
+// 	int		status;
+// 	int		sockets[2];
+
+// 	this->fillEnvp();
+
+// 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0) {
+// 		std::cerr << "Error: opening stream socket pair" << std::endl;
+// 		return FAILURE;
+// 	}
+
+// 	int pid = fork();
+// 	if (pid == -1)
+// 	{
+// 		std::cerr << "fork process failed" << std::endl;
+// 		return FAILURE;
+// 	}
+// 	else if (pid == 0)
+// 	{
+// 		close(sockets[0]);  /* Ferme l'extrémité de lecture inutilisée */
+// 		dup2(sockets[1], STDIN_FILENO);
+// 		dup2(sockets[1], STDOUT_FILENO);
+// 		dup2(sockets[1], STDERR_FILENO);
+// 		close(sockets[1]);  /* Ferme l'extrémité d'éciture après utilisation par le fils */
+
+// 		stringMap cgi_extensions = this->_req.getCgi_extensions();
+
+// 		char * argv[3] = {
+// 			const_cast<char*>(cgi_extensions[extension].c_str()),
+// 			const_cast<char*>(this->_res.getTarget().c_str()),
+// 			(char *)0
+// 		};
+// 		if (execve(argv[0], &argv[0], this->_envp) < 0) /* Le script écrit dans STDOUT */
+// 		{
+// 			std::cerr << "execve() failed, errno: " << errno << " - " << strerror(errno) << std::endl;
+// 			_exit(1);
+// 		}
+// 	}
+// 	else
+// 	{
+// 		close(sockets[1]);  /* Ferme l'extrémité d'écriture inutilisée */
+		
+// 		if (!this->_req.body.empty())
+// 		{
+// 			size_t size_left = this->_req.body.size();
+// 			size_t tot_ret = 0;
+// 			std::cerr << "size_left = " << size_left << std::endl;
+// 			while (size_left > CGI_BUF_SIZE)
+// 			{
+// 				ret = write(sockets[0], &this->_req.body[tot_ret], CGI_BUF_SIZE);
+// 				tot_ret += ret;
+// 				size_left -= ret;
+// 				std::cerr << "ret: " << ret << std::endl;
+// 				std::cerr << "size_left: " << size_left << std::endl;
+// 				std::cerr << "tot_ret: " << tot_ret << std::endl;
+// 			}
+// 		}
+// 		else
+// 			write(sockets[0], "for youpi.bla", 13);
+
+// 		while (ret == CGI_BUF_SIZE)
+// 		{
+// 			memset(buf, 0, CGI_BUF_SIZE);
+// 			if ((ret = read(sockets[0], buf, CGI_BUF_SIZE)) < 0)
+// 				return FAILURE;
+// 			this->storeBuffer(body, buf, ret);
+// 		}
+// 		if (!body.empty())
+// 			fillOutputs(body);
+
+// 		close(sockets[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
+
+// 		if (waitpid(pid, &status, 0) == -1)
+// 			return FAILURE;
+
+// 		if (WIFEXITED(status))
+// 		{
+// 			if (WEXITSTATUS(status) == 1)
+// 				return FAILURE;
+// 		}
+
+// 	}
+// 	return SUCCESS;
+// }
 
 /* Getters */
 

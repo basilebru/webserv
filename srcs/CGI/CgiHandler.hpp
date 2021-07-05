@@ -44,7 +44,7 @@ public:
 	~CgiHandler(void);
 	CgiHandler& operator=(CgiHandler const & rhs);
 
-	int	execScript(std::string const& extension);
+	int	execScript(std::string const& cgi_path);
 	
 	/* Getters */
 	std::string&				getHeaders(void);
