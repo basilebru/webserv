@@ -127,6 +127,32 @@ int		Server::loop_server_socket()
 	return SUCCESS;
 }
 
+
+// returns CLOSE if connection needs to be closed (error during request or EOF received)
+// returns SKIP if request is not ready to be processed (not entirely received)
+// returns NEW if request has been processed, buffer is filled -> request can be deleted
+int		Server::process_request(std::map<int, Request*>::iterator client_socket_pair_iterator)
+{
+	Request* request = client_socket_pair_iterator->second;
+	int client_socket_fd = client_socket_pair_iterator->first;
+	request->parse();
+	if (request->connection_end())
+	{
+        std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
+		return CLOSE;
+	}
+	if (request->get_error_code() || request->request_is_ready())
+	{
+		int ret;
+		std::vector<unsigned char>& response_buffer = this->response_buffers[client_socket_fd];
+		Response *response = new Response(*request, response_buffer);
+		ret = response->build();
+		delete response;
+		return ret;
+	}
+	return SKIP;
+}
+
 int		Server::loop_client_socket()
 {
 	// On parcourt les client_sockets. S'ils sont disponibles en lecture, c'est qu'on peut parser une requete (rq: une meme requete peut etre envoyee en plusieurs fois)
@@ -136,9 +162,7 @@ int		Server::loop_client_socket()
 		if (FD_ISSET(it->first, &this->ready_read_sockets)) // read() possible
 		{
 			// std::cout << GREEN << "Communication with client -> fd " << it->first << NOCOLOR << std::endl;
-			it->second->parse();
-			Response res(*it->second, this->response_buffers[it->first]);
-			ret = res.process();
+			ret = this->process_request(it);
 			if (ret == NEW)
 			{
 				// save fd and addr, delete request and create new request
@@ -151,9 +175,9 @@ int		Server::loop_client_socket()
 		if (FD_ISSET(it->first, &this->ready_write_sockets) && this->response_buffers[it->first].size()) // write possible
 		{
 			ssize_t ret;
-			std::cout << "response_buffer size: " << this->response_buffers[it->first].size() << std::endl;
+			// std::cout << "response_buffer size: " << this->response_buffers[it->first].size() << std::endl;
 			ret = send(it->first, &this->response_buffers[it->first][0], this->response_buffers[it->first].size(), MSG_DONTWAIT);
-			std::cout << "AFTER SEND" << std::endl;
+			// std::cout << "AFTER SEND" << std::endl;
 			this->response_buffers[it->first].erase(this->response_buffers[it->first].begin(), this->response_buffers[it->first].begin() + ret);
 		}
 		if (ret == CLOSE && this->response_buffers[it->first].empty())

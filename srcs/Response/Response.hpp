@@ -70,7 +70,7 @@ public:
     ~Response(void);
     Response& operator=(Response const & rhs);
 
-    int process();
+    int build();
 
     /* getters */
     const std::string& getTarget(void) const;

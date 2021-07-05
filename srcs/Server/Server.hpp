@@ -32,6 +32,7 @@ private:
 	int		select();
 	int		loop_server_socket();
 	int		loop_client_socket();
+	int		process_request(std::map<int, Request*>::iterator client_socket_pair_iterator);
 			Server(void);
 
 public:

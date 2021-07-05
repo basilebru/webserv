@@ -17,38 +17,33 @@ Response::~Response(void)
 }
 
 // returns CLOSE if connection needs to be closed (error during request or EOF received)
-// returns SKIP if request is not ready to be processed (not entirely received)
 // returns NEW if request has been processed, buffer is filled -> request can be deleted
-int Response::process()
+int Response::build()
 {
-    if (this->req.connection_end()) // client has disconected (read received EOF)
-    {
-        std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
-        return CLOSE;
-    }
-    if (this->req.error_code) // request not well formated, ctrl-c... (like nginx: closes connection)
-    {
-        this->error_module(this->req.error_code);
-        return CLOSE;
-    }
-    if (this->req.request_is_ready())
-    {
+    // debug infos
+    if (req.request_is_ready())
         std::cout << "<<<<<<Request ready to be treated>>>>>" << std::endl;
-        this->req.print();
-        this->req.print_config();
-        try
-        {
-            this->build_response();
-        }
-        catch(const std::exception& e)
-        {
-            std::cerr << "exception caught: " << e.what() << std::endl;
-            this->error_module(500);
-            return CLOSE;
-        }
-        return NEW;
+    if (req.error_code)
+        std::cout << "<<<<<<Error found in request>>>>>" << std::endl;
+    this->req.print();
+    this->req.print_config();
+    //
+
+    try
+    {
+        this->build_response();
     }
-    return SKIP;
+    catch(const std::exception& e)
+    {
+        std::cerr << "exception caught: " << e.what() << std::endl;
+        this->error_module(500);
+        return CLOSE;
+    }
+    
+    if (this->req.error_code)
+        return CLOSE;
+    else 
+        return NEW;
 }
 
 void Response::build_response()
