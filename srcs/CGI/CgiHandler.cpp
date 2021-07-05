@@ -208,17 +208,13 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 
 	std::cout << "ENTER IN CGI HANDLER" << std::endl;
 
-	std::vector<unsigned char>	body;
-	char	buf[CGI_BUF_SIZE];
-	int		ret = CGI_BUF_SIZE;
-	int		status;
-	int		cgi_fd;
-	int		srvToCgi_fd[2]; // Pipe Server --> CGI
+	int srvToCgi_fd[2]; // Pipe Server --> CGI (for sending body to cgi)
+	int cgi_fd; // share file btw server and CGI (for receiving cgi output)
+	// Rq: using two set of pipes to communicate both ways between CGI and server is likely to cause a "deadlock"
 
 	this->fillEnvp();
 
-	int srvToCgi_fd[2]; // Pipe Server --> CGI
-	cgi_fd = open("/tmp/cgi_file", O_RDWR | O_CREAT | O_APPEND, 0666);
+	cgi_fd = open("/tmp/cgi_file", O_RDWR | O_CREAT | O_APPEND | O_TRUNC, 0666); // if file with that name already exists, O_TRUNC will "erase" it
 	if (cgi_fd == -1)
 	{
 		std::cout << "open error" << std::endl;
@@ -243,7 +239,7 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 		dup2(srvToCgi_fd[0], STDIN_FILENO);
 		// dup2(cgi_fd, STDERR_FILENO); --> Not necessary
 		close(cgi_fd);
-		close(srvToCgi_fd[0]);   //Ferme l'extrémité de lecture après utilisation par le fils 
+		close(srvToCgi_fd[0]); 
 
 		char * argv[3] = {
 			const_cast<char*>(cgi_path.c_str()),
@@ -261,6 +257,7 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 	{
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
 
+		// 1. write to cgi
 		if (!this->_req.body.empty())
 		{
 			// std::cout << "WRITE....." << std::endl;
@@ -268,11 +265,24 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 			// std::cout << "WRITE AFTER....." << std::endl;
 		}
 
-		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
+		close(srvToCgi_fd[1]); 
 
+		// 2. wait for cgi to finish
+		// do waitpid before read, so parent process will access shared file only when child is done with it
+		int status;
 		if (waitpid(pid, &status, 0) == -1)
 			return FAILURE;
+		if (WIFEXITED(status))
+		{
+			if (WEXITSTATUS(status) == 1)
+				return FAILURE;
+		}
+
+		// 3. Read from cgi and fill outputs
 		lseek(cgi_fd, 0, SEEK_SET); // reposition file offset at begining
+		int ret = CGI_BUF_SIZE;
+		char	buf[CGI_BUF_SIZE];
+		std::vector<unsigned char> body;
 		while (ret == CGI_BUF_SIZE)
 		{
 			// std::cout << "READ..." << std::endl;
@@ -292,6 +302,7 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 			if (WEXITSTATUS(status) == 1)
 				return FAILURE;
 		}
+
 	}
 	std::cout << "OUT OF CGI HANDLER" << std::endl;
 	return SUCCESS;
