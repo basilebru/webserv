@@ -29,6 +29,7 @@ Response::int_map Response::init_code_map()
     int_map mp;
     mp[200] = "OK";
     mp[201] = "Created";
+    mp[204] = "No Content";
     mp[301] = "Moved permanently";
     mp[400] = "Bad Request";
     mp[403] = "Forbidden";

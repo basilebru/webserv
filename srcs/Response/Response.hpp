@@ -6,7 +6,7 @@
 
 class Response {
 
-enum return_codes{UNSET=0, OK=200, NOT_IMPLEMENTED=501, INTERNAL_ERROR=500, NOT_FOUND=404, REDIR=301};
+enum return_codes{UNSET=0, OK=200, NOT_IMPLEMENTED=501, INTERNAL_ERROR=500, NOT_FOUND=404, REDIR=301, FORBIDDEN=403};
 #define YES 1
 #define ERROR 2
 #define NO 0
@@ -42,6 +42,7 @@ private:
     void build_content_type();
     void build_location_if_redirection();
     void get_module();
+    void put_module();
     std::string build_index_uri(std::string index);
     int remove_target();
     int target_exists();
