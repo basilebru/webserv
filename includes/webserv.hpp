@@ -51,6 +51,7 @@
 # define DEFAULT_CHUNKED_ENC	1				// ON
 # define MAX_TCP_PORT			65535
 # define DEFAULT_CONF_FILE		"./conf.d/webserv.conf"
+# define DEFAULT_SERVER			"./conf.d/default.conf"
 
 //CARRIAGE AND NEWLINES
 # define CR		"\r"

@@ -26,13 +26,17 @@ int main(int ac, char **av)
 	if (signal(SIGINT, signal_handler) == SIG_ERR)
 		return (1);
 
-	if (ac == 2)
+	if (ac >= 1 && ac < 3)
 	{
 		ConfParser parser;
 
 		try {
 			parser.readConfFile(DEFAULT_CONF_FILE); // Default config file containing http directive
-			parser.readConfFile(av[1]); // Config file containing server blocks
+			
+			if (ac == 1)
+				parser.readConfFile(DEFAULT_SERVER); // Default server
+			if (ac == 2)
+				parser.readConfFile(av[1]); // Config file containing server blocks
 
 			HttpBlock baseConfig = parser.getHttpBlock();
 			std::vector<ServerBlock> servers = parser.getServers();
@@ -48,7 +52,7 @@ int main(int ac, char **av)
 			std::cerr << e.what() << '\n';
 		}
 	}
-
-
+	else
+		write(2, "Execute with zero (default) or one config file in argument\n", 59);
 	return (0);
 }
