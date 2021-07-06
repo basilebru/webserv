@@ -3,6 +3,7 @@
 
 # include <string>
 # include <vector>
+# include <map>
 # include <iostream>
 # include <sstream>
 # include <cstdlib>
@@ -27,10 +28,6 @@ std::string		ipToString(unsigned int ip);
 unsigned short	ft_htons(unsigned short port);
 unsigned short	ft_ntohs(unsigned short port);
 
-/* Base 64 encoding */
-typedef unsigned char BYTE;
-std::string base64_encode(BYTE const* buf, unsigned int bufLen);
-std::vector<BYTE> base64_decode(std::string const&);
 
 template<typename T>
 void displayVec(std::vector<T> const& v, const char* separator = "")
@@ -39,6 +36,18 @@ void displayVec(std::vector<T> const& v, const char* separator = "")
 	while (it != v.end())
 	{
 		std::cout << *it << separator;
+		++it;
+	}
+	std::cout << std::endl;
+}
+
+template<typename T, typename U>
+void displayMap(std::map<T, U> const& map, char const separator = '\n')
+{
+	typename std::map<T, U>::const_iterator it = map.begin();
+	while (it != map.end())
+	{
+		std::cout << it->first << " = " << it->second << separator;
 		++it;
 	}
 	std::cout << std::endl;

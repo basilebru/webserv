@@ -76,12 +76,9 @@ SRCS += ServerBlock.cpp
 SRCS += LocationBlock.cpp
 
 # Utils sources
-SRCS += get_next_line.cpp
-SRCS += get_next_line_utils.cpp
 SRCS += ip_manipulation.cpp
 SRCS += utils.cpp
 SRCS += Autoindex.cpp
-SRCS += base64.cpp
 
 
 # Add directories containing files to compile here

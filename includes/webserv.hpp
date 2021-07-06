@@ -1,5 +1,5 @@
 #ifndef WEBSERV_HPP
-#define WEBSERV_HPP
+# define WEBSERV_HPP
 
 
 # include <string>
@@ -22,8 +22,6 @@
 # include <unistd.h>
 
 # include <algorithm> //find function and co.
-
-// # include "libft.h"
 
 
 // Utils
@@ -55,10 +53,10 @@
 # define DEFAULT_CONF_FILE		"./conf.d/webserv.conf"
 
 //CARRIAGE AND NEWLINES
-# define CR "\r"
-# define LF "\n"
-# define CRLF "\r\n"
-# define CRLFX2 "\r\n\r\n"
+# define CR		"\r"
+# define LF		"\n"
+# define CRLF	"\r\n"
+# define CRLFX2	"\r\n\r\n"
 
 
 // Colors

@@ -25,8 +25,8 @@ int Response::build()
         std::cout << "<<<<<<Request ready to be treated>>>>>" << std::endl;
     if (req.error_code)
         std::cout << "<<<<<<Error found in request>>>>>" << std::endl;
-    this->req.print();
-    this->req.print_config();
+    // this->req.print();
+    // this->req.print_config();
     //
 
     try
@@ -125,7 +125,7 @@ void Response::error_module(int error_code)
         if (this->read_and_store_target_content() == ERROR)
             this->store_default_error_message();
     }
-    else
+    else if (error_code != 204)
         this->store_default_error_message();
     this->response_code = error_code;
     return this->build_headers();
@@ -140,7 +140,6 @@ void Response::store_default_error_message()
 
 void Response::put_module()
 {
-
     std::ofstream file;
 
     if (uri_is_file(this->target) == YES)
@@ -156,22 +155,15 @@ void Response::put_module()
             return this->error_module(FORBIDDEN);
 
     }
-    
     file.write((char*)&this->req.body[0], this->req.body.size());
     file.close();
     this->headers += "HTTP/1.1 204 No Content\r\n";
-    this->headers += "Content-Location: /file_should_exist_after\r\n"; // a modifier
+    this->headers += "Content-Location: ";
+    this->headers += this->req.req_line.target;
     // this->build_keep_alive();
-    this->headers += CRLF;
+    this->headers += CRLFX2;
     this->response.assign(this->headers.begin(), this->headers.end());
 
-    std::cout << "Contenu de la reponse:" << std::endl;
-    std::cout << "---------------------------" << std::endl;
-    for (size_t i = 0; i < this->response.size(); ++i)
-    {
-        std::cout << this->response[i];
-    }
-    std::cout << "---------------------------" << std::endl;
     return ;
 }
 
@@ -272,7 +264,6 @@ int Response::try_index_directive()
     return FAILURE;
 }
 
-
 void Response::file_module()
 {
     std::cout << "file module:" << this->target << std::endl;
@@ -331,31 +322,6 @@ int Response::read_and_store_target_content()
     ifs.close();
     return SUCCESS;
 }
-
-
-
-/*void Response::cgi_module()
-{
-    // std::cerr << "TARGET: " << this->req.req_line.target << std::endl;
-    // std::cerr << "CONFIG: " << this->req.config.cgi_path << std::endl;
-    CgiHandler                  cgi(this->req);
-
-    std::cout << "cgi module" << std::endl;
-    if (cgi.execScript(this->target) == SUCCESS)
-    {
-        this->headers = cgi.getHeaders();
-        // if no Content-type header, return error 500
-        std::string buf = "Content-Type";
-        if (std::search(this->headers.begin(), this->headers.end(), buf.begin(), buf.end(), my_equal) == this->headers.end())
-            return this->error_module(500);
-
-        this->response_code = 200;
-        this->response = cgi.getBody();
-        this->build_headers();
-    }
-    else
-        this->error_module(500);
-}*/
 
 bool Response::is_cgi_extension()
 {
@@ -428,5 +394,3 @@ void Response::set_extension_from_target()
     if (pos != std::string::npos)
         this->extension = this->target.substr(pos + 1);
 }
-
-

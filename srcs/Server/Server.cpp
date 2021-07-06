@@ -247,8 +247,8 @@ int Server::setup_sockets(void)
 			return (FAILURE);
 		}
 		
-		// 5. Start listening. Hold at most 10 connections in the queue
-		if (listen(newSocket, 30) < 0)
+		// 5. Start listening. Hold at most 100 connections in the queue
+		if (listen(newSocket, 100) < 0) // On met combien au backlog ?
 		{
 			std::cout << "Failed to listen on socket. errno: " << errno << std::endl;
 			close(newSocket);

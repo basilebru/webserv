@@ -3,7 +3,6 @@
 CgiHandler::CgiHandler(Request const& req, Response const& res) :
 _envp(NULL), _req(req), _res(res), _hasCL(false), _hasCT(false), _hasRedir(false)
 {
-	// std::cout << "CGI CONSTRUCTOR" << std::endl;
 	this->initEnv();
 }
 
@@ -15,7 +14,6 @@ _hasCT(copy._hasCT), _hasRedir(copy._hasRedir), _status(copy._status)
 
 CgiHandler::~CgiHandler(void)
 {
-	// std::cout << "CGI DESTRUCTOR" << std::endl;
 	for (size_t i = 0; i < this->_env_map.size(); ++i)
 		delete[] this->_envp[i];
 	delete[] this->_envp;
@@ -36,15 +34,23 @@ CgiHandler& CgiHandler::operator=(CgiHandler const & rhs)
 	return *this;
 }
 
-void displayMap(std::map<std::string, std::string> const& map, char const separator = '\n')
+stringMap CgiHandler::prepare_for_cgi(stringMap &headers)
 {
-	std::map<std::string, std::string>::const_iterator it = map.begin();
-	while (it != map.end())
+	stringMap http_headers;
+	stringMap::const_iterator it = headers.begin();
+	stringMap::const_iterator end = headers.end();
+	std::string key;
+	
+	while (it != end)
 	{
-		std::cout << it->first << " = " << it->second << separator;
+		key = "HTTP_";
+		transform(it->first.begin(), it->first.end(), std::back_inserter(key), toupper);
+		std::replace(key.begin(), key.end(), '-', '_');
+		http_headers[key] = it->second;
 		++it;
 	}
-	std::cout << std::endl;
+
+	return (http_headers);
 }
 
 void	CgiHandler::initEnv(void)
@@ -52,7 +58,8 @@ void	CgiHandler::initEnv(void)
 	/* Les variables d'environnement permettent au script d'accéder à des informations
 	relatives au serveur, au client, à la requête. */
 
-	std::map<std::string, std::string> headers = this->_req.get_headers();
+	stringMap headers = this->_req.get_headers();
+	stringMap http_headers = this->prepare_for_cgi(headers);
 	
 	this->_env_map["REDIRECT_STATUS"]	=	"200"; //for php-cgi
 	this->_env_map["CONTENT_LENGTH"]	=	iToString(this->_req.body_size);	// content-length de la requete
@@ -69,16 +76,7 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["SERVER_PORT"]		=	this->_req.host_port;	// port ayant reçu la requête
 	this->_env_map["SERVER_PROTOCOL"]	=	this->_req.req_line.version;;	// protocol HTTP (toujours HTTP/1.1 ?)
 	this->_env_map["SERVER_SOFTWARE"]	=	"webserv";
-	// this->_env_map["UPLOAD_DIR"]		=	this->_req.config.upload_dir;
- // 	this->_env_map["HTTP_CONTENT_TYPE"] =  "test/file";
-	// this->_env_map["HTTP_ACCEPT_ENCODING"] =  "gzip";
- // 	this->_env_map["HTTP_HOST"] =  "127.0.0.1:9999";
- // 	this->_env_map["HTTP_TRANSFER_ENCODING"] =  "chunked";
- // 	this->_env_map["HTTP_USER_AGENT"] =  "Go-http-client/1.1";
- 	this->_env_map["HTTP_X_SECRET_HEADER_FOR_TEST"] =  "1";
-
-	// displayMap(this->_env_map);
-
+	this->_env_map.insert(http_headers.begin(), http_headers.end());
 }
 
 void	CgiHandler::fillEnvp(void)
@@ -103,7 +101,6 @@ void	CgiHandler::fillEnvp(void)
 
 void	CgiHandler::storeBuffer(std::vector<unsigned char> &body, const char *buf, int len)
 {
-	// std::cout << "ENTER in STORE: " << std::endl;
 	int i = 0;
 
 	if (len < CGI_BUF_SIZE && len != 0)
@@ -113,7 +110,6 @@ void	CgiHandler::storeBuffer(std::vector<unsigned char> &body, const char *buf, 
 	{
 		body.push_back(buf[i++]);
 	}
-	// std::cout << "OUT OFF STORE: " << std::endl;
 }
 
 void	CgiHandler::replaceLF(void)
@@ -133,33 +129,27 @@ void	CgiHandler::flagHeaders(void)
 	std::string	upper;
 
 	transform(this->_headers.begin(), this->_headers.end(), std::back_inserter(upper), toupper);
-	// std::cerr << "UPPER: " << upper << std::endl;
 
 	if (upper.find("CONTENT-LENGTH") != std::string::npos)
 	{
-		// std::cerr << "FOUND CONTENT LENGTH" << std::endl;
 		this->_hasCL = true;
 	}
 	if (upper.find("CONTENT-TYPE") != std::string::npos)
 	{
-		// std::cerr << "FOUND CONTENT TYPE" << std::endl;
 		this->_hasCT = true;
 	}
 	if (upper.find("LOCATION") != std::string::npos)
 	{
-		// std::cerr << "FOUND REDIRECTION" << std::endl;
 		this->_hasRedir = true;
 	}
 	if ((pos = upper.find("STATUS")) != std::string::npos)
 	{
-		// std::cerr << "FOUND STATUS" << std::endl;
 		this->_status = this->_headers.substr(pos + 7, upper.find("\n", pos) - pos - 7);
 	}
 }
 
 void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 {
-	// std::cout << "ENTER IN FILL OUTPUT" << std::endl;
 	size_t		i = 0;
 	int			count = 0;
 	std::vector<unsigned char>::iterator it = buffer.begin();
@@ -178,16 +168,11 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 		++i;
 		++it;
 	}
-	// replaceLF();
 	flagHeaders();
 	if (it != buffer.end())
 		this->_body.assign(++it, --buffer.end());
 
 	std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
-	// std::cout << "this->headers: " << this->_headers << std::endl;
-	// if (this->_body.size() < 1000000)
-	// 	displayVec(this->_body);
-
 }
 
 /**
@@ -205,8 +190,6 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 	Comme le scrit écrit dans stdout, il faut lire stdout et l'enregistrer dans une variable,
 	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
 	*/
-
-	std::cout << "ENTER IN CGI HANDLER" << std::endl;
 
 	int srvToCgi_fd[2]; // Pipe Server --> CGI (for sending body to cgi)
 	int cgi_fd; // share file btw server and CGI (for receiving cgi output)
@@ -259,11 +242,7 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 
 		// 1. write to cgi
 		if (!this->_req.body.empty())
-		{
-			// std::cout << "WRITE....." << std::endl;
 			write(srvToCgi_fd[1], &this->_req.body[0], this->_req.body.size());
-			// std::cout << "WRITE AFTER....." << std::endl;
-		}
 
 		close(srvToCgi_fd[1]); 
 
@@ -285,11 +264,9 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 		std::vector<unsigned char> body;
 		while (ret == CGI_BUF_SIZE)
 		{
-			// std::cout << "READ..." << std::endl;
 			memset(buf, 0, CGI_BUF_SIZE);
 			if ((ret = read(cgi_fd, buf, CGI_BUF_SIZE)) < 0)
 				return FAILURE;
-			// std::cout << "ret: " << ret << std::endl;
 			this->storeBuffer(body, buf, ret);
 		}
 		if (!body.empty())
@@ -302,7 +279,6 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 			if (WEXITSTATUS(status) == 1)
 				return FAILURE;
 		}
-
 	}
 	std::cout << "OUT OF CGI HANDLER" << std::endl;
 	return SUCCESS;
