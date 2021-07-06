@@ -148,7 +148,7 @@ void	CgiHandler::flagHeaders(void)
 	}
 }
 
-void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
+int	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 {
 	size_t		i = 0;
 	int			count = 0;
@@ -168,11 +168,14 @@ void	CgiHandler::fillOutputs(std::vector<unsigned char>& buffer)
 		++i;
 		++it;
 	}
+	if (count != 2)
+		return FAILURE;
 	flagHeaders();
 	if (it != buffer.end())
 		this->_body.assign(++it, --buffer.end());
 
 	std::cerr << "BDY-SIZE: " << this->_body.size() << std::endl;
+	return SUCCESS;
 }
 
 /**
@@ -220,7 +223,7 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'ecriture inutilisée */
 		dup2(cgi_fd, STDOUT_FILENO);
 		dup2(srvToCgi_fd[0], STDIN_FILENO);
-		// dup2(cgi_fd, STDERR_FILENO); --> Not necessary
+		dup2(cgi_fd, STDERR_FILENO); // necessary to adjust Status according to cgi error
 		close(cgi_fd);
 		close(srvToCgi_fd[0]); 
 
@@ -270,7 +273,8 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 			this->storeBuffer(body, buf, ret);
 		}
 		if (!body.empty())
-			fillOutputs(body);
+			if (fillOutputs(body) == FAILURE)
+				return FAILURE;
 
 		close(cgi_fd);
 
@@ -280,7 +284,6 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 				return FAILURE;
 		}
 	}
-	std::cout << "OUT OF CGI HANDLER" << std::endl;
 	return SUCCESS;
 }
 

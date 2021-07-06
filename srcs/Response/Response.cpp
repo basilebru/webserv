@@ -347,6 +347,8 @@ void Response::cgi_module()
             cgi_body = cgi.getBody();
             if (!cgi.getStatus().empty())
             {
+                if (cgi.getStatus().find("500"))
+                    return this->error_module(500);
                 this->headers = "HTTP/1.1"; // devrait etre le protocole de la requete ?
                 this->headers += cgi.getStatus();
                 this->headers += CRLF;

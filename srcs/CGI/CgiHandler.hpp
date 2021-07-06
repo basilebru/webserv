@@ -32,7 +32,7 @@ private:
 	void		initEnv(void);
 	void		fillEnvp(void);
 	void		storeBuffer(std::vector<unsigned char>&, const char *buf, int len);
-	void		fillOutputs(std::vector<unsigned char>&);
+	int			fillOutputs(std::vector<unsigned char>&);
 	void		replaceLF(void);
 	void		flagHeaders(void);
 	stringMap	prepare_for_cgi(std::map<std::string, std::string> &);
