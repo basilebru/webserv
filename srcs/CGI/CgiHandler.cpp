@@ -76,6 +76,7 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["SERVER_PORT"]		=	this->_req.host_port;	// port ayant reçu la requête
 	this->_env_map["SERVER_PROTOCOL"]	=	this->_req.req_line.version;;	// protocol HTTP (toujours HTTP/1.1 ?)
 	this->_env_map["SERVER_SOFTWARE"]	=	"webserv";
+	this->_env_map["UPLOAD_DIR"]		=	this->_req.config.upload_dir;
 	this->_env_map.insert(http_headers.begin(), http_headers.end());
 }
 

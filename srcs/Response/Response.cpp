@@ -368,6 +368,7 @@ void Response::cgi_module()
                 this->headers += "Content-Type: application/octet-stream";
                 this->headers += CRLF;
             }
+            this->build_keep_alive();
             this->headers += cgi_headers;
             this->response.assign(this->headers.begin(), this->headers.end());
             this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());

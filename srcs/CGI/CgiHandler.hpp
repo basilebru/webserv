@@ -7,6 +7,7 @@
 # include <sys/wait.h>
 # include <sys/socket.h>
 # include <sys/un.h>
+# include <sys/stat.h>
 
 # define CGI_BUF_SIZE 65536
 
