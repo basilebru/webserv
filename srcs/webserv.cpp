@@ -8,7 +8,10 @@ void signal_handler(int signum)
 	if (signum == SIGINT)
 	{
 		Server::server_is_alive = 0;
-		std::cerr << std::endl;
+	}
+	if (signum == SIGPIPE)
+	{
+		std::cout << "SP caught" << std::endl;
 	}
 }
 
@@ -24,6 +27,8 @@ void displayConfig(HttpBlock const& baseConfig, std::vector<ServerBlock> const& 
 int main(int ac, char **av)
 {
 	if (signal(SIGINT, signal_handler) == SIG_ERR)
+		return (1);
+	if (signal(SIGPIPE, signal_handler) == SIG_ERR)
 		return (1);
 
 	if (ac >= 1 && ac < 3)

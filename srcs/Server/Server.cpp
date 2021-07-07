@@ -138,7 +138,7 @@ int		Server::process_request(std::map<int, Request*>::iterator client_socket_pai
 	request->parse();
 	if (request->connection_end())
 	{
-        std::cout << RED << "Client closed connection" << NOCOLOR << std::endl;
+        	std::cout << RED << "Client closed connection !" << NOCOLOR << std::endl;
 		return CLOSE;
 	}
 	if (request->get_error_code() || request->request_is_ready())
@@ -175,9 +175,14 @@ int		Server::loop_client_socket()
 		if (FD_ISSET(it->first, &this->ready_write_sockets) && this->response_buffers[it->first].size()) // write possible
 		{
 			ssize_t ret;
-			// std::cout << "response_buffer size: " << this->response_buffers[it->first].size() << std::endl;
 			ret = send(it->first, &this->response_buffers[it->first][0], this->response_buffers[it->first].size(), MSG_DONTWAIT);
-			// std::cout << "AFTER SEND" << std::endl;
+			if (ret == -1)
+			{
+				std::cerr << strerror(errno) << std::endl;
+				this->close_socket(it++->first);
+				continue;
+			}
+			// std::cout << "AFTER SEND: " << ret << std::endl;
 			this->response_buffers[it->first].erase(this->response_buffers[it->first].begin(), this->response_buffers[it->first].begin() + ret);
 		}
 		if (ret == CLOSE && this->response_buffers[it->first].empty())
@@ -295,6 +300,7 @@ void Server::close_socket(int fd)
 	delete this->client_sockets[fd];
 	// Erase the map element containing the former request
 	this->client_sockets.erase(fd);
+	this->response_buffers.clear();
 }
 
 void	Server::init_select_fd_set()
