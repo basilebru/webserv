@@ -347,7 +347,7 @@ void Response::cgi_module()
             cgi_body = cgi.getBody();
             if (!cgi.getStatus().empty())
             {
-                if (cgi.getStatus().find("500"))
+                if (cgi.getStatus().find("500") != std::string::npos)
                     return this->error_module(500);
                 this->headers = "HTTP/1.1"; // devrait etre le protocole de la requete ?
                 this->headers += cgi.getStatus();
@@ -373,16 +373,16 @@ void Response::cgi_module()
             this->response.assign(this->headers.begin(), this->headers.end());
             this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());
 
-            // if (this->response.size() < 1000000)
-            // {
-            //     std::cout << "Contenu de la reponse:" << std::endl;
-            //     std::cout << "---------------------------" << std::endl;
-            //     for (size_t i = 0; i < this->response.size(); ++i)
-            //     {
-            //         std::cout << this->response[i];
-            //     }
-            //     std::cout << "---------------------------" << std::endl;
-            // }
+            if (this->response.size() < 1000000)
+            {
+                std::cout << "Contenu de la reponse:" << std::endl;
+                std::cout << "---------------------------" << std::endl;
+                for (size_t i = 0; i < this->response.size(); ++i)
+                {
+                    std::cout << this->response[i];
+                }
+                std::cout << "---------------------------" << std::endl;
+            }
         }
         else
             this->error_module(500);

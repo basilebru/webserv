@@ -53,6 +53,17 @@ stringMap CgiHandler::prepare_for_cgi(stringMap &headers)
 	return (http_headers);
 }
 
+std::string	CgiHandler::get_cwd(void)
+{
+	char cwd[256];
+
+    if (getcwd(cwd, sizeof(cwd)) == NULL)
+      return (std::string("./"));
+    else
+      return (std::string(cwd));  
+}
+
+
 void	CgiHandler::initEnv(void)
 {
 	/* Les variables d'environnement permettent au script d'accéder à des informations
@@ -60,7 +71,6 @@ void	CgiHandler::initEnv(void)
 
 	stringMap headers = this->_req.get_headers();
 	stringMap http_headers = this->prepare_for_cgi(headers);
-	
 	this->_env_map["REDIRECT_STATUS"]	=	"200"; //for php-cgi
 	this->_env_map["CONTENT_LENGTH"]	=	iToString(this->_req.body_size);	// content-length de la requete
 	this->_env_map["CONTENT_TYPE"]		=	headers["content-type"];	// content-type de la requete (POST)
@@ -72,11 +82,14 @@ void	CgiHandler::initEnv(void)
 	this->_env_map["REQUEST_METHOD"]	=	this->_req.req_line.method;	// GET ou POST ou ...
 	this->_env_map["REQUEST_URI"]		=	this->_req.req_line.target; // --> For the 42 tester
 	this->_env_map["SCRIPT_NAME"]		=	this->_res.getTarget();	// full path du fichier de script
+	this->_env_map["SCRIPT_FILENAME"]	=	this->_res.getTarget();	// full path du fichier de script
 	this->_env_map["SERVER_NAME"]		=	this->_req.host_uri;	// DNS ou IP du server (hostname)
 	this->_env_map["SERVER_PORT"]		=	this->_req.host_port;	// port ayant reçu la requête
 	this->_env_map["SERVER_PROTOCOL"]	=	this->_req.req_line.version;;	// protocol HTTP (toujours HTTP/1.1 ?)
 	this->_env_map["SERVER_SOFTWARE"]	=	"webserv";
 	this->_env_map["UPLOAD_DIR"]		=	this->_req.config.upload_dir;
+	if (this->_req.config.upload_dir[0] != '/')
+		this->_env_map["DOCUMENT_ROOT"]		=	this->get_cwd();  //for php-cgi
 	this->_env_map.insert(http_headers.begin(), http_headers.end());
 }
 
@@ -224,7 +237,7 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'ecriture inutilisée */
 		dup2(cgi_fd, STDOUT_FILENO);
 		dup2(srvToCgi_fd[0], STDIN_FILENO);
-		dup2(cgi_fd, STDERR_FILENO); // necessary to adjust Status according to cgi error
+		// dup2(cgi_fd, STDERR_FILENO); // necessary to adjust Status according to cgi error
 		close(cgi_fd);
 		close(srvToCgi_fd[0]); 
 

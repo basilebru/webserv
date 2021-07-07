@@ -55,6 +55,7 @@ public:
 	bool&						getHasContentType(void);
 	bool&						getHasRedir(void);
 	std::string&				getStatus(void);
+	std::string					get_cwd(void);
 
 };
 

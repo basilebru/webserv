@@ -1,6 +1,6 @@
 <?php
-$uploaddir = getenv('UPLOAD_DIR');
-$uploadfile = $uploaddir . basename($_FILES['file']['name']);
+$uploaddir = $_SERVER['DOCUMENT_ROOT'] . "/" . getenv('UPLOAD_DIR');
+$uploadfile = $uploaddir . "/" . basename($_FILES['file']['name']);
 
 if (!is_dir($uploaddir))
     mkdir($uploaddir, 0775);
