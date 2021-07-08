@@ -21,10 +21,11 @@ private:
     std::string                 headers;
     std::vector<unsigned char>  &response;
     int                         response_code; 
-    std::string                 extension; // copy from request, in order to be able to modify value (request is const)
-    std::string                 target; // // copy from request, in order to be able to modify value (request is const)
+    std::string                 extension; 
+    std::string                 target; 
     bool                        redir_activated;
     std::string                 redir_target;
+    
     static str_map extension_map;
     static str_map init_ext_map();
     static int_map code_map;

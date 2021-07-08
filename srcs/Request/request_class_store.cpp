@@ -218,46 +218,21 @@ void Request::store_body_size()
 
 bool Request::has_transfer_encoding()  const
 {
-    if (std::find_if(this->headers.begin(), this->headers.end(), transfer_encoding_present) != this->headers.end())
+    if (this->headers.count("transfer-encoding"))
         return true;
     return false;
 }
 
 bool Request::has_content_length() const
 {
-    if (std::find_if(this->headers.begin(), this->headers.end(), content_length_present) != this->headers.end())
+    if (this->headers.count("content-length"))
         return true;
     return false;
 }
 
 bool Request::has_host() const
 {
-    if (std::find_if(this->headers.begin(), this->headers.end(), host_present) != this->headers.end())
+    if (this->headers.count("host"))
         return true;
     return false;
 }
-
-bool transfer_encoding_present(std::pair<std::string, std::string> header)
-{
-    if (header.first == "Transfer-Encoding" || header.first == "transfer-encoding")
-        return true;
-    else
-        return false;
-}
-
-bool host_present(std::pair<std::string, std::string> header)
-{
-    if (header.first == "Host" || header.first == "host")
-        return true;
-    else
-        return false;
-}
-
-bool content_length_present(std::pair<std::string, std::string> header)
-{
-    if (header.first == "Content-Length" || header.first == "content-length")
-        return true;
-    else
-        return false;
-}
-

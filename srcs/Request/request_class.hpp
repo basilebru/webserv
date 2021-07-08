@@ -25,9 +25,6 @@ struct conf
         std::vector<std::string>    index;
         int                         autoindex;
         errorMap                    error_pages;
-        // std::vector<std::string>    cgi_allowed_ext;
-        // std::string                 auth_basic;
-        // std::string                 auth_basic_user_file;
         std::pair<int, std::string> return_dir;
         std::string                 cgi_path;
         std::string                 upload_dir;
@@ -39,18 +36,14 @@ class Request
     friend class Response;
     friend class CgiHandler;
     friend class Autoindex;
-    public:
-        // typedef std::pair<std::string, std::string> header;
-
-        // ATTRIBUTES
+    
     private:
         // known HTTP methods
         static std::vector<std::string> known_methods;
         static std::vector<std::string> build_known_methods();
+        // ctrl_c string
         static std::vector<unsigned char> ctrl_c;
         static std::vector<unsigned char> build_ctrl_c();
-
-        // void    initHeaders(void);
 
 
         // reading from connection
@@ -63,14 +56,12 @@ class Request
         
         // storing request
         request_line req_line;
-        // std::list<header> headers;
         std::map<std::string, std::string> headers;
         unsigned long body_size;
         unsigned long chunk_size;
         std::vector<unsigned char> body;
         std::string host_uri;
         std::string host_port;
-        std::string target_uri; // concatenation of config.root and req_line.target
         
         // bools
         bool chunked_encoding;
@@ -132,7 +123,6 @@ class Request
 
         // main functions
         void parse();
-        // void reset();
         // utils
         void print(void) const;
         void print_buffer() const;
@@ -151,12 +141,6 @@ class Request
 
 };
 
-bool content_length_present(std::pair<std::string, std::string> header);
-bool transfer_encoding_present(std::pair<std::string, std::string> header);
-bool host_present(std::pair<std::string, std::string> header);
 void delete_consecutive_slashes_in_uri(std::string &uri);
-
-std::ostream & operator<<(std::ostream & o, Request const & rhs);
-
 
 #endif

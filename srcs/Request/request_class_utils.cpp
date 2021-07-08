@@ -15,29 +15,6 @@ std::vector<std::string> Request::build_known_methods()
     return methods;
 }
 
-// void                    Request::initHeaders(void)
-// {
-//     this->headers["accept-charsets"] = "";
-//     this->headers["accept-language"] = "";
-//     this->headers["allow"] = "";
-//     this->headers["auth-scheme"] = "";
-//     this->headers["authorization"] = "";
-//     this->headers["content-language"] = "";
-//     this->headers["content-length"] = "";
-//     this->headers["content-location"] = "";
-//     this->headers["content-type"] = "";
-//     this->headers["date"] = "";
-//     this->headers["host"] = "";
-//     this->headers["last-modified"] = "";
-//     this->headers["location"] = "";
-//     this->headers["referer"] = "";
-//     this->headers["retry-after"] = "";
-//     this->headers["server"] = "";
-//     this->headers["transfer-encoding"] = "";
-//     this->headers["user-agent"] = "";
-//     this->headers["www-authenticate"] = "";
-//     this->headers["connection"] = "";
-// }
 
 std::vector<std::string> Request::known_methods = Request::build_known_methods();
 
@@ -52,39 +29,8 @@ std::vector<unsigned char> Request::build_ctrl_c()
     vec.push_back('\xFD');
     vec.push_back('\x06');
     return vec;
-        // if (ret == 5 && strcmp(buf, "\xFF\xF4\xFF\xFD\x06") == 0)
 }
 
-
-// // reset is called before each request, to "clear" the previous request and init attributes (it is also called for the first request)
-// void Request::reset()
-// {
-//     std::cout << "reseting request" << std::endl;
-//     // set bools to false
-//     this->chunked_encoding = false;
-//     this->req_line_read = false;
-//     this->request_ready = false;
-//     this->chunked_size_read = false;
-//     // reset req line, headers & body
-//     this->req_line.method = "";
-//     this->req_line.version = "";
-//     this->req_line.target = "";
-//     this->headers.erase(this->headers.begin(), this->headers.end());
-//     this->body = "";
-//     this->body_size = 0;
-//     this->chunk_size = 0;
-//     // this->host_port = 0;
-//     this->host_uri = "";
-//     // config
-//     this->config.root = "";
-//     this->config.max_body_size = NOT_SET;
-//     this->config.autoindex = NOT_SET;
-//     this->config.index.erase(this->config.index.begin(), this->config.index.end());
-//     this->config.allow_methods.erase(this->config.allow_methods.begin(), this->config.allow_methods.end());
-//     this->config.error_pages.erase(this->config.error_pages.begin(), this->config.error_pages.end());
-
-//     // reset serverblock and location block
-// }
 
 int Request::get_error_code() const
 {
@@ -172,7 +118,6 @@ void    Request::print2(void) const
     std::cout << "METHOD: " << this->req_line.method << std::endl;
     std::cout << "TARGET: " << this->req_line.target << std::endl;
     std::cout << "VERSION: " << this->req_line.version << std::endl;
-    std::cout << "TARGET PATH: " << this->target_uri << std::endl;
     
     std::string bdy;
     bdy.assign(this->body.begin(), this->body.end());
@@ -214,3 +159,27 @@ void Request::print_config() const
     // std::cout << "CGI PATH: " << this->config.cgi_path << std::endl;
     std::cout << "--------------------------------" << std::endl;
 }
+
+// void                    Request::initHeaders(void)
+// {
+//     this->headers["accept-charsets"] = "";
+//     this->headers["accept-language"] = "";
+//     this->headers["allow"] = "";
+//     this->headers["auth-scheme"] = "";
+//     this->headers["authorization"] = "";
+//     this->headers["content-language"] = "";
+//     this->headers["content-length"] = "";
+//     this->headers["content-location"] = "";
+//     this->headers["content-type"] = "";
+//     this->headers["date"] = "";
+//     this->headers["host"] = "";
+//     this->headers["last-modified"] = "";
+//     this->headers["location"] = "";
+//     this->headers["referer"] = "";
+//     this->headers["retry-after"] = "";
+//     this->headers["server"] = "";
+//     this->headers["transfer-encoding"] = "";
+//     this->headers["user-agent"] = "";
+//     this->headers["www-authenticate"] = "";
+//     this->headers["connection"] = "";
+// }
