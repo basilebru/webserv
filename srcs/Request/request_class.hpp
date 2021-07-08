@@ -3,7 +3,9 @@
 
 # include "ConfParser.hpp"
 
-# define BUF_SIZE 32768
+# define BUF_SIZE 65536
+# define URI_MAX_LEN 100000
+# define HEADER_MAX_LEN 100000
 
 struct request_line
 {
@@ -48,7 +50,7 @@ class Request
         static std::vector<unsigned char> ctrl_c;
         static std::vector<unsigned char> build_ctrl_c();
 
-        void    initHeaders(void);
+        // void    initHeaders(void);
 
 
         // reading from connection

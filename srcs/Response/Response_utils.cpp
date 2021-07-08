@@ -36,6 +36,7 @@ Response::int_map Response::init_code_map()
     mp[404] = "Not found";
     mp[405] = "Method not allowed";
     mp[413] = "Request entity too large";
+    mp[414] = "URI too long";
     mp[500] = "Internal server error";
     mp[501] = "Not implemented";
     mp[505] = "HTTP version not supported";

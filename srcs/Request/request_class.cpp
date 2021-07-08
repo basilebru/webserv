@@ -63,9 +63,6 @@ void Request::parse()
 void Request::read_from_socket()
 {
 
-    // TO DO:
-    // - set a limit on buffer size ?
-
     long int ret;
     std::vector<unsigned char> buf(BUF_SIZE + 1);
     ret = recv(this->fd, &buf[0], BUF_SIZE, MSG_DONTWAIT);
@@ -138,6 +135,8 @@ void Request::parse_headers()
 void Request::parse_body()
 {
     // std::cout << "Parsing body..." << std::endl;
+    // [RFC7230] If a message is received with both a Transfer-Encoding and a
+    // Content-Length header field, the Transfer-Encoding overrides the Content-Length
 
     if (!this->chunked_encoding)
         this->parse_body_normal();
@@ -235,7 +234,6 @@ std::vector<unsigned char>::iterator Request::find_crlf()
 
 bool Request::read_buf_line(std::string &line)
 {
-
     std::vector<unsigned char>::iterator pos = this->find_crlf();
     if (pos == this->buffer.end())
         return false;

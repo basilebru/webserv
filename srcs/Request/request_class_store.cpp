@@ -23,6 +23,14 @@ void Request::store_req_line(std::string line)
     }
     this->req_line.version = line.substr(pos);
 
+    // check that uri is not "too long"
+    if (this->req_line.target.size() >= URI_MAX_LEN)
+    {
+        this->error_code = 414;
+        return;
+    }
+
+
     // separate query_string from target
     pos = this->req_line.target.find('?');
     if (pos != std::string::npos)
@@ -81,6 +89,22 @@ void Request::store_header(std::string line)
     }
     field_value = line.substr(find + 1);
     trim_whitespace(field_value);
+
+    // check that header value/name is not "too long"
+    if (field_name.size() >= HEADER_MAX_LEN || field_value.size() >= HEADER_MAX_LEN)
+    {
+        this->error_message = "parsing error: header too long ";
+        this->error_code = 400;
+        return ;
+    }
+
+    // check that the header does not exist yet (mandatory for "host" header)
+    if (this->headers.count(to_lower(field_name)))
+    {
+        this->error_message = "duplicate header: " + field_name;
+        this->error_code = 400;
+        return ;
+    }
     this->headers[to_lower(field_name)] = field_value;
 }
 
