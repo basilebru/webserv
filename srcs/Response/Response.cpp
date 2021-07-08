@@ -25,7 +25,7 @@ int Response::build()
         std::cout << "<<<<<<Request ready to be treated>>>>>" << std::endl;
     if (req.error_code)
         std::cout << "<<<<<<Error found in request>>>>>" << std::endl;
-    // this->req.print();
+    this->req.print();
     // this->req.print_config();
     //
 
@@ -290,7 +290,7 @@ int Response::handle_directory_target_with_no_trailing_slash()
     }
     if (ret == YES)
     {
-        std::cout << "directory target with no trailing slash" << std::endl;
+        // std::cout << "directory target with no trailing slash" << std::endl;
         this->redir_module(REDIR, this->req.req_line.target + "/");
         return DONE;
     }
@@ -370,6 +370,8 @@ void Response::cgi_module()
             }
             this->build_keep_alive();
             this->headers += cgi_headers;
+            if (cgi_headers.empty())
+                this->headers += CRLF;
             this->response.assign(this->headers.begin(), this->headers.end());
             this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());
 
