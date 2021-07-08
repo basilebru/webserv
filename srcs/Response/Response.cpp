@@ -27,8 +27,6 @@ int Response::build()
         std::cout << "<<<<<<Error found in request>>>>>" << std::endl;
     this->req.print();
     // this->req.print_config();
-    //
-
     try
     {
         this->build_response();
@@ -82,7 +80,7 @@ void Response::build_target()
     std::string target_uri_without_location_part = this->req.req_line.target.substr(position_of_location + size_of_location);
     this->target += target_uri_without_location_part;
     
-    std::cout << "target is: " << this->target << std::endl;
+    // std::cout << "target is: " << this->target << std::endl;
 }
 
 
@@ -113,8 +111,6 @@ void Response::redir_module(int redir_code, std::string redir_target)
 
 void Response::error_module(int error_code)
 {
-    std::cout << "error module" << this->target << std::endl;
-
     std::map<int, std::string> error_pages = this->req.getErrorPages();
     bool error_page_exists = !error_pages[error_code].empty();
 
@@ -192,7 +188,6 @@ int Response::remove_target()
 
 void Response::index_module()
 {
-    std::cout << "index module" << this->target << std::endl;
     if (this->check_target_is_directory() == FAILURE)
         return;
     
@@ -208,7 +203,6 @@ void Response::index_module()
 
 void Response::autoindex_module()
 {
-    std::cout << "autoindex module" << this->target << std::endl;
     Autoindex ind(this->req);
     std::string auto_index;
     if (ind.genAutoindex(this->target) == SUCCESS)
@@ -265,9 +259,7 @@ int Response::try_index_directive()
 }
 
 void Response::file_module()
-{
-    std::cout << "file module:" << this->target << std::endl;
-    
+{    
     if (this->handle_directory_target_with_no_trailing_slash() == DONE)
         return;
     if (this->read_and_store_target_content() == ERROR)
@@ -374,17 +366,6 @@ void Response::cgi_module()
                 this->headers += CRLF;
             this->response.assign(this->headers.begin(), this->headers.end());
             this->response.insert(this->response.end(), cgi_body.begin(), cgi_body.end());
-
-            if (this->response.size() < 1000000)
-            {
-                std::cout << "Contenu de la reponse:" << std::endl;
-                std::cout << "---------------------------" << std::endl;
-                for (size_t i = 0; i < this->response.size(); ++i)
-                {
-                    std::cout << this->response[i];
-                }
-                std::cout << "---------------------------" << std::endl;
-            }
         }
         else
             this->error_module(500);

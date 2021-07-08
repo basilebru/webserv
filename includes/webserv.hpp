@@ -52,8 +52,8 @@
 # define DEFAULT_AUTH_BASIC		"off"
 # define DEFAULT_CHUNKED_ENC	1				// ON
 # define MAX_TCP_PORT			65535
-# define DEFAULT_CONF_FILE		"./conf.d/webserv.conf"
-# define DEFAULT_SERVER			"./conf.d/default.conf"
+# define DEFAULT_CONF_FILE		"./conf.d/default/webserv.conf"
+# define DEFAULT_SERVER			"./conf.d/default/default.conf"
 
 //CARRIAGE AND NEWLINES
 # define CR		"\r"

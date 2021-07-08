@@ -1,9 +1,7 @@
 # include "Response.hpp"
 
 void Response::build_headers()
-{
-    std::cout << "building headers" << std::endl;
-    
+{    
     this->build_content_length();
     this->build_content_type();
     this->build_keep_alive();
@@ -14,15 +12,6 @@ void Response::build_headers()
     this->response.insert(this->response.begin(), this->headers.begin(), this->headers.end());
     
     this->build_response_line();
-	
-    // std::cout << "Contenu de la reponse:" << std::endl;
-    // std::cout << "---------------------------" << std::endl;
-    // for (size_t i = 0; i < this->response.size(); ++i)
-    // {
-    //     std::cout << this->response[i];
-    // }
-    // std::cout << std::endl;
-    // std::cout << "---------------------------" << std::endl;
 }
 
 void Response::build_content_length()
@@ -52,7 +41,7 @@ void Response::build_location_if_redirection()
 {
     if (this->redir_activated)
     {
-        std::cout << "Redirection activated" << std::endl;
+        // std::cout << "Redirection activated" << std::endl;
         this->headers += "Location: ";
         this->headers += this->redir_target;
         this->headers += "\r\n";
