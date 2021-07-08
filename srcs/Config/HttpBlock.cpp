@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   HttpBlock.cpp                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/18 09:29:05 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/24 20:26:12 by julnolle         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "HttpBlock.hpp"
 
 HttpBlock::HttpBlock(void) :
@@ -17,14 +5,13 @@ _autoindex(NOT_SET),
 _client_max_body_size(NOT_SET),
 _keepalive_timeout(NOT_SET),
 _chunked_transfer_encoding(NOT_SET),
-_auth_basic(DEFAULT_AUTH_BASIC) {
-	// std::cout << GREEN << "HTTP CTOR" << NOCOLOR << std::endl;
+_auth_basic(DEFAULT_AUTH_BASIC)
+{
 	return ;
 }
 
 HttpBlock::HttpBlock(HttpBlock const & copy)
 {
-	// std::cout << YELLOW << "HTTP CPY CTOR" << NOCOLOR << std::endl;
 	this->_root = copy._root;
 	this->_autoindex = copy._autoindex;
 	this->_indexes = copy._indexes;

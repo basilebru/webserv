@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ConfParser.cpp                                     :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/16 15:55:10 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/23 15:31:28 by julnolle         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "ConfParser.hpp"
 
 ConfParser::ConfParser(void) :
@@ -28,7 +16,6 @@ _block_type(NOBLOCK), _line_nb(1)
 
 ConfParser::~ConfParser(void)
 {
-	// std::cout << "DESTRUCTOR CALLED" << std::endl;
 	return ;
 }
 

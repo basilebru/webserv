@@ -4,7 +4,6 @@
 # include "webserv.hpp"
 # include "request_class.hpp"
 # include "dirent.h"
-# include <sys/stat.h>
 # include <ctime>
 
 class Autoindex {

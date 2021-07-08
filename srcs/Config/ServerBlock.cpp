@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ServerBlock.cpp                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: julnolle <julnolle@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/18 09:37:57 by julnolle          #+#    #+#             */
-/*   Updated: 2021/06/23 15:55:16 by julnolle         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "ServerBlock.hpp"
 
 ServerBlock::ServerBlock(void) :
@@ -17,25 +5,11 @@ _listenIP(DEFAULT_LISTEN_IP),
 _listenPort(DEFAULT_LISTEN_PORT),
 _server_names(1, DEFAULT_SRV_NAME)
 {
-	// std::cout << GREEN << "SERVER CONSTRUCTOR" << NOCOLOR <<std::endl;
-	// this->_listenIP = DEFAULT_LISTEN_IP;
-	// this->_listenPort = DEFAULT_LISTEN_PORT;
-	// this->_root.clear();
-	// this->_autoindex = NOT_SET;
-	// this->_indexes.clear();
-	// this->_client_max_body_size = NOT_SET;
-	// this->_keepalive_timeout = NOT_SET;
-	// this->_chunked_transfer_encoding = NOT_SET;
-	// this->_auth_basic = DEFAULT_AUTH_BASIC;
-	// this->_server_names.push_back(DEFAULT_SRV_NAME);
-
-
 	return ;
 }
 
 ServerBlock::ServerBlock(ServerBlock const & copy) : HttpBlock(copy)
 {
-	// std::cout << YELLOW << "SERVER CPY CONSTRUCTOR" << NOCOLOR <<std::endl;
 	this->_listenIP = copy._listenIP;
 	this->_listenPort = copy._listenPort;
 	this->_server_names = copy._server_names;
@@ -70,7 +44,6 @@ ServerBlock& ServerBlock::operator=(ServerBlock const & rhs)
 	this->_return = rhs._return;
 	this->_upload_dir = rhs._upload_dir;
 
-	// std::cout << RED << "SERVER ASSIGNATION" << NOCOLOR <<std::endl;
 	return *this;
 }
 

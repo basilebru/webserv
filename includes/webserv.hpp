@@ -7,6 +7,8 @@
 
 # include <sys/socket.h> // For socket functions
 # include <sys/select.h>
+# include <sys/stat.h>  // stat
+# include <sys/types.h> // stat
 # include <netinet/in.h> // For sockaddr_in
 # include <fstream> // ifstream
 # include <fcntl.h> // For fcntl --> non_blocking fd

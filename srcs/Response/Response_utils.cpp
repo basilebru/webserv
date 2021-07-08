@@ -1,8 +1,4 @@
 #include "Response.hpp"
-# include <unistd.h> // stat
-#include <sys/types.h> // stat
-#include <sys/stat.h> // stat
-
 
 Response::str_map Response::extension_map = Response::init_ext_map();
 

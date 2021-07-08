@@ -3,12 +3,9 @@
 
 # include "webserv.hpp"
 # include "Response.hpp"
-# include <sys/types.h>
 # include <sys/wait.h>
-# include <sys/stat.h>
 
 # define CGI_BUF_SIZE 65536
-
 
 class CgiHandler {
 

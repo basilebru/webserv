@@ -1,5 +1,4 @@
 #include "Server.hpp"
-#define	SEND_BUF 1024
 
 /*Server::Server(void)
 {
