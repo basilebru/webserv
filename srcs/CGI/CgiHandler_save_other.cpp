@@ -191,9 +191,6 @@ int	CgiHandler::execScript(std::string const& extension)
 	variable qui sera retournée par la fonction execScript() et utilsée pour contruire le bdy de la réponse.
 	*/
 
-	std::vector<unsigned char>	body;
-	char	buf[CGI_BUF_SIZE];
-	int		ret = CGI_BUF_SIZE;
 	int		status;
 
 
@@ -273,27 +270,29 @@ int	CgiHandler::execScript(std::string const& extension)
 		close(cgiToSrv_fd[1]);  /* Ferme l'extrémité d'écriture inutilisée */
 		close(srvToCgi_fd[0]);  /* Ferme l'extrémité de lecture inutilisée */
 
+		// fcntl(cgiToSrv_fd[0], F_SETFL, O_NONBLOCK);
+		// fcntl(srvToCgi_fd[1], F_SETFL, O_NONBLOCK);
+		long ret_write;
+		size_t write_total;
+		ret_write = 0;
+		write_total = 0;
 		if (!this->_req.body.empty())
 		{
-			size_t ret_write;
-			std::cout << "writing to cgi" << std::endl;
-			ret_write = write(srvToCgi_fd[1], &this->_req.body[0], this->_req.body.size());
-			std::cout << ret_write << " wrote to cgi" << std::endl;
+			while(write_total < this->_req.body.size())
+			{
+				std::cout << "writing to cgi" << std::endl;
+				// ret_write = send(srvToCgi_fd[1], &this->_req.body[0] + write_total, CGI_BUF_SIZE, MSG_DONTWAIT);
+				ret_write = write(srvToCgi_fd[1], &this->_req.body[0] + write_total, CGI_BUF_SIZE);
+				std::cout << "ret write:" << ret_write << std::endl;
+				read_from_cgi(cgiToSrv_fd[0]);
+				write_total += ret_write;
+				std::cout << ret_write << " wrote to cgi" << std::endl;
+				std::cout << write_total << " wrote to cgi total" << std::endl;
+			}
 		}
-		// fcntl(cgiToSrv_fd[0], F_SETFL, O_NONBLOCK);
-		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
-		while (ret > 0)
-		{
-			memset(buf, 0, CGI_BUF_SIZE);
-			std::cout << "reading..." << std::endl;
-			ret = read(cgiToSrv_fd[0], buf, CGI_BUF_SIZE);
-			// std::cout << "cgi output: " << buf << std::endl;
-			std::cout << "...reading: " << ret << std::endl;
-			this->storeBuffer(body, buf, ret);
-		}
-
-		if (!body.empty())
-			fillOutputs(body);
+		else
+			close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'éciture après utilisation par le père */
+		read_from_cgi(cgiToSrv_fd[0]);
 
 		close(cgiToSrv_fd[0]);  /* Ferme l'extrémité de lecture après utilisation par le père */
 		if (waitpid(pid, &status, 0) == -1)
@@ -309,6 +308,25 @@ int	CgiHandler::execScript(std::string const& extension)
 	return SUCCESS;
 }
 
+
+void CgiHandler::read_from_cgi(int fd_cgi)
+{
+	long ret = CGI_BUF_SIZE;
+	std::vector<unsigned char>	body;
+	char	buf[CGI_BUF_SIZE];
+	// while (ret > 0)
+	// {
+		memset(buf, 0, CGI_BUF_SIZE);
+		std::cout << "reading..." << std::endl;
+		// ret = recv(fd_cgi, buf, CGI_BUF_SIZE, MSG_DONTWAIT);
+		ret = read(fd_cgi, buf, CGI_BUF_SIZE);
+		// std::cout << "cgi output: " << buf << std::endl;
+		std::cout << "...reading: " << ret << std::endl;
+		this->storeBuffer(body, buf, ret);
+	// }
+	if (!body.empty())
+		fillOutputs(body);
+}
 
 /* Getters */
 
