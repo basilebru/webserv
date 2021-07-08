@@ -126,17 +126,6 @@ void	CgiHandler::storeBuffer(std::vector<unsigned char> &body, const char *buf, 
 	}
 }
 
-void	CgiHandler::replaceLF(void)
-{
-	size_t pos = 0;
-
-	while ((pos = this->_headers.find_first_of("\n", pos)) != std::string::npos)
-	{
-		this->_headers.replace(pos, 1, "\r\n");
-		pos += 2;
-	}
-}
-
 void	CgiHandler::flagHeaders(void)
 {
 	size_t pos = 0;
@@ -235,9 +224,21 @@ int	CgiHandler::execScript(std::string const& cgi_path)
 	else if (pid == 0)
 	{
 		close(srvToCgi_fd[1]);  /* Ferme l'extrémité d'ecriture inutilisée */
-		dup2(cgi_fd, STDOUT_FILENO);
-		dup2(srvToCgi_fd[0], STDIN_FILENO);
-		// dup2(cgi_fd, STDERR_FILENO); // necessary to adjust Status according to cgi error
+		if (dup2(cgi_fd, STDOUT_FILENO) == -1)
+		{
+			std::cout << "problem with dup: " << errno << std::endl;
+			return FAILURE;
+		}
+		if (dup2(srvToCgi_fd[0], STDIN_FILENO) == -1)
+		{
+			std::cout << "problem with dup: " << errno << std::endl;
+			return FAILURE;
+		}
+		if (dup2(cgi_fd, STDERR_FILENO) == -1)
+		{
+			std::cout << "problem with dup: " << errno << std::endl;
+			return FAILURE;
+		}
 		close(cgi_fd);
 		close(srvToCgi_fd[0]); 
 
