@@ -165,8 +165,9 @@ void Response::put_module()
 
 void Response::delete_module()
 {
-    std::cerr << "DELETE: " << this->target << std::endl;
-    
+    // std::cerr << "DELETE: " << this->target << std::endl;
+    if (uri_exists(this->target) == NO)
+        return this->error_module(404); 
     if (this->remove_target() == SUCCESS)
     {
         this->response_code = 200;
