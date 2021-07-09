@@ -15,6 +15,7 @@
 # include <map>
 # include <vector>
 # include <list>
+# include <errno.h>
 
 # include <sstream>
 # include <bitset>
