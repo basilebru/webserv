@@ -22,9 +22,9 @@ endif
 EXTRAFLAGS	=	-std=c++98
 
 ifeq ($(leak), yes)
-	SANITIZE	=	-g
-else
 	SANITIZE	=	-g3 -fsanitize=address,undefined
+else
+	SANITIZE	=	-g
 endif
 
 
