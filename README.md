@@ -1,19 +1,22 @@
 # webserv
 
 HTTP server in C++
+
 Team: bbrunet (@grim22) and julnolle (@sequoiageant)
 
 HTTP compliant (cf RFC 7230 to 7235)
 
 GET, POST, PUT, DELETE...
+
 Upload of files to server (text, images, binary...)
 
 CGI implemented (php-cgi and perl handled)
 
-Compatible with Chrome or Firefox
-Tested via Telnet and Postman
-Stress tested via SIEGE
-42 tester 100% OK
+Testing:
+- Compatible with Chrome or Firefox
+- Tested via Telnet and Postman
+- Stress tested via SIEGE
+- 42 tester 100% OK
 
 Server Configuration inspired from Nginx: 
 - "Server block(s)": one or more servers listening on a given address/port, with "server-name" defined or not
@@ -38,17 +41,17 @@ Notes on CGI:
 
 Ressources:
 
-tutorial "how to build a simple HTTP server from scratch
+- tutorial "how to build a simple HTTP server from scratch
 https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa
 
-how the server "matches" a request to the right configuration block (server block and location block)
+- how the server "matches" a request to the right configuration block (server block and location block)
 https://www.digitalocean.com/community/tutorials/understanding-nginx-server-and-location-block-selection-algorithms
 
-insights on how nginx works internally:
+- insights on how nginx works internally:
 https://www.aosabook.org/en/nginx.html
 
-blocking vs non blocking sockets:
+- blocking vs non blocking sockets:
 https://www.scottklement.com/rpg/socktut/nonblocking.html
 
-RFC 7230 commented:
+- RFC 7230 commented:
 https://docs.google.com/document/d/1jEM-PiHYoStfB8KAnTmat553gS5TmExkgDiOLFGKDk8/edit#heading=h.rdums0fppbhu
