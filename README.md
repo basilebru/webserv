@@ -39,6 +39,15 @@ Notes on CGI:
 - TO DO: try to communicate with CGI only with pipes (so far, causes deadlocks when body is too big)
 - CGI environement variables are set by server. One of them ("PATH INFO") is the name of the script that is run
 
+Notes on "non blocking"
+- Non blocking can concern server socket or client socketd
+- If server socket, it concerns accept()...
+- If client socket, it concerns recv(), send()...
+- 3 ways to make read and write operations "non blocking":
+  1. Set the socket as non blocking, upon creation or using fcntl (flag O_NONBLOCK)
+  2. Set the operation (recv, send) as non blocking each time you use the socket: recv(..., MSG_DONTWAIT) send(..., MSG_DONTWAIT)
+  3. Go through select() before each call to recv/send
+
 Ressources:
 
 - tutorial "how to build a simple HTTP server from scratch
